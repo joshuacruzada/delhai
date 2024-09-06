@@ -1,0 +1,321 @@
+.stocks-container {
+  padding: 5px 20px 20px 20px;
+}
+
+.stocks-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #cdcdcd;
+  padding-top: 20px;
+  padding-left: 10px;
+  padding-bottom: 10px;
+  position: relative;
+
+}
+
+.stocks-header h2{
+  margin: 0;
+  font-size: 24px;
+  font-weight: 650;
+  color: #373A40;
+}
+
+.stocks-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-right: 10px;
+}
+
+.search-input {
+  padding: 5px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  background-color: #f8f7f7;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+
+.category-filter {
+  margin-right: 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  background-color: #f8f7f7;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+.new-product-btn {
+  padding: 5px 10px;
+  border-radius: 5px;
+  background-color: #373A40;
+  color: #FFFFFF;
+  border: none;
+  cursor: pointer;
+}
+
+
+.stocks-table-container {
+  max-height: 100%; 
+  overflow-y: auto; 
+  margin-top: 20px;
+  border-radius: 14px;
+  border: 1px solid #ddd; 
+  background: #f7f3f3;
+}
+.stocks-table tbody tr:hover {
+  background-color: #cccccc; 
+}
+
+
+.stocks-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.stocks-table td{
+  text-align: center;
+  padding: 10px;
+  color: #5a5d63;
+}
+.stocks-table th {
+  padding: 10px;
+  text-align: center;
+  color: #e6e6e8;
+  background-color: #373A40; 
+  position: sticky;
+  top: 0; 
+  z-index: 1; 
+}
+
+
+.stocks, .category {
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+  color: #5a5d63;
+}
+
+.itemname {
+  text-align: center;
+  color: #5a5d63;
+  border-bottom: 1px solid #ddd;
+  font-size: 16px;
+
+}
+
+.actions {
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+ 
+}
+
+.edit-btn, .delete-btn {
+  background: none;
+  border-style: none;
+  cursor: pointer;
+  margin: 3px;
+  border-radius: 12px;
+  background-color: #8a8c90;
+  
+}
+.edit-btn{
+  padding: 5px 10px;
+}
+
+.delete-btn{
+  padding: 5px 10px;
+}
+
+.edit-btn i {
+  color: #ffffff;
+  
+}
+
+.delete-btn i {
+  color: #ffffff;
+}
+
+.edit-btn:hover {
+  background-color: #DC5F00;
+  opacity: 0.8;
+}
+
+.edit-modal-content {
+  background: #EEEEEE !important; 
+  border: 1px solid #ddd !important;
+  border-radius: 16px !important;
+  padding: 20px;
+  position: relative;
+  width: 600px !important;
+  max-width: 90%;
+  text-align: left; 
+}
+
+.delete-btn:hover{
+  opacity: 0.8;
+  background-color: #e81a0c ;
+}
+
+.duplicate-btn {
+  background: none;
+  border-style: none;
+  cursor: pointer;
+  margin: 3px;
+  border-radius: 12px;
+  background-color: #8a8c90; 
+  padding: 5px 10px;
+}
+
+.duplicate-btn i {
+  color: #ffffff;
+}
+
+.duplicate-btn:hover {
+  background-color: #41729f; 
+  opacity: 0.8;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.modal-content,
+.add-modal-content,
+.edit-modal-content {
+  border-radius: 16px;
+  padding: 20px;
+  position: relative;
+  z-index: 1001; /* Ensure modal content is above the overlay */
+}
+.modal-content {
+  color: #e81a0c !important;
+  background: #EEEEEE !important;
+  border: 1px solid #ddd !important;
+  border-radius: 16px !important;
+  padding: 20px;
+  text-align: center;
+  position: relative;
+  width: 400px !important;
+  max-width: 90%; 
+}
+
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.modal-input, .modal-textarea, .modal-select {
+  margin: 10px 0;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 100%;
+}
+
+.modal-textarea {
+  height: 80px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+
+.modal-password-input{
+  border: 2px solid #bab6b6;
+  padding: 5px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+.new-product-form {
+  display: flex;
+  flex-direction: column;
+  color: #5a5d63;
+  gap: 15px; /* Adjusts spacing between form elements */
+}
+
+
+.form-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px; /* Reduces the gap between input fields and their corresponding units */
+}
+.modal-input {
+  flex: 2; /* Ensures the input field takes more space */
+}
+
+.modal-select {
+  flex: 1; /* Ensures the dropdown takes up less space */
+}
+
+.form-group label {
+  flex: 1; /* Ensures labels take up equal space */
+}
+
+.delmodal-header{
+  color: #5a5d63;
+  font-size: 25px;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.cancel{
+  padding: 6px 36px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  background-color: #ccc;
+}
+
+.add{
+  padding: 6px 16px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  background-color: #ccc;
+}
+
+.add, .cancel{
+  margin-top: 15px;
+}
+
+.add:hover, .cancel:hover{
+  background-color: #DC5F00;
+  color: #eae5e5;
+}
+
+
+.add-modal-content {
+    background: #EEEEEE !important; 
+    border: 1px solid #ddd !important;
+    border-radius: 16px !important;
+    padding: 20px;
+    position: relative;
+    width: 600px !important; /* Adjusts the width to fit the new layout */
+    max-width: 90%;
+    text-align: left; /* Ensures all text aligns to the left */
+}
+
+.error-message {
+  color: red;
+  font-size: 12px;
+}

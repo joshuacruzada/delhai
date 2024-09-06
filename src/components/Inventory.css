@@ -1,0 +1,89 @@
+.inventory-container {
+  padding: 5px 20px 20px 20px;
+}
+.inventory-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #cdcdcd;
+  padding-top: 20px;
+  padding-left: 10px;
+  padding-bottom: 10px;
+  position: relative;
+}
+
+.inventory-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 650;
+  color: #373A40;
+}
+
+.inventory-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-right: 10px;
+}
+
+.inventory-search {
+  padding: 5px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  background-color: #f8f7f7;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+
+.category-inventory{
+  margin-right: 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  background-color: #f8f7f7;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+.inventory-table-container {
+  max-height: 100%; 
+  overflow-y: auto;
+  border: 1px solid #ddd; 
+  margin-top: 20px;
+  border-radius: 14px;
+  background: #f7f3f3;
+  
+}
+
+.inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.inventory-table th {
+  padding: 10px;
+  text-align: center;
+  color: #e6e6e8;
+  background-color: #373A40;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.inventory-table td {
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+  color: #5a5d63;
+  padding: 10px;
+}
+
+.inventory-table tbody tr:hover {
+  background-color: #cccccc;
+}
+
+
+
+.inventory-itemname {
+  text-align: left;
+  font-size: 16px;
+  border-bottom: 1px solid #ddd;
+}

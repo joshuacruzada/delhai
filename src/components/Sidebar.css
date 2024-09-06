@@ -1,0 +1,76 @@
+.sidebar {
+  width: 180px;
+  height: 100vh;
+  background-color: #373A40;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  transition: 0.5s ease;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  padding-top: 20px;  /* Add some padding at the top */
+}
+
+.sidebar-logo {
+  font-size: 20px;
+  font-weight: 600;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+}
+
+.nav-links-wrapper {
+  padding-top: 10px;  /* Add some padding at the top */
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Ensure it takes full height */
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Align items to the left */
+  flex-grow: 1; /* Make the nav take all the available space */
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Align items to the start */
+  width: 100%; /* Ensure the nav-link takes full width */
+  font-size: 1.2em !important;
+  color: #FFFFFF !important;
+  text-decoration: none;
+  padding: 10px 20px;  /* Add padding */
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.nav-link i {
+  margin-right: 10px;
+  transition: transform 0.2s ease;  /* Smooth icon scale effect */
+}
+
+.nav-link.active {
+  color: #f6700a !important;
+  font-weight: 600;
+}
+
+.nav-link:hover {
+  background-color: #DC5F00;
+  color: #FFFFFF !important;
+  border-radius: 4px;
+}
+
+.nav-link:hover i {
+  transform: scale(1.2);  /* Enlarge icon smoothly on hover */
+}
+
+.settings-link {
+  margin-top: auto; /* Pushes the settings link to the bottom */
+  padding: 10px 20px; /* Match padding with other nav-links */
+}

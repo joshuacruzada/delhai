@@ -1,0 +1,120 @@
+.activity-log-container {
+  margin-right: 5px;
+  background-color: transparent;
+  border: none;
+  width: 100%;
+}
+
+.activity-log-header {
+  background-color: transparent !important;
+}
+
+.activity-log-header h4 {
+  font-size: 20px;
+  font-weight: 650;
+  color: #343a40;
+}
+
+.table-container {
+  max-height: 300px; 
+  overflow-y: auto;  
+  margin-top: 10px; 
+  border: 1px solid #ddd; 
+  border-radius: 8px;
+}
+
+
+.activity-log-table {
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+}
+
+.activity-log-table th, .activity-log-table td {
+  border: none;
+  padding: 10px 15px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Ensure thead takes full width */
+.activity-log-table thead {
+  display: table; /* Ensure the thead behaves like a table */
+  width: 100%;
+  table-layout: fixed; /* Prevent columns from shifting */
+}
+
+.activity-log-table thead th {
+  background-color: #eee;
+  color: #595757;
+  text-align: center; /* Horizontal centering */
+  vertical-align: middle; /* Vertical centering */
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 10px; /* Adjust padding if necessary */
+  width: auto; /* Ensure width auto-adjusts to the content */
+}
+
+.activity-log-table tbody {
+  display: block;
+  max-height: 260px;
+  overflow-y: auto;
+  width: 100%;
+}
+
+.activity-log-table tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.activity-log-table tbody tr td {
+  text-align: center; /* Horizontal centering for the body */
+  vertical-align: middle; /* Vertical centering for the body */
+}
+.activity-log-table {
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+}
+
+.activity-log-table th, .activity-log-table td {
+  border: none;
+  padding: 10px 15px;
+  text-align: center;
+  vertical-align: middle; /* Ensures vertical centering as well */
+}
+
+.activity-log-table thead th {
+  background-color: #eee;
+  color: #595757;
+  text-align: center;
+  position: sticky;  /* Make header sticky */
+  top: 0;           /* Stick to top of the table */
+  z-index: 10;      /* Ensure header stays above table body */
+  vertical-align: middle; /* Ensures vertical centering as well */
+}
+
+
+.activity-log-table tbody {
+  display: block; /* Separate table body from header */
+  max-height: 260px; /* Control table body height */
+  overflow-y: auto; /* Scroll within the body */
+}
+
+.activity-log-table tbody tr {
+  display: table; /* Ensure rows behave like a table */
+  width: 100%; /* Full width for rows */
+  table-layout: fixed; /* Prevent column shifting */
+}
+
+.activity-log-table tbody tr td {
+  color: #495057;
+  background-color: transparent;
+  text-align: center;
+}
+
+.activity-log-table tbody tr:hover {
+  background-color: #f1f1f1;
+}

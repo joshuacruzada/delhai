@@ -1,0 +1,77 @@
+/* Container for the stock details page */
+.stock-details-page {
+  padding: 15px;
+}
+
+/* Header section */
+.stock-details-header {
+  display: flex;
+  align-items: center;
+  font-size: 28px; /* Match font size with dashboard header */
+  color: #5a5d63;
+  margin-bottom: 20px;
+}
+
+.dashboard-link {
+  color: #5a5d63;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.dashboard-link:hover {
+  opacity: 0.50;
+  color: #DC5F00;
+}
+
+.header-separator {
+  margin: 0 10px;
+}
+
+.header-title {
+  font-weight: 500;
+}
+
+/* Styling for the Stock Details table */
+.stock-details-table {
+  width: 100%;
+  margin-top: 20px;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #f7f3f3;
+}
+
+/* Table header styling */
+.stock-details-table thead th {
+  color: #e6e6e8;
+  background-color: #373A40;
+  padding: 10px;
+  text-align: center;
+}
+
+/* Table body rows */
+.stock-details-table tbody tr {
+  border-bottom: 1px solid #ddd;
+  transition: background-color 0.3s;
+}
+
+.stock-details-table tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Table body cells */
+.stock-details-table tbody td {
+  padding: 10px;
+  color: #333;
+  background-color: #f8f8f8;
+  text-align: center;
+}
+
+.stock-details-table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 14px;
+}
+
+.stock-details-table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 14px;
+}
