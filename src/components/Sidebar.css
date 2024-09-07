@@ -44,6 +44,7 @@
   justify-content: flex-start; /* Align items to the start */
   width: 100%; /* Ensure the nav-link takes full width */
   font-size: 1.2em !important;
+  font-weight: 500;
   color: #FFFFFF !important;
   text-decoration: none;
   padding: 10px 20px;  /* Add padding */

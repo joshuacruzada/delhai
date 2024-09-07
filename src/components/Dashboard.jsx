@@ -8,7 +8,6 @@ import Analytics from './Analytics';
 import ActivityLog from './ActivityLog';
 import {
   loadNotifications,
-  generateNotifications,
   markNotificationAsRead,
   saveNotifications,
 } from '../services/notification.js';
@@ -27,21 +26,49 @@ const Dashboard = () => {
 
   const navigate = useNavigate();
 
+  // UseCallback to generate notifications when stock data changes
   const generateAndSetNotifications = useCallback((stockArray, category) => {
-    const newNotifications = generateNotifications(stockArray, category);
-    setNotifications(newNotifications);
+    // Load existing notifications from local storage or state
+    let existingNotifications = loadNotifications();
+
+    // Filter for low stock items in the new stock array
+    const newLowStockNotifications = stockArray
+      .filter((stock) => stock.category === category && parseInt(stock.quantity) < 10)
+      .map((stock) => ({
+        id: stock.id, // Use stock ID for better identification
+        message: `Stock item ${stock.name} in category ${category} is low.`,
+        time: new Date().toLocaleString(),
+        read: false, // New notifications are unread by default
+      }));
+
+    // Filter out existing notifications that correspond to low stock items to avoid duplicates
+    const mergedNotifications = [
+      ...existingNotifications,
+      ...newLowStockNotifications.filter(
+        (newNotif) => !existingNotifications.some((notif) => notif.id === newNotif.id)
+      ),
+    ];
+
+    // Set and save the merged notifications
+    setNotifications(mergedNotifications);
+    saveNotifications(mergedNotifications);
   }, []);
 
   useEffect(() => {
     const stocksRef = ref(database, 'stocks/');
-    onValue(stocksRef, (snapshot) => {
+    const unsubscribe = onValue(stocksRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const stockArray = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        const stockArray = Object.keys(data).map((key) => ({
+          id: key,
+          ...data[key],
+        }));
         calculateTotals(stockArray, activeTab);
-        generateAndSetNotifications(stockArray, activeTab);
+        generateAndSetNotifications(stockArray, activeTab); // Trigger notifications on stock change
       }
     });
+
+    return () => unsubscribe(); // Clean up Firebase listener
   }, [activeTab, generateAndSetNotifications]);
 
   useEffect(() => {
@@ -55,7 +82,7 @@ const Dashboard = () => {
     let lowStocks = 0;
     let outOfStocks = 0;
 
-    stockArray.forEach(stock => {
+    stockArray.forEach((stock) => {
       if (stock.category === category) {
         totalItems += 1;
         const quantity = parseInt(stock.quantity.split(' ')[0], 10);
@@ -92,9 +119,9 @@ const Dashboard = () => {
   };
 
   const clearAllNotifications = (event) => {
-    event.stopPropagation(); 
+    event.stopPropagation();
     setNotifications([]);
-    saveNotifications([]); 
+    saveNotifications([]);
   };
 
   // Sort notifications: Unread notifications on top
@@ -112,24 +139,22 @@ const Dashboard = () => {
         </div>
         <div className="dashboard-header-right">
           <div className="notification-container" onClick={handleToggleNotifications}>
-            <img 
-              src="/notification-bell.png" 
-              alt="Notification Bell" 
-              className="notification-icon"
-            />
-            {notifications.some(notification => !notification.read) && (
+            <img src="/notification-bell.png" alt="Notification Bell" className="notification-icon" />
+            {notifications.some((notification) => !notification.read) && (
               <span className="notification-dot"></span>
             )}
             {showNotifications && (
               <div className="notification-dropdown" onClick={(e) => e.stopPropagation()}>
                 <div className="notification-header">
                   <h5>Notifications</h5>
-                  <button className="clear-all-btn" onClick={clearAllNotifications}>Clear All</button>
+                  <button className="clear-all-btn" onClick={clearAllNotifications}>
+                    Clear All
+                  </button>
                 </div>
                 {sortedNotifications.map((notif) => (
-                  <div 
-                    key={notif.id} 
-                    className={`notification-item ${notif.read ? '' : 'unread'}`} 
+                  <div
+                    key={notif.id}
+                    className={`notification-item ${notif.read ? '' : 'unread'}`}
                     onClick={(e) => handleNotificationClick(notif.id, e)}
                   >
                     <div className="notification-content">
@@ -165,13 +190,16 @@ const Dashboard = () => {
             <Card className="stats-group-card">
               <Row className="mb-2">
                 {[
-                  { title: "TOTAL ITEMS", count: totals.totalItems, className: 'total-items' },
-                  { title: "TOTAL STOCKS", count: totals.totalStocks, className: 'total-stocks' },
-                  { title: "LOW STOCKS", count: totals.lowStocks, className: 'low-stocks' },
-                  { title: "OUT OF STOCKS", count: totals.outOfStocks, className: 'out-of-stocks' }
+                  { title: 'TOTAL ITEMS', count: totals.totalItems, className: 'total-items' },
+                  { title: 'TOTAL STOCKS', count: totals.totalStocks, className: 'total-stocks' },
+                  { title: 'LOW STOCKS', count: totals.lowStocks, className: 'low-stocks' },
+                  { title: 'OUT OF STOCKS', count: totals.outOfStocks, className: 'out-of-stocks' },
                 ].map((cardData, index) => (
                   <Col key={index} md="auto">
-                    <Card className={`text-center stats-card ${cardData.className}`} onClick={() => handleCardClick(cardData.className)}>
+                    <Card
+                      className={`text-center stats-card ${cardData.className}`}
+                      onClick={() => handleCardClick(cardData.className)}
+                    >
                       <Card.Body>
                         <Card.Title>{cardData.title}</Card.Title>
                         <Card.Text className="count">{cardData.count}</Card.Text>

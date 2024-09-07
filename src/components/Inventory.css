@@ -44,46 +44,64 @@
   border-radius: 5px;
 }
 
-.inventory-table-container {
-  max-height: 100%; 
-  overflow-y: auto;
-  border: 1px solid #ddd; 
-  margin-top: 20px;
-  border-radius: 14px;
-  background: #f7f3f3;
-  
-}
 
 .inventory-table {
   width: 100%;
   border-collapse: collapse;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Add shadow for depth */
+  border-radius: 10px;
+  overflow: hidden; /* This will make sure rounded borders work properly */
+  background-color: rgb(248, 248, 248);
+}
+
+.inventory-table th, .inventory-table td {
+  text-align: left;
+  border-bottom: 2px solid #e0e0e0;
 }
 
 .inventory-table th {
   padding: 10px;
-  text-align: center;
-  color: #e6e6e8;
   background-color: #373A40;
-  position: sticky;
-  top: 0;
-  z-index: 1;
+  color: #ffffff;
+  letter-spacing: 0.1em;
 }
 
-.inventory-table td {
-  text-align: center;
-  border-bottom: 1px solid #ddd;
-  color: #5a5d63;
-  padding: 10px;
+.inventory-table tbody tr {
+  transition: background-color 0.2s ease;
 }
 
 .inventory-table tbody tr:hover {
-  background-color: #cccccc;
+  background-color: #d6d6d6; /* Add subtle hover effect */
 }
 
-
-
-.inventory-itemname {
-  text-align: left;
+.inventory-table td {
+  color: #5a5d63;
   font-size: 16px;
-  border-bottom: 1px solid #ddd;
+  padding: 14px;
+}
+
+.inventory-table-container {
+  margin-top: 20px;
+  overflow-y: auto;
+  border-radius: 10px;
+  border: 1px solid #ddd; /* Slight border for structure */
+  background-color: #f9f9f9;
+}
+
+/* Specific class for item names to make them stand out */
+.inventory-itemname {
+  font-weight: 600;
+  font-size: 16px;
+  color: #373A40;
+}
+
+/* For Resubmit/Submit button links, if you want */
+.inventory-link {
+  color: #1e90ff;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.inventory-link:hover {
+  text-decoration: underline;
 }
