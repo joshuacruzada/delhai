@@ -7,7 +7,8 @@ const Sidebar = () => {
     <div className="sidebar">
       <div className="sidebar-header">
         <span className="sidebar-logo">
-          AUXILIARY
+        <img src="/delhailogo.ico" alt="DELHAI Logo" className="delhai-logo-img" />
+          DELHAI
         </span>
       </div>
       <div className="nav-links-wrapper">

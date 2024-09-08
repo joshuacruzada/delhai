@@ -11,17 +11,21 @@
 .sidebar-header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-  padding-top: 20px;  /* Add some padding at the top */
+  padding: 10px 15px; /* Add some padding for spacing */
 }
 
 .sidebar-logo {
-  font-size: 20px;
-  font-weight: 600;
-  color: #FFFFFF;
   display: flex;
-  align-items: center;
+  align-items: center; /* Ensures image and text are vertically aligned */
+  font-size: 24px;
+  font-weight: bold;
+  color: #ffffff; /* Assuming white text for better visibility */
+}
+
+.delhai-logo-img {
+  width: 30px; /* Adjust the size as needed */
+  height: 30px;
+  margin-right: 10px; /* Space between logo and text */
 }
 
 .nav-links-wrapper {
