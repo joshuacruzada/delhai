@@ -1,0 +1,149 @@
+/* Container for the entire products page */
+.products-page {
+  padding: 20px;
+  background-color: rgb(239, 238, 238); /* Light background for better readability */
+}
+
+/* Header styles for the products page */
+.products-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #cdcdcd;
+  padding-bottom: 10px;
+}
+
+.products-header h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #333; /* Darker color for better contrast */
+}
+
+.products-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px; /* Space between search and category dropdown */
+}
+
+.products-search {
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ddd; /* Softer border */
+  background-color: #fff; /* White background */
+  border-radius: 6px;
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1); /* Subtle shadow for input */
+  transition: all 0.2s ease;
+}
+
+.products-search:focus {
+  border-color: #6c757d; /* Focused border */
+  outline: none;
+}
+
+.category-products {
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  background-color: #fff;
+  border-radius: 6px;
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1); /* Subtle shadow for select */
+}
+
+/* Products table styling */
+.products-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Softer shadow */
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.products-table th, .products-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 4px solid rgb(239, 238, 238);
+}
+
+.products-table th {
+  background-color: #fff;
+  color: #373A40;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+   /* To make headers stand out */
+}
+
+.products-table td {
+  font-size: 16px;
+  color: #5a5d63;
+}
+
+.products-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.products-table tbody tr:hover {
+  background-color: whitesmoke; /* Lighter hover effect */
+}
+
+/* Date column */
+.products-date {
+  color: #333;
+  font-weight: 500;
+}
+
+/* Product name column */
+.products-name {
+  font-weight: 600;
+  color: #373A40;
+}
+
+/* Category column */
+.products-category {
+  font-weight: 500;
+  color: #6c757d; /* Lighter color for secondary info */
+}
+
+/* Scrollable table container */
+.products-table-container {
+  margin-top: 20px;
+  max-height: 500px; /* Set a max height */
+  overflow-y: auto;
+  border-radius: 10px;
+  background-color: #fff;
+}
+
+/* Add hover effect to button-like links */
+.products-link {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.products-link:hover {
+  text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .products-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .products-controls {
+    width: 100%;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .products-table th, .products-table td {
+    padding: 10px;
+  }
+
+  .products-table {
+    font-size: 14px;
+  }
+}

@@ -1,0 +1,74 @@
+/* Orders.css */
+
+/* General styling for the Orders section */
+.orders-section {
+    padding: 20px;
+    background-color: #f9f9f9;
+  }
+  
+  .orders-section h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .new-order-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 30px;
+  }
+  
+  .new-order-form label {
+    display: flex;
+    flex-direction: column;
+    font-size: 16px;
+    color: #333;
+  }
+  
+  .new-order-form input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+  }
+  
+  .new-order-form button {
+    padding: 10px 15px;
+    background-color: #2a9d8f;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .new-order-form button:hover {
+    background-color: #1f776f;
+  }
+  
+  /* Styling for the order history table */
+  .orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  .orders-table th, .orders-table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+  }
+  
+  .orders-table th {
+    background-color: #264653;
+    color: white;
+  }
+  
+  .orders-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+  
+  .orders-table tr:hover {
+    background-color: #ddd;
+  }
+  

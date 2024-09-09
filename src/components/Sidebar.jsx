@@ -7,7 +7,7 @@ const Sidebar = () => {
     <div className="sidebar">
       <div className="sidebar-header">
         <span className="sidebar-logo">
-        <img src="/delhailogo.ico" alt="DELHAI Logo" className="delhai-logo-img" />
+          <img src="/delhailogo.ico" alt="DELHAI Logo" className="delhai-logo-img" />
           DELHAI
         </span>
       </div>
@@ -16,11 +16,17 @@ const Sidebar = () => {
           <NavLink className="nav-link" to="/" exact activeClassName="active">
             <i className="bi bi-grid-fill"></i> Dashboard
           </NavLink>
+          <NavLink className="nav-link" to="/orders" activeClassName="active">
+            <i className="bi bi-list-check"></i> Orders
+          </NavLink>
+          <NavLink className="nav-link" to="/products" activeClassName="active">
+            <i className="bi bi-box-seam"></i> Products
+          </NavLink>
           <NavLink className="nav-link" to="/inventory" activeClassName="active">
             <i className="bi bi-archive"></i> Inventory
           </NavLink>
-          <NavLink className="nav-link" to="/stocks" activeClassName="active">
-            <i className="bi bi-box-seam"></i> Stocks
+          <NavLink className="nav-link" to="/invoices" activeClassName="active">
+            <i className="bi bi-receipt"></i> Invoices
           </NavLink>
           <NavLink className="nav-link" to="/analytics" activeClassName="active">
             <i className="bi bi-bar-chart"></i> Analytics
