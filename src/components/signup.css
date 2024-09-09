@@ -1,0 +1,20 @@
+/* Centering the sign-up form */
+.signup-page-wrapper {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f8f9fa; /* Optional background color */
+  }
+  
+  .signup-card {
+    width: 100%;
+    max-width: 500px; /* Adjust this width as needed */
+    padding: 30px; /* Padding inside the card for a spacious look */
+  }
+  
+  @media (min-width: 768px) {
+    .signup-card {
+      max-width: 600px; /* Adjust this width for larger screens */
+    }
+  }

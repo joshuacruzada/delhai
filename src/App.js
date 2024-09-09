@@ -10,7 +10,8 @@ import Products from './components/Products';
 import Inventory from './components/Inventory';
 import Analytics from './components/Analytics';
 import StockDetails from './components/StockDetails';
-
+import LoginForm from './components/login';
+import SignUpForm from './components/signup';
 function App() {
   return (
     <div className="App">
@@ -25,6 +26,8 @@ function App() {
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/stock-details" element={<StockDetails />} />
+            <Route path="/login-page" element={<LoginForm />} />
+            <Route path="/signup-page" element={<SignUpForm />} />
           </Routes>
         </div>
       </BrowserRouter>
