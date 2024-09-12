@@ -1,41 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for redirection
+import { useNavigate } from 'react-router-dom';
 import './Inventory.css';
-import { fetchStocks, deleteProduct, duplicateProduct } from '../services/stockServices'; // Removed unused imports
+import { fetchStocks, deleteProduct, duplicateProduct } from '../services/stockServices';
 
 const Inventory = () => {
   const [inventoryItems, setInventoryItems] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const navigate = useNavigate();  // Use navigate for routing
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [expandedRows, setExpandedRows] = useState([]); // State for expanded rows
+  const navigate = useNavigate();
 
-  // Fetch the stocks on mount
+  // Fetch products from Firebase on component mount
   useEffect(() => {
-    fetchStocks(setInventoryItems);  // Fetch inventory items
+    fetchStocks(setInventoryItems); // Fetch data and update state
   }, []);
 
-  // Handle editing product by redirecting to the edit page
+  // Toggle expanded rows to show more details
+  const handleRowToggle = (id) => {
+    setExpandedRows((prev) =>
+      prev.includes(id) ? prev.filter(rowId => rowId !== id) : [...prev, id]
+    );
+  };
+
+  // Navigate to edit product page
   const handleEdit = (id) => {
-    navigate(`/edit-product/${id}`);  // Redirect to the edit product page with product ID
+    navigate(`/edit-product/${id}`);
   };
 
-  // Handle adding new product by redirecting to the add new product page
+  // Navigate to add new product page
   const handleAddNewProduct = () => {
-    navigate('/add-product');  // Redirect to the add new product page
+    navigate('/add-product');
   };
 
-  // Handle duplicating product
+  // Duplicate the product
   const handleDuplicate = (item) => {
-    duplicateProduct(item, () => fetchStocks(setInventoryItems));  // Refresh after duplication
+    duplicateProduct(item, () => fetchStocks(setInventoryItems));
   };
 
-  // Handle deleting product
+  // Delete the product
   const handleDelete = (id) => {
-    deleteProduct(id, () => {
-      fetchStocks(setInventoryItems);  // Refresh after deletion
-    });
+    deleteProduct(id, () => fetchStocks(setInventoryItems));
   };
 
-  // Handle category change
+  // Filter by category
   const handleCategoryChange = (e) => {
     setSelectedCategory(e.target.value);
   };
@@ -63,10 +69,11 @@ const Inventory = () => {
           <table className="inventory-table">
             <thead>
               <tr>
+                <th></th>
+                <th>Image</th>
                 <th>Stock</th>
                 <th>Packaging</th>
                 <th>Item Description</th>
-                <th>Price</th>
                 <th>Category</th>
                 <th>Actions</th>
               </tr>
@@ -76,30 +83,52 @@ const Inventory = () => {
                 inventoryItems
                   .filter(item => selectedCategory === 'All' || item.category === selectedCategory)
                   .map(item => (
-                    <tr key={item.id}>
-                      <td className="stock">{`${item.quantity} ${item.quantityUnit || ''}`}</td>
-                      <td className="packaging">{item.packaging}</td> {/* Assuming packaging is included in the data */}
-                      <td className="itemname">
-                        {`${item.measurementValue ? `${item.measurementValue} ${item.measurementUnit} ` : ''}${item.name}`}
-                      </td>
-                      <td className="price">{`$${item.price}`}</td> {/* Assuming price is included in the data */}
-                      <td className="category">{item.category}</td>
-                      <td className="actions">
-                        <button className="duplicate-btn" onClick={() => handleDuplicate(item)}>
-                          <i className="bi bi-files"></i>
-                        </button>
-                        <button className="edit-btn" onClick={() => handleEdit(item.id)}>
-                          <i className="bi bi-pencil"></i>
-                        </button>
-                        <button className="delete-btn" onClick={() => handleDelete(item.id)}>
-                          <i className="bi bi-trash"></i>
-                        </button>
-                      </td>
-                    </tr>
+                    <React.Fragment key={item.id}>
+                      <tr>
+                        <td>
+                          <input type="checkbox" onClick={() => handleRowToggle(item.id)} />
+                        </td>
+                        {/* Display product image */}
+                        <td className="image-column">
+                          {item.imageUrl ? (
+                            <img src={item.imageUrl} alt={item.name} className="product-image" />
+                          ) : (
+                            <span>No Image</span>
+                          )}
+                        </td>
+                        <td className="stock">{`${item.quantity} ${item.quantityUnit || ''}`}</td>
+                        <td className="packaging">{item.packaging || 'N/A'}</td>
+                        <td className="itemname">{`${item.measurementValue ? `${item.measurementValue} ${item.measurementUnit} ` : ''}${item.name}`}</td>
+                        <td className="category">{item.category || 'Uncategorized'}</td>
+                        <td className="actions">
+                          <button className="duplicate-btn" onClick={() => handleDuplicate(item)}>
+                            <i className="bi bi-files"></i>
+                          </button>
+                          <button className="edit-btn" onClick={() => handleEdit(item.id)}>
+                            <i className="bi bi-pencil"></i>
+                          </button>
+                          <button className="delete-btn" onClick={() => handleDelete(item.id)}>
+                            <i className="bi bi-trash"></i>
+                          </button>
+                        </td>
+                      </tr>
+                      {expandedRows.includes(item.id) && (
+                        <tr className="expanded-row">
+                          <td colSpan="7">
+                            {/* Display more item details when expanded */}
+                            <div className="expanded-details">
+                              <p><strong>Vendor:</strong> {item.vendor || 'N/A'}</p>
+                              <p><strong>Batch Number:</strong> {item.batchNumber || 'N/A'}</p>
+                              <p><strong>Expiration Date:</strong> {item.expiryDate || 'N/A'}</p>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   ))
               ) : (
                 <tr>
-                  <td colSpan="6">No products available.</td>
+                  <td colSpan="7">No products available.</td>
                 </tr>
               )}
             </tbody>

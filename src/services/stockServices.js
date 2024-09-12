@@ -45,13 +45,16 @@ export const addNewProduct = (newProduct, callback) => {
   const newStockRef = push(stocksRef);
 
   const productData = {
-    name: newProduct.name,
-    measurementValue: newProduct.measurementValue || '', // Ensure default value if undefined
-    measurementUnit: newProduct.measurementUnit || '', // Ensure default value if undefined
-    category: newProduct.category,
-    quantity: newProduct.quantity,
+    name: newProduct.name || 'Unnamed Product', // Handle missing names
+    measurementValue: newProduct.measurementValue || '', // Default if undefined
+    measurementUnit: newProduct.measurementUnit || '',
+    category: newProduct.category || 'Uncategorized', // Default category
+    quantity: newProduct.quantity || 0,
     quantityUnit: newProduct.quantityUnit || '',
-    date: newProduct.date,
+    date: newProduct.date || '', // Default date handling
+    expiryDate: newProduct.expiryDate || '',
+    packaging: newProduct.packaging || 'N/A', // Handle missing packaging
+    imageUrl: newProduct.imageUrl || '', // Handle missing image
   };
 
   set(newStockRef, productData)
@@ -63,6 +66,7 @@ export const addNewProduct = (newProduct, callback) => {
       console.error('Error adding new product:', error);
     });
 };
+
 
 // Update an existing product in the database
 export const updateProduct = (updatedProduct, callback) => {

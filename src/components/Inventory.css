@@ -256,3 +256,25 @@
     font-size: 14px;
   }
 }
+
+/* Image column - set a specific width for the images */
+.image-column {
+  width: 150px; /* Adjust as needed */
+  text-align: center;
+}
+
+.product-image {
+  max-width: 100%; /* Ensure image does not exceed the column width */
+  max-height: 120px; /* Limit the image height */
+  object-fit: contain; /* Ensure the image maintains its aspect ratio */
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #ddd; /* Optional: add a border */
+  background-color: #f9f9f9; /* Optional: add a background */
+}
+
+/* Optional: Add hover effect to images for better UX */
+.product-image:hover {
+  transform: scale(1.05); /* Slightly enlarge on hover */
+  transition: transform 0.3s ease;
+}
