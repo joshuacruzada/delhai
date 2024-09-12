@@ -25,7 +25,7 @@ const Products = () => {
   return (
     <div className="products-page">
       <div className="products-header">
-        <h2>Products</h2>
+        <h2>Products List</h2>
         <div className="products-controls">
           <input type="text" placeholder="Search" className="products-search" />
           <select className="category-products">

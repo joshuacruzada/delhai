@@ -1,321 +1,258 @@
-.stocks-container {
-  padding: 5px 20px 20px 20px;
+/* Container for the entire inventory page */
+.inventory-page {
+  padding: 20px;
+  background-color: rgb(239, 238, 238); /* Light background for better readability */
 }
 
-.stocks-header {
+/* Header styles for the inventory page */
+.inventory-header {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 10px;
-  border-bottom: 1px solid #cdcdcd;
-  padding-top: 20px;
-  padding-left: 10px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #cdcdcd;
   padding-bottom: 10px;
-  position: relative;
-
 }
 
-.stocks-header h2{
+.inventory-header h2 {
   margin: 0;
-  font-size: 24px;
-  font-weight: 650;
-  color: #373A40;
+  font-size: 28px;
+  font-weight: 700;
+  color: #333; /* Darker color for better contrast */
 }
 
-.stocks-actions {
+.inventory-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding-right: 10px;
+  gap: 15px; /* Space between search and category dropdown */
 }
 
-.search-input {
-  padding: 5px;
+.inventory-search {
+  padding: 8px;
   font-size: 14px;
-  border: 1px solid #ccc;
-  background-color: #f8f7f7;
-  border-radius: 4px;
-  margin-right: 10px;
+  border: 1px solid #ddd; /* Softer border */
+  background-color: #fff; /* White background */
+  border-radius: 6px;
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1); /* Subtle shadow for input */
+  transition: all 0.2s ease;
+}
+
+.inventory-search:focus {
+  border-color: #6c757d; /* Focused border */
+  outline: none;
 }
 
 .category-filter {
-  margin-right: 10px;
+  padding: 8px;
   font-size: 14px;
-  border: 1px solid #ccc;
-  background-color: #f8f7f7;
-  padding: 5px;
-  border-radius: 5px;
+  border: 1px solid #ddd;
+  background-color: #fff;
+  border-radius: 6px;
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1); /* Subtle shadow for select */
 }
 
 .new-product-btn {
-  padding: 5px 10px;
-  border-radius: 5px;
-  background-color: #373A40;
-  color: #FFFFFF;
+  background-color: #4D869C;
+  color: #fff;
   border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  font-size: 14px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
-
-.stocks-table-container {
-  max-height: 100%; 
-  overflow-y: auto; 
-  margin-top: 20px;
-  border-radius: 14px;
-  border: 1px solid #ddd; 
-  background: rgb(248, 248, 248);
-}
-.stocks-table tbody tr:hover {
-  background-color: #cccccc; 
+.new-product-btn:hover {
+  background-color: #7AB2B2;
 }
 
-
-.stocks-table {
+/* Inventory table styling */
+.inventory-table {
   width: 100%;
   border-collapse: collapse;
+  background-color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Softer shadow */
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-.stocks-table td{
-  text-align: center;
-  padding: 10px;
-  color: #5a5d63;
-}
-.stocks-table th {
-  padding: 10px;
-  text-align: center;
-  color: #e6e6e8;
-  background-color: #373A40; 
-  position: sticky;
-  top: 0; 
-  z-index: 1; 
+.inventory-table th, .inventory-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 4px solid rgb(239, 238, 238);
 }
 
-
-.stocks, .category {
-  text-align: center;
-  border-bottom: 1px solid #ddd;
-  color: #5a5d63;
+.inventory-table th {
+  background-color: #fff;
+  color: #373A40;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  /* To make headers stand out */
 }
 
-.itemname {
-  text-align: center;
-  color: #5a5d63;
-  border-bottom: 1px solid #ddd;
+.inventory-table td {
   font-size: 16px;
-
+  color: #5a5d63;
 }
 
+.inventory-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.inventory-table tbody tr:hover {
+  background-color: whitesmoke; /* Lighter hover effect */
+}
+
+/* Quantity column */
+.stocks {
+  color: #333;
+  font-weight: 500;
+}
+
+/* Item name column */
+.itemname {
+  font-weight: 600;
+  color: #373A40;
+}
+
+/* Category column */
+.category {
+  font-weight: 500;
+  color: #6c757d; /* Lighter color for secondary info */
+}
+
+/* Scrollable table container */
+.inventory-table-container {
+  margin-top: 20px;
+  max-height: 500px; /* Set a max height */
+  overflow-y: auto;
+  border-radius: 10px;
+  background-color: #fff;
+}
+
+/* Add hover effect to button-like links */
+.inventory-link {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.inventory-link:hover {
+  text-decoration: underline;
+}
+
+/* Action buttons for edit, duplicate, delete */
 .actions {
-  text-align: center;
-  border-bottom: 1px solid #ddd;
- 
+  display: flex;
+  gap: 10px;
 }
 
-.edit-btn, .delete-btn {
-  background: none;
-  border-style: none;
+.duplicate-btn, .edit-btn, .delete-btn {
+  background-color: transparent;
+  border: none;
+  font-size: 16px;
   cursor: pointer;
-  margin: 3px;
-  border-radius: 12px;
-  background-color: #8a8c90;
-  
-}
-.edit-btn{
-  padding: 5px 10px;
-}
-
-.delete-btn{
-  padding: 5px 10px;
-}
-
-.edit-btn i {
-  color: #ffffff;
-  
-}
-
-.delete-btn i {
-  color: #ffffff;
-}
-
-.edit-btn:hover {
-  background-color: #DC5F00;
-  opacity: 0.8;
-}
-
-.edit-modal-content {
-  background: #EEEEEE !important; 
-  border: 1px solid #ddd !important;
-  border-radius: 16px !important;
-  padding: 20px;
-  position: relative;
-  width: 600px !important;
-  max-width: 90%;
-  text-align: left; 
-}
-
-.delete-btn:hover{
-  opacity: 0.8;
-  background-color: #e81a0c ;
-}
-
-.duplicate-btn {
-  background: none;
-  border-style: none;
-  cursor: pointer;
-  margin: 3px;
-  border-radius: 12px;
-  background-color: #8a8c90; 
-  padding: 5px 10px;
 }
 
 .duplicate-btn i {
-  color: #ffffff;
+  color: #28a745;
 }
 
-.duplicate-btn:hover {
-  background-color: #41729f; 
-  opacity: 0.8;
+.edit-btn i {
+  color: #ffc107;
 }
 
+.delete-btn i {
+  color: #dc3545;
+}
+
+/* Modal Styling */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
 }
-.modal-content,
-.add-modal-content,
-.edit-modal-content {
-  border-radius: 16px;
-  padding: 20px;
-  position: relative;
-  z-index: 1001; /* Ensure modal content is above the overlay */
-}
+
 .modal-content {
-  color: #e81a0c !important;
-  background: #EEEEEE !important;
-  border: 1px solid #ddd !important;
-  border-radius: 16px !important;
+  background-color: #fff;
   padding: 20px;
-  text-align: center;
-  position: relative;
-  width: 400px !important;
-  max-width: 90%; 
+  border-radius: 8px;
+  width: 400px;
+  max-width: 90%;
 }
 
 .modal-close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
+  background-color: transparent;
   border: none;
   font-size: 20px;
   cursor: pointer;
+  float: right;
 }
 
-.modal-input, .modal-textarea, .modal-select {
-  margin: 10px 0;
-  padding: 8px;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  width: 100%;
-}
-
-.modal-textarea {
-  height: 80px;
+.delmodal-header {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
 }
 
 .modal-actions {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 10px;
 }
 
-
-.modal-password-input{
-  border: 2px solid #bab6b6;
-  padding: 5px;
-  border-radius: 12px;
-  margin-bottom: 10px;
-}
-
-.new-product-form {
-  display: flex;
-  flex-direction: column;
-  color: #5a5d63;
-  gap: 15px; 
-}
-
-
-.form-group {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px; /* Reduces the gap between input fields and their corresponding units */
-}
-.modal-input {
-  flex: 2; /* Ensures the input field takes more space */
-}
-
-.modal-select {
-  flex: 1; /* Ensures the dropdown takes up less space */
-}
-
-.form-group label {
-  flex: 1; /* Ensures labels take up equal space */
-}
-
-.delmodal-header{
-  color: #5a5d63;
-  font-size: 25px;
-  text-align: center;
-  margin-bottom: 15px;
-}
-
-.cancel{
-  padding: 6px 36px;
-  border-radius: 10px;
+.confirm-btn {
+  background-color: #dc3545;
+  color: #fff;
   border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  font-size: 14px;
   cursor: pointer;
-  background-color: #ccc;
 }
 
-.add{
-  padding: 6px 16px;
-  border-radius: 10px;
+.confirm-btn:hover {
+  background-color: #c82333;
+}
+
+.cancel-btn {
+  background-color: #6c757d;
+  color: #fff;
   border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  font-size: 14px;
   cursor: pointer;
-  background-color: #ccc;
 }
 
-.add, .cancel{
-  margin-top: 15px;
+.cancel-btn:hover {
+  background-color: #5a6268;
 }
 
-.add:hover, .cancel:hover{
-  background-color: #DC5F00;
-  color: #eae5e5;
-}
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .inventory-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
+  .inventory-actions {
+    width: 100%;
+    flex-direction: column;
+    gap: 10px;
+  }
 
-.add-modal-content {
-    background: #EEEEEE !important; 
-    border: 1px solid #ddd !important;
-    border-radius: 16px !important;
-    padding: 20px;
-    position: relative;
-    width: 600px !important; /* Adjusts the width to fit the new layout */
-    max-width: 90%;
-    text-align: left; /* Ensures all text aligns to the left */
-}
+  .inventory-table th, .inventory-table td {
+    padding: 10px;
+  }
 
-.error-message {
-  color: red;
-  font-size: 12px;
+  .inventory-table {
+    font-size: 14px;
+  }
 }

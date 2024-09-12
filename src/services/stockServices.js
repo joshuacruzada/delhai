@@ -1,5 +1,5 @@
 import { database } from '../FirebaseConfig'; 
-import { ref, set, push, onValue } from 'firebase/database';
+import { ref, set, push, onValue, get } from 'firebase/database';
 
 // Fetch stocks from the database
 export const fetchStocks = (callback) => {
@@ -19,6 +19,24 @@ export const fetchStocks = (callback) => {
       callback([]); // Return an empty array if no data exists
     }
   });
+};
+
+// Fetch a single product by ID
+export const fetchProductById = (id, callback) => {
+  const stockRef = ref(database, `stocks/${id}`);
+  
+  get(stockRef)
+    .then((snapshot) => {
+      if (snapshot.exists()) {
+        callback(snapshot.val());
+      } else {
+        console.log("No data available");
+        callback(null); // Call with null if no data found
+      }
+    })
+    .catch((error) => {
+      console.error('Error fetching product:', error);
+    });
 };
 
 // Add a new product to the database

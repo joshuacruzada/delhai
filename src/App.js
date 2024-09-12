@@ -10,6 +10,8 @@ import Products from './components/Products';
 import Inventory from './components/Inventory';
 import Analytics from './components/Analytics';
 import StockDetails from './components/StockDetails';
+import AddNewProduct from './components/AddNewProduct';
+import EditProduct from './components/EditProduct';  // New edit product component
 
 function App() {
   return (
@@ -25,6 +27,8 @@ function App() {
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/stock-details" element={<StockDetails />} />
+            <Route path="/add-product" element={<AddNewProduct />} />  {/* Route for adding product */}
+            <Route path="/edit-product/:id" element={<EditProduct />} />  {/* Route for editing product */}
           </Routes>
         </div>
       </BrowserRouter>
