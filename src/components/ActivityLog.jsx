@@ -26,16 +26,16 @@ const ActivityLog = () => {
   return (
     <Card className="activity-log-container">
       <Card.Header className="activity-log-header">
-        <h4>Activity Log</h4>
+        <h4>User Activity Log</h4>
       </Card.Header>
       <Card.Body className="table-container">
         <Table className="activity-log-table">
           <thead>
             <tr>
               <th>Time Stamp</th>
-              <th>Product Description</th>
-              <th>Where Used</th>
-              <th>Quantity Used</th>
+              <th>User</th>
+              <th>Action</th>
+              <th>Details</th>
             </tr>
           </thead>
           <tbody>
@@ -43,9 +43,9 @@ const ActivityLog = () => {
               activityLogs.map((log, index) => (
                 <tr key={log.id || index}>
                   <td>{log.timestamp}</td>
-                  <td>{log.productDescription}</td>
-                  <td>{log.whereUsed}</td>
-                  <td>{log.quantityUsed}</td>
+                  <td>{log.user}</td>
+                  <td>{log.action}</td>
+                  <td>{log.details}</td>
                 </tr>
               ))
             ) : (

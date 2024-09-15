@@ -6,7 +6,7 @@ import { fetchStocks, deleteProduct, duplicateProduct } from '../services/stockS
 const Inventory = () => {
   const [inventoryItems, setInventoryItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [expandedRows, setExpandedRows] = useState([]); // State for expanded rows
+  const [expandedRows] = useState([]); // State for expanded rows
   const navigate = useNavigate();
 
   // Fetch products from Firebase on component mount
@@ -14,12 +14,7 @@ const Inventory = () => {
     fetchStocks(setInventoryItems); // Fetch data and update state
   }, []);
 
-  // Toggle expanded rows to show more details
-  const handleRowToggle = (id) => {
-    setExpandedRows((prev) =>
-      prev.includes(id) ? prev.filter(rowId => rowId !== id) : [...prev, id]
-    );
-  };
+  
 
   // Navigate to edit product page
   const handleEdit = (id) => {
@@ -86,7 +81,7 @@ const Inventory = () => {
                     <React.Fragment key={item.id}>
                       <tr>
                         <td>
-                          <input type="checkbox" onClick={() => handleRowToggle(item.id)} />
+                          
                         </td>
                         {/* Display product image */}
                         <td className="image-column">

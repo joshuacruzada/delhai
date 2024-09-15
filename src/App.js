@@ -21,6 +21,8 @@ function App() {
         <Sidebar />
         <div className="content">
         <Routes>
+            <Route path="/login-page" element={<LoginForm />} />
+            <Route path="/signup-page" element={<SignUpForm />} />
             <Route path="/" element={<Dashboard />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/invoices" element={<Invoices />} />
@@ -30,8 +32,7 @@ function App() {
             <Route path="/stock-details" element={<StockDetails />} />
             <Route path="/add-product" element={<AddNewProduct />} />  {/* Route for adding product */}
             <Route path="/edit-product/:id" element={<EditProduct />} />  {/* Route for editing product */}
-            <Route path="/login-page" element={<LoginForm />} />
-            <Route path="/signup-page" element={<SignUpForm />} />
+            
           </Routes>
         </div>
       </BrowserRouter>

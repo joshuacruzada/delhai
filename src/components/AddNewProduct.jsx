@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ref, push, set } from 'firebase/database'; // Import Firebase database functions
-import { database } from '../FirebaseConfig'; // Import your initialized Firebase database
+import { database, storage } from '../FirebaseConfig'; // Import Firebase storage
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'; // Firebase Storage functions
 import './AddNewProduct.css';
 
 const AddNewProduct = () => {
@@ -14,11 +15,14 @@ const AddNewProduct = () => {
     quantity: '',
     expiryDate: '',
     date: '',
-    imageUrl: '', // Image URL after upload (optional)
+    imageUrl: '', // Image URL after upload
+    pricePerTest: '', // New field for price per test
+    pricePerBox: '',  // New field for price per box
   });
 
   const [imageFile, setImageFile] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false); // Loading state for feedback
   const navigate = useNavigate(); // Use navigate for routing
 
   // Handle input change for form inputs
@@ -35,33 +39,61 @@ const AddNewProduct = () => {
       const file = e.target.files[0];
       setImageFile(file);
 
-      // Create a URL for the selected image file to display as a preview
-      const imageUrl = URL.createObjectURL(file);
-      setNewProduct((prevProduct) => ({
-        ...prevProduct,
-        imageUrl: imageUrl, // Set the image URL to display the preview
-      }));
+      // Create a local URL for the image preview before upload
+      const localImageUrl = URL.createObjectURL(file);
+      setNewProduct({
+        ...newProduct,
+        imageUrl: localImageUrl, // Set the local image URL for preview
+      });
     }
   };
 
-  const handleAddProduct = () => {
-    if (!newProduct.name || !newProduct.category || !newProduct.quantity) {
+  // Handle adding product
+  const handleAddProduct = async () => {
+    // Validate form
+    if (!newProduct.name || !newProduct.category || !newProduct.quantity || !newProduct.pricePerTest || !newProduct.pricePerBox || !newProduct.expiryDate) {
       setErrorMessage('Please fill all required fields.');
       return;
     }
 
-    // Firebase database reference
-    const productRef = push(ref(database, 'stocks/')); // "stocks/" is the node where we store products
+    setIsLoading(true);
 
-    // Set the new product in Firebase
-    set(productRef, newProduct)
+    let downloadUrl = '';
+    // Upload image to Firebase Storage if an image is selected
+    if (imageFile) {
+      const imageRef = storageRef(storage, `products/${imageFile.name}`);
+      try {
+        await uploadBytes(imageRef, imageFile);
+        downloadUrl = await getDownloadURL(imageRef);
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        setErrorMessage('Failed to upload image.');
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    // Update the product object with the image URL after the image upload
+    const productWithImage = {
+      ...newProduct,
+      imageUrl: downloadUrl || newProduct.imageUrl, // Use Firebase Storage URL if available
+    };
+
+    // Firebase database reference
+    const productRef = push(ref(database, 'stocks/'));
+
+    // Add product to database with image URL
+    set(productRef, productWithImage)
       .then(() => {
         console.log('Product added successfully');
-        navigate('/inventory'); // Navigate back to inventory after successful product addition
+        navigate('/inventory');
       })
       .catch((error) => {
         console.error('Error adding product:', error);
         setErrorMessage('Failed to add product.');
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   };
 
@@ -85,7 +117,7 @@ const AddNewProduct = () => {
                 <p className="photo-placeholder">Photo</p>
               )}
             </div>
-            
+
             {/* Custom File Input */}
             <div className="file-input-wrapper">
               <input
@@ -162,6 +194,26 @@ const AddNewProduct = () => {
               />
             </div>
             <div className="form-group">
+              <label>Price Per Test:</label> {/* New field */}
+              <input
+                type="number"
+                name="pricePerTest"
+                value={newProduct.pricePerTest}
+                onChange={handleInputChange}
+                className="input-underline"
+              />
+            </div>
+            <div className="form-group">
+              <label>Price Per Box:</label> {/* New field */}
+              <input
+                type="number"
+                name="pricePerBox"
+                value={newProduct.pricePerBox}
+                onChange={handleInputChange}
+                className="input-underline"
+              />
+            </div>
+            <div className="form-group">
               <label>Date:</label>
               <input
                 type="date"
@@ -194,7 +246,9 @@ const AddNewProduct = () => {
           </div>
         </div>
 
-        <button onClick={handleAddProduct} className="add-product-btn">Add Product</button>
+        <button onClick={handleAddProduct} className="add-product-btn">
+          {isLoading ? 'Adding Product...' : 'Add Product'}
+        </button>
         {errorMessage && <p className="error-message">{errorMessage}</p>}
       </div>
     </div>

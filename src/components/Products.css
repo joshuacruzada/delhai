@@ -147,3 +147,25 @@
     font-size: 14px;
   }
 }
+
+.products-image {
+  width: 120px; /* Adjust width based on your preference */
+  text-align: center;
+}
+
+/* Styling for the product images */
+.product-image {
+  max-width: 100%; /* Ensure the image does not exceed the column width */
+  max-height: 120px; /* Limit the image height */
+  object-fit: contain; /* Ensure the image maintains its aspect ratio */
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #ddd; /* Optional: add a border */
+  background-color: #f9f9f9; /* Optional: add a background */
+}
+
+/* Optional: Add hover effect to images for better UX */
+.product-image:hover {
+  transform: scale(1.05); /* Slightly enlarge on hover */
+  transition: transform 0.3s ease;
+}

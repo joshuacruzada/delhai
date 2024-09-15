@@ -18,12 +18,11 @@ const EditProduct = () => {
     packaging: '',
     pricePerTest: '',
     pricePerBox: '',
-    vendor: '',
     expirationDate: '',
-    batchNumber: '',
   });
 
   const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false); // To show a loading state during update
 
   // Fetch the product details when the component mounts
   useEffect(() => {
@@ -40,157 +39,148 @@ const EditProduct = () => {
 
   const handleUpdateProduct = () => {
     if (!product.name || !product.category || !product.quantity || !product.quantityUnit || !product.date) {
-      setErrorMessage('These fields are required!');
+      setErrorMessage('Please fill in all required fields!');
       return;
     }
 
+    setIsLoading(true);
+
     updateProduct(id, product, () => {
+      setIsLoading(false);
       navigate('/inventory');  // Redirect to inventory after successful update
     });
   };
 
   return (
-    <div className="edit-product-page">
-      <h2>Edit Medical Product</h2>
-      <div className="product-form">
-        <div>
-          <label>Product Name:</label>
-          <input
-            type="text"
-            name="name"
-            value={product.name}
-            onChange={handleInputChange}
-          />
+    <div className="add-product-page">
+      <div className="add-product-container">
+        <i className="bi bi-arrow-left back-arrow" onClick={() => navigate('/inventory')}></i> {/* Back arrow */}
+        <h2 className="add-product-header">Edit Product</h2>
+
+        <div className="add-product-content">
+          {/* Form Section */}
+          <div className="form-section">
+            <div className="form-group">
+              <label>Product Name:</label>
+              <input
+                type="text"
+                name="name"
+                value={product.name}
+                onChange={handleInputChange}
+                className="input-underline"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Category:</label>
+              <select
+                name="category"
+                value={product.category}
+                onChange={handleInputChange}
+                className="input-underline"
+              >
+                <option value="">Select Category</option>
+                <option value="Surgical">Surgical</option>
+                <option value="Pharmaceutical">Pharmaceutical</option>
+                <option value="Laboratory">Laboratory</option>
+                <option value="Diagnostic">Diagnostic</option>
+                <option value="Medical Supplies">Medical Supplies</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Packaging:</label>
+              <input
+                type="text"
+                name="packaging"
+                value={product.packaging}
+                onChange={handleInputChange}
+                className="input-underline"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Price Per Test:</label>
+              <input
+                type="number"
+                name="pricePerTest"
+                value={product.pricePerTest}
+                onChange={handleInputChange}
+                className="input-underline"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Price Per Box:</label>
+              <input
+                type="number"
+                name="pricePerBox"
+                value={product.pricePerBox}
+                onChange={handleInputChange}
+                className="input-underline"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Measurement Unit:</label>
+              <input
+                type="text"
+                name="measurementUnit"
+                value={product.measurementUnit}
+                onChange={handleInputChange}
+                className="input-underline"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Measurement Value:</label>
+              <input
+                type="text"
+                name="measurementValue"
+                value={product.measurementValue}
+                onChange={handleInputChange}
+                className="input-underline"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Quantity:</label>
+              <input
+                type="number"
+                name="quantity"
+                value={product.quantity}
+                onChange={handleInputChange}
+                className="input-underline"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Quantity Unit:</label>
+              <input
+                type="text"
+                name="quantityUnit"
+                value={product.quantityUnit}
+                onChange={handleInputChange}
+                className="input-underline"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Expiration Date:</label>
+              <input
+                type="date"
+                name="expirationDate"
+                value={product.expirationDate}
+                onChange={handleInputChange}
+                className="input-underline"
+              />
+            </div>
+          </div>
         </div>
 
-        <div>
-          <label>Category:</label>
-          <select
-            name="category"
-            value={product.category}
-            onChange={handleInputChange}
-          >
-            <option value="">Select Category</option>
-            <option value="Surgical">Surgical</option>
-            <option value="Pharmaceutical">Pharmaceutical</option>
-            <option value="Laboratory">Laboratory</option>
-            <option value="Diagnostic">Diagnostic</option>
-            <option value="Medical Supplies">Medical Supplies</option>
-          </select>
-        </div>
-
-        <div>
-          <label>Packaging:</label>
-          <input
-            type="text"
-            name="packaging"
-            value={product.packaging}
-            onChange={handleInputChange}
-            placeholder="e.g., Box, 50's, 100ml"
-          />
-        </div>
-
-        <div>
-          <label>Price Per Test:</label>
-          <input
-            type="number"
-            name="pricePerTest"
-            value={product.pricePerTest}
-            onChange={handleInputChange}
-            placeholder="Enter price per test"
-          />
-        </div>
-
-        <div>
-          <label>Price Per Box:</label>
-          <input
-            type="number"
-            name="pricePerBox"
-            value={product.pricePerBox}
-            onChange={handleInputChange}
-            placeholder="Enter price per box"
-          />
-        </div>
-
-        <div>
-          <label>Measurement Unit:</label>
-          <input
-            type="text"
-            name="measurementUnit"
-            value={product.measurementUnit}
-            onChange={handleInputChange}
-            placeholder="e.g., mg, liters"
-          />
-        </div>
-
-        <div>
-          <label>Measurement Value:</label>
-          <input
-            type="text"
-            name="measurementValue"
-            value={product.measurementValue}
-            onChange={handleInputChange}
-            placeholder="Enter measurement value"
-          />
-        </div>
-
-        <div>
-          <label>Quantity:</label>
-          <input
-            type="number"
-            name="quantity"
-            value={product.quantity}
-            onChange={handleInputChange}
-            placeholder="Enter quantity"
-          />
-        </div>
-
-        <div>
-          <label>Quantity Unit:</label>
-          <input
-            type="text"
-            name="quantityUnit"
-            value={product.quantityUnit}
-            onChange={handleInputChange}
-            placeholder="e.g., boxes, pcs"
-          />
-        </div>
-
-        <div>
-          <label>Vendor:</label>
-          <input
-            type="text"
-            name="vendor"
-            value={product.vendor}
-            onChange={handleInputChange}
-            placeholder="Enter vendor name"
-          />
-        </div>
-
-        <div>
-          <label>Expiration Date:</label>
-          <input
-            type="date"
-            name="expirationDate"
-            value={product.expirationDate}
-            onChange={handleInputChange}
-          />
-        </div>
-
-        <div>
-          <label>Batch Number:</label>
-          <input
-            type="text"
-            name="batchNumber"
-            value={product.batchNumber}
-            onChange={handleInputChange}
-            placeholder="Enter batch number"
-          />
-        </div>
-
-        <button className="update-btn" onClick={handleUpdateProduct}>Update Product</button>
-        <button className="cancel-btn" onClick={() => navigate('/inventory')}>Cancel</button>
-
+        <button className="add-product-btn" onClick={handleUpdateProduct}>
+          {isLoading ? 'Updating...' : 'Update Product'}
+        </button>
         {errorMessage && <p className="error-message">{errorMessage}</p>}
       </div>
     </div>

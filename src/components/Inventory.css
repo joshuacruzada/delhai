@@ -54,11 +54,13 @@
   background-color: #4D869C;
   color: #fff;
   border: none;
-  padding: 8px 15px;
+  padding: 8px;
   border-radius: 5px;
   font-size: 14px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  width: 40%;
+  
 }
 
 .new-product-btn:hover {
@@ -143,97 +145,27 @@
 
 /* Action buttons for edit, duplicate, delete */
 .actions {
-  display: flex;
-  gap: 10px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+ 
 }
 
-.duplicate-btn, .edit-btn, .delete-btn {
-  background-color: transparent;
-  border: none;
-  font-size: 16px;
+.duplicate-btn,.edit-btn, .delete-btn {
+  background: none;
+  border-style: none;
   cursor: pointer;
+  margin: 3px;
+  border-radius: 12px;
+  background-color: #8a8c90;
+  padding: 5px 10px;
+  color: #ffffff;
 }
 
-.duplicate-btn i {
-  color: #28a745;
+.edit-btn:hover {
+  background-color: #4D869C;
+  opacity: 0.8;
 }
 
-.edit-btn i {
-  color: #ffc107;
-}
-
-.delete-btn i {
-  color: #dc3545;
-}
-
-/* Modal Styling */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.modal-content {
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  width: 400px;
-  max-width: 90%;
-}
-
-.modal-close {
-  background-color: transparent;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  float: right;
-}
-
-.delmodal-header {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.confirm-btn {
-  background-color: #dc3545;
-  color: #fff;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 5px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.confirm-btn:hover {
-  background-color: #c82333;
-}
-
-.cancel-btn {
-  background-color: #6c757d;
-  color: #fff;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 5px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.cancel-btn:hover {
-  background-color: #5a6268;
-}
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
@@ -264,7 +196,7 @@
 }
 
 .product-image {
-  max-width: 100%; /* Ensure image does not exceed the column width */
+  max-width: 60%; /* Ensure image does not exceed the column width */
   max-height: 120px; /* Limit the image height */
   object-fit: contain; /* Ensure the image maintains its aspect ratio */
   padding: 5px;
