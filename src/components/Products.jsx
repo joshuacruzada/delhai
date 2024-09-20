@@ -52,7 +52,7 @@ const Products = () => {
             <thead>
               <tr>
                 <th> </th>
-                <th>Item Description</th> {/* Update the header */}
+                <th>Item Description</th> {/* Updated header */}
                 <th>Price Per Box</th>
                 <th>Price Per Test</th>
                 <th>Stocks</th>
@@ -71,9 +71,11 @@ const Products = () => {
                         'No Image'
                       )}
                     </td>
-                    <td className="itemname">
-                      {`${product.measurementValue ? `${product.measurementValue} ${product.measurementUnit} ` : ''}${product.name}`}
-                    </td> {/* Use itemname to combine measurement and name */}
+                    <td className="item-description">
+                      <strong>{product.name}</strong>
+                      <br />
+                      {product.description || 'No description available'} {/* Display description */}
+                    </td> {/* Updated to include description */}
                     <td className="products-price">
                       {product.pricePerBox ? `₱${Number(product.pricePerBox).toFixed(2)}` : '₱0.00'}
                     </td>

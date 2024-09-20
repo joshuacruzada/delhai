@@ -19,8 +19,12 @@
     color: #666;
     text-align: left;
     text-decoration: none;
+    padding-left: 0;
 }
 
+.back-button:hover{
+    color: #4D869C;
+}
 .order-container {
     display: flex;
     justify-content: space-between;
@@ -77,24 +81,33 @@
 
 .search-container {
     position: relative;
-    display: inline-block; /* Ensure the container is sized for its content */
-    width: 60%; /* Same width as the input */
-  }
-  
-.search-icon {
+    width: 50%; /* Adjust this if you want it wider or narrower */
+    margin-left: auto; /* This will move the search bar to the right */
+    margin-bottom: 10px; /* Adds space below the search bar */
+}
+
+.search-container input {
+    width: 100%; /* Takes up the full width */
+    padding: 10px 40px 10px 20px; /* Extra padding to account for the search icon */
+    border: 1px solid #ccc; /* Border color */
+    border-radius: 25px; /* Fully round border */
+    font-size: 16px; /* Font size for readability */
+    outline: none;
+    box-shadow: none; /* Remove box shadow */
+}
+
+.search-container .search-icon {
     position: absolute;
     top: 50%;
-    left: 15px; /* Adjust the left position for the icon */
+    right: 20px; /* Positioning the icon on the right */
     transform: translateY(-50%);
+    font-size: 20px;
     color: #aaa; /* Icon color */
+    cursor: pointer; /* Make the icon clickable */
 }
-.search-product {
-    width: 60%;
-    border-radius: 15px;
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    margin-bottom: 10px;
-    margin-left: auto;
+.search-container input:focus {
+    outline: none; /* This removes the blue border */
+    box-shadow: none; /* Removes any additional shadow that may appear */
 }
 
 .product-card {
@@ -139,11 +152,10 @@
 .product-price {
     font-weight: bold;
     margin-top: 5px;
-}
-
-p{
     margin-bottom: 0rem;
 }
+
+
 
 .product-stock {
     font-size: 14px;
@@ -154,7 +166,6 @@ p{
 .addto-order-btn{
     border-radius: 20px;
 }
-/* Flip container for the order section */
 .flip-container {
     flex: 1;
     background-color: white;
@@ -165,40 +176,65 @@ p{
     display: flex;
     flex-direction: column;
     height: 100%;
-    perspective: 1000px;
     position: relative;
     width: 100%;
 }
 
 .flipper {
-    transition: 0.6s;
-    transform-style: preserve-3d;
     position: relative;
     width: 100%;
     height: 100%;
-}
-
-.flipped .flipper {
-    transform: rotateY(180deg);
 }
 
 .front, .back {
     position: absolute;
     width: 100%;
     height: 100%;
-    backface-visibility: hidden;
+    transition: opacity 0.6s ease-in-out; /* Transition for fade */
+    opacity: 0; /* Initially hide both sides */
+    visibility: hidden;
+}
+
+.flipped .front {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.flipped .back {
+    opacity: 1;
+    visibility: visible;
 }
 
 .front {
-    z-index: 2;
-    transform: rotateY(0deg);
+    opacity: 1;
+    visibility: visible;
 }
 
 .back {
-    transform: rotateY(180deg);
+    opacity: 0;
+    visibility: hidden;
 }
 
+
 /* Style for order and buyer info sections */
+.next-btn-container {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.next-btn {
+    background-color: transparent;
+    color: #666;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.next-btn:hover {
+    text-decoration: underline;
+}
 
 .order-details-section, .buyer-info-container {
     display: flex;
@@ -207,7 +243,7 @@ p{
     height: 100%;
 }
 
-.order-details-section h4, .buyer-info-container h4 {
+.order-details-section h4 {
     margin: 0;
     font-size: 1.5rem;
     
@@ -231,37 +267,17 @@ p{
 
 .order-item {
     display: grid;
-    grid-template-columns: 80px 1fr auto auto auto auto;
-    align-items: start; /* Aligns the order item content to the top */
-    gap: 15px;
-    border-bottom: 1px solid #cdcccc;
+    grid-template-columns: 80px 1fr auto auto auto auto; /* Defined grid layout for image, name, packaging, quantity controls, price, and delete icon */
+    align-items: center; /* Ensures all elements are vertically aligned */
+    gap: 15px; /* Gap between columns */
+    border-bottom: 1px solid #cdcccc; /* Border between order items */
     padding-bottom: 10px;
-}
-
-
-.next-btn-container {
-    display: flex;
-    justify-content: flex-end;
-}
-
-.next-btn {
-    background-color: transparent;
-    color: #666;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    text-decoration: none;
-}
-
-.next-btn:hover {
-    text-decoration: underline;
 }
 
 .order-item img {
     width: 60px;
     height: 60px;
-    object-fit: cover;
+    object-fit: contain;
     border-radius: 4px;
 }
 
@@ -273,14 +289,35 @@ p{
     display: flex;
     align-items: center;
     gap: 5px;
+    width: 138px;
 }
 
 .quantity-control button {
-    width: 30px;
+    width: 20px;
     height: 30px;
     font-size: 16px;
     text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
+.quantity-control input {
+    width: 72px; /* Adjust the width as needed */
+    height: 30px; /* Adjust the height as needed */
+    text-align: center; /* Centers the number inside the input */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px; /* Adjust the font size as needed */
+    appearance: none; /* Removes the default spinner (up/down arrows) */
+    -moz-appearance: textfield; /* Removes the spinner for Firefox */
+}
+
+.quantity-control input::-webkit-outer-spin-button,
+.quantity-control input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0; /* Removes the spinner for Webkit browsers (Chrome, Safari) */
+}
+
 
 .price-wrapper {
     display: flex;
@@ -288,7 +325,7 @@ p{
 }
 
 .editable-price-input {
-    width: 60%;
+    width: 100px; /* Set a defined width for price input */
     padding: 5px;
     text-align: right;
     border: 1px solid #ccc;
@@ -298,9 +335,15 @@ p{
 .remove-item-button {
     background-color: transparent;
     border: none;
-    padding: 5px;
+    padding: 10px;
     cursor: pointer;
-    font-size: 1em;
+    font-size: 1.2em;
+    color: #d02008;
+}
+
+.remove-item-button:hover {
+    transform: scale(1.3);
+    color: #f5432b;
 }
 
 
@@ -341,4 +384,34 @@ p{
 
 .packaging-dropdown-wide {
     width: 80px;
+}
+
+/* Style for order and buyer info sections */
+.buyer-header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #d1d0d0; /* Adds the bottom border */
+    margin-bottom: 20px; /* Adds space below the header */
+    padding-bottom: 10px; /* Adds padding below the header */
+}
+
+.buyer-header-container h4 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.previous-btn {
+    background-color: transparent;
+    color: #666;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+
+.previous-btn:hover{
+    text-decoration: underline;
 }

@@ -166,14 +166,14 @@ const NewOrderForm = ({ onBackToOrders, onNext }) => {
           </div>
           
           <div className="search-container">
-            <i className="bi bi-search search-icon"></i> {/* Bootstrap search icon */}
-              <input
-                type="text"
-                placeholder="Search product"
-                className="form-control search-product"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+                <i className="bi bi-search search-icon"></i> {/* Bootstrap search icon */}
+                <input
+                    type="text"
+                    placeholder="Search product"
+                    className="form-control search-product"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
           </div>
 
 
@@ -204,7 +204,7 @@ const NewOrderForm = ({ onBackToOrders, onNext }) => {
             <div className="front">
               <div className="order-details-section">
                 <div className="order-header">
-                  <h4>Order</h4>
+                  <h4>Order Information</h4>
                   <div className="next-btn-container">
                     <button className="btn next-btn" onClick={goToBuyerInfo}>
                       Next Page
@@ -267,7 +267,7 @@ const NewOrderForm = ({ onBackToOrders, onNext }) => {
 
                       {/* Remove button */}
                       <button className="remove-item-button" onClick={() => removeProductFromOrder(item.id)}>
-                        <RiDeleteBin6Line style={{ color: 'red', fontSize: '1.5em' }} />
+                        <RiDeleteBin6Line/>
                       </button>
                     </div>
                   ))
@@ -285,7 +285,14 @@ const NewOrderForm = ({ onBackToOrders, onNext }) => {
             {/* Buyer Info Page (back) */}
             <div className="back">
               <div className="buyer-info-container">
+
+              <div className="buyer-header-container">
                 <h4>Buyer Information</h4>
+                <button className="btn previous-btn" onClick={goToOrderPage}>
+                  Previous
+                </button>
+              </div>
+
                 <form className="buyer-info-form">
                   <div className="form-group">
                     <label htmlFor="buyerName">Buyer Name</label>
@@ -301,9 +308,6 @@ const NewOrderForm = ({ onBackToOrders, onNext }) => {
                   </div>
 
                   <div className="action-buttons">
-                    <button className="btn btn-secondary" onClick={goToOrderPage}>
-                      Previous
-                    </button>
                     <button className="btn btn-primary" onClick={onNext}>
                       Create Invoice
                     </button>

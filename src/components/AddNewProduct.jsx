@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ref, push, set } from 'firebase/database'; // Import Firebase database functions
-import { database, storage } from '../FirebaseConfig'; // Import Firebase storage
-import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'; // Firebase Storage functions
+import { ref, push, set } from 'firebase/database';
+import { database, storage } from '../FirebaseConfig';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import './AddNewProduct.css';
 
 const AddNewProduct = () => {
@@ -10,22 +10,23 @@ const AddNewProduct = () => {
     name: '',
     category: '',
     packaging: '',
-    measurementUnit: '',
-    measurementValue: '',
     quantity: '',
     expiryDate: '',
     date: '',
-    imageUrl: '', // Image URL after upload
-    pricePerTest: '', // New field for price per test
-    pricePerBox: '',  // New field for price per box
+    imageUrl: '', 
+    pricePerTest: '',  // Price per test field
+    pricePerBox: '',   // Price per box field
+    pricePerPiece: '', // New field for price per piece
+    minStockPcs: '',   // Minimum stock for pieces
+    minStockBox: '',   // Minimum stock for boxes
+    description: '',   // New field for product description
   });
 
   const [imageFile, setImageFile] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false); // Loading state for feedback
-  const navigate = useNavigate(); // Use navigate for routing
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
-  // Handle input change for form inputs
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewProduct({
@@ -43,15 +44,13 @@ const AddNewProduct = () => {
       const localImageUrl = URL.createObjectURL(file);
       setNewProduct({
         ...newProduct,
-        imageUrl: localImageUrl, // Set the local image URL for preview
+        imageUrl: localImageUrl,
       });
     }
   };
 
-  // Handle adding product
   const handleAddProduct = async () => {
-    // Validate form
-    if (!newProduct.name || !newProduct.category || !newProduct.quantity || !newProduct.pricePerTest || !newProduct.pricePerBox || !newProduct.expiryDate) {
+    if (!newProduct.name || !newProduct.category || !newProduct.quantity || !newProduct.pricePerTest || !newProduct.pricePerBox || !newProduct.pricePerPiece || !newProduct.minStockPcs || !newProduct.minStockBox || !newProduct.expiryDate) {
       setErrorMessage('Please fill all required fields.');
       return;
     }
@@ -59,7 +58,6 @@ const AddNewProduct = () => {
     setIsLoading(true);
 
     let downloadUrl = '';
-    // Upload image to Firebase Storage if an image is selected
     if (imageFile) {
       const imageRef = storageRef(storage, `products/${imageFile.name}`);
       try {
@@ -73,16 +71,13 @@ const AddNewProduct = () => {
       }
     }
 
-    // Update the product object with the image URL after the image upload
     const productWithImage = {
       ...newProduct,
-      imageUrl: downloadUrl || newProduct.imageUrl, // Use Firebase Storage URL if available
+      imageUrl: downloadUrl || newProduct.imageUrl,
     };
 
-    // Firebase database reference
     const productRef = push(ref(database, 'stocks/'));
 
-    // Add product to database with image URL
     set(productRef, productWithImage)
       .then(() => {
         console.log('Product added successfully');
@@ -98,17 +93,16 @@ const AddNewProduct = () => {
   };
 
   const handleBack = () => {
-    navigate('/inventory'); // Navigate to inventory or previous page
+    navigate('/inventory');
   };
 
   return (
     <div className="add-product-page">
       <div className="add-product-container">
-        <i className="bi bi-arrow-left back-arrow" onClick={handleBack}></i> {/* Back arrow */}
+        <i className="bi bi-arrow-left back-arrow" onClick={handleBack}></i>
         <h2 className="add-product-header">Add New Product</h2>
 
         <div className="add-product-content">
-          {/* Image Section */}
           <div className="image-section">
             <div className="image-preview">
               {newProduct.imageUrl ? (
@@ -117,8 +111,6 @@ const AddNewProduct = () => {
                 <p className="photo-placeholder">Photo</p>
               )}
             </div>
-
-            {/* Custom File Input */}
             <div className="file-input-wrapper">
               <input
                 type="file"
@@ -135,7 +127,6 @@ const AddNewProduct = () => {
             </div>
           </div>
 
-          {/* Form Section */}
           <div className="form-section">
             <div className="form-group">
               <label>Item Name:</label>
@@ -161,27 +152,8 @@ const AddNewProduct = () => {
                 <option value="Laboratory">Laboratory</option>
                 <option value="Diagnostic">Diagnostic</option>
                 <option value="Medical Supplies">Medical Supplies</option>
+                <option value="Rapid Test">Rapid Test</option>
               </select>
-            </div>
-            <div className="form-group">
-              <label>Measurement Value:</label>
-              <input
-                type="text"
-                name="measurementValue"
-                value={newProduct.measurementValue}
-                onChange={handleInputChange}
-                className="input-underline"
-              />
-            </div>
-            <div className="form-group">
-              <label>Measurement Unit:</label>
-              <input
-                type="text"
-                name="measurementUnit"
-                value={newProduct.measurementUnit}
-                onChange={handleInputChange}
-                className="input-underline"
-              />
             </div>
             <div className="form-group">
               <label>Packaging:</label>
@@ -194,7 +166,7 @@ const AddNewProduct = () => {
               />
             </div>
             <div className="form-group">
-              <label>Price Per Test:</label> {/* New field */}
+              <label>Price Per Test:</label>
               <input
                 type="number"
                 name="pricePerTest"
@@ -204,7 +176,7 @@ const AddNewProduct = () => {
               />
             </div>
             <div className="form-group">
-              <label>Price Per Box:</label> {/* New field */}
+              <label>Price Per Box:</label>
               <input
                 type="number"
                 name="pricePerBox"
@@ -214,11 +186,31 @@ const AddNewProduct = () => {
               />
             </div>
             <div className="form-group">
-              <label>Date:</label>
+              <label>Price Per Piece:</label> {/* New field */}
               <input
-                type="date"
-                name="date"
-                value={newProduct.date}
+                type="number"
+                name="pricePerPiece"
+                value={newProduct.pricePerPiece}
+                onChange={handleInputChange}
+                className="input-underline"
+              />
+            </div>
+            <div className="form-group">
+              <label>Minimum Stock (Pieces):</label> {/* New field */}
+              <input
+                type="number"
+                name="minStockPcs"
+                value={newProduct.minStockPcs}
+                onChange={handleInputChange}
+                className="input-underline"
+              />
+            </div>
+            <div className="form-group">
+              <label>Minimum Stock (Boxes):</label> {/* New field */}
+              <input
+                type="number"
+                name="minStockBox"
+                value={newProduct.minStockBox}
                 onChange={handleInputChange}
                 className="input-underline"
               />
@@ -241,6 +233,15 @@ const AddNewProduct = () => {
                 value={newProduct.quantity}
                 onChange={handleInputChange}
                 className="input-underline"
+              />
+            </div>
+            <div className="form-group">
+              <label>Product Description:</label>
+              <textarea
+                name="description"
+                value={newProduct.description}
+                onChange={handleInputChange}
+                className="input-underline description-field"
               />
             </div>
           </div>

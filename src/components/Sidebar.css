@@ -44,9 +44,10 @@
 
 .sidebar-text {
   font-size: 22px;
-  font-weight: bold;
+  font-weight: 600;
   color: #ffffff;
-  margin-left: 10px; /* Space between logo and text */
+  margin-left: 10px; 
+  letter-spacing: 0.6px;
 }
 
 .sidebar.collapsed .sidebar-text {
