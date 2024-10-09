@@ -126,7 +126,7 @@
 /* Scrollable table container */
 .inventory-table-container {
   margin-top: 20px;
-  max-height: 500px; /* Set a max height */
+  max-height: 800px; /* Set a max height */
   overflow-y: auto;
   border-radius: 10px;
   background-color: #fff;

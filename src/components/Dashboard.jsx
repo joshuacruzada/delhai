@@ -175,7 +175,7 @@ const Dashboard = () => {
         <div className="left-section">
           <Card className="category-and-stats-container">
             <div className="button-group-container">
-              {['Electrical', 'Civil', 'Production', 'HVAC'].map((category) => (
+              {['Pharmaceuticals', 'Medical Supplies', 'Laboratory Reagents', 'Medical Equipment'].map((category) => (
                 <Button
                   key={category}
                   variant="outline-secondary"

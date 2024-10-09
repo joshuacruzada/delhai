@@ -72,7 +72,7 @@ const Inventory = () => {
                 <th>Image</th>
                 <th>Stock</th>
                 <th>Packaging</th>
-                <th>Item Name & Description</th> {/* Updated to show both name and description */}
+                <th>Item Name & Description</th> 
                 <th>Category</th>
                 <th>Actions</th>
               </tr>

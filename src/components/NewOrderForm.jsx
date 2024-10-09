@@ -2,15 +2,31 @@ import React, { useState, useEffect } from 'react';
 import { RiDeleteBin6Line } from 'react-icons/ri';
 import './NewOrderForm.css';
 import { database } from '../FirebaseConfig';
-import { ref, onValue, update } from 'firebase/database';
+import { ref, onValue, update } from 'firebase/database'; // Include Firebase push, set
+import { completeOrderProcess } from '../services/orderUtils'; 
 
-const NewOrderForm = ({ onBackToOrders, onNext }) => {
+const NewOrderForm = ({ onBackToOrders, onNext = () => {} }) => {
   const [products, setProducts] = useState([]);
   const [order, setOrder] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState('order'); // Tracks whether to show order or buyer info page
 
+  // Buyer information state
+  const [buyerInfo, setBuyerInfo] = useState({
+    soldTo: '',
+    address: '',
+    tin: '',
+    shippedTo: '',
+    drNo: '',
+    date: '',
+    terms: '',
+    salesman: '',
+    poNo: '',
+    email: '',
+  });
+
+  // Fetch products from Firebase
   useEffect(() => {
     const productsRef = ref(database, 'stocks/');
     onValue(productsRef, (snapshot) => {
@@ -30,20 +46,54 @@ const NewOrderForm = ({ onBackToOrders, onNext }) => {
     });
   }, []);
 
-  // Function to handle switching to the buyer information page
+  // Automatically update total amount when the order changes
+  useEffect(() => {
+    updateTotalAmount(order);
+  }, [order]);
+
+  // Function to handle buyer info input changes
+  const handleBuyerInfoChange = (e) => {
+    const { name, value } = e.target;
+    setBuyerInfo((prevInfo) => ({
+      ...prevInfo,
+      [name]: value,
+    }));
+  };
+
+ // Function to handle the form submission and complete the order process
+const handleCreateInvoice = (e) => {
+  e.preventDefault();
+
+  // Check if the order is not empty before submitting
+  if (order.length === 0) {
+    alert("No items in the order");
+    return;
+  }
+
+  // Complete the order process (save order, create invoice, send email)
+  completeOrderProcess(buyerInfo, order, totalAmount)
+    .then(() => {
+      console.log('Order process completed successfully!');
+      onNext(); // Call the onNext prop function when order is created
+    })
+    .catch((error) => {
+      console.error('Error completing the order process:', error);
+    });
+};
+  // Switch to buyer info page
   const goToBuyerInfo = () => {
     setCurrentPage('buyerInfo');
   };
 
-  // Function to handle going back to the order page
+  // Go back to order page
   const goToOrderPage = (e) => {
-    e.preventDefault(); // Prevent form submission
+    e.preventDefault();
     setCurrentPage('order');
   };
 
-  // Use the passed prop to go back to the order history
+  // Use the passed prop to go back to order history
   const handleBackClick = () => {
-    onBackToOrders(); // Calls the function to show the order history
+    onBackToOrders();
   };
 
   // Add product to order
@@ -61,7 +111,6 @@ const NewOrderForm = ({ onBackToOrders, onNext }) => {
       const updatedOrder = [...order, { ...product, quantity: 1, packaging: 'pcs', editablePrice: product.price }];
       setOrder(updatedOrder);
     }
-    updateTotalAmount();
     updateStock(product.id, -1); // Decrease stock when added to order
   };
 
@@ -69,11 +118,9 @@ const NewOrderForm = ({ onBackToOrders, onNext }) => {
   const updateStock = (productId, quantityChange) => {
     const productRef = ref(database, `stocks/${productId}`);
     const product = products.find((p) => p.id === productId);
-
     if (product) {
       const currentStock = Number(product.stock) || 0;
       const updatedStock = Math.max(currentStock + quantityChange, 0);
-
       if (!isNaN(updatedStock)) {
         update(productRef, { stock: updatedStock })
           .then(() => {
@@ -88,37 +135,32 @@ const NewOrderForm = ({ onBackToOrders, onNext }) => {
     }
   };
 
-  // Update total amount
-  const updateTotalAmount = (updatedOrder = order) => {
+  // Calculate and update total amount based on order
+  const updateTotalAmount = (updatedOrder) => {
     const total = updatedOrder.reduce((sum, item) => sum + item.editablePrice * item.quantity, 0);
     setTotalAmount(total);
   };
 
-  // Update product quantity or price
+  // Update product details like quantity or price
   const updateProductDetails = (productId, key, value) => {
     const updatedOrder = order.map((item) => {
       if (item.id === productId) {
         const updatedItem = { ...item };
-
         if (key === 'quantity') {
           const newQuantity = Math.max(1, value);
           const quantityChange = newQuantity - item.quantity;
           updateStock(productId, -quantityChange);
           updatedItem.quantity = newQuantity;
         }
-
         if (key === 'price') {
           const newPrice = parseFloat(value) || item.price;
           updatedItem.editablePrice = newPrice;
         }
-
         return updatedItem;
       }
       return item;
     });
-
     setOrder(updatedOrder);
-    updateTotalAmount(updatedOrder);
   };
 
   // Remove product from order
@@ -129,7 +171,6 @@ const NewOrderForm = ({ onBackToOrders, onNext }) => {
     }
     const updatedOrder = order.filter((item) => item.id !== productId);
     setOrder(updatedOrder);
-    updateTotalAmount(updatedOrder);
   };
 
   // Update packaging selection
@@ -149,7 +190,6 @@ const NewOrderForm = ({ onBackToOrders, onNext }) => {
   );
 
   return (
-    
     <div className="new-order-form">
       <div className="header-section">
         <button className="btn btn-link back-button" onClick={handleBackClick}>
@@ -160,22 +200,20 @@ const NewOrderForm = ({ onBackToOrders, onNext }) => {
       <div className="order-container full-screen">
         {/* Left Section: Product List */}
         <div className="product-list-section">
-          
           <div className="product-header-container">
             <h4>Product List</h4>
           </div>
-          
-          <div className="search-container">
-                <i className="bi bi-search search-icon"></i> {/* Bootstrap search icon */}
-                <input
-                    type="text"
-                    placeholder="Search product"
-                    className="form-control search-product"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-          </div>
 
+          <div className="search-container">
+            <i className="bi bi-search search-icon"></i> {/* Bootstrap search icon */}
+            <input
+              type="text"
+              placeholder="Search product"
+              className="form-control search-product"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
 
           <div className="product-list">
             {filteredProducts.length > 0 ? (
@@ -267,48 +305,150 @@ const NewOrderForm = ({ onBackToOrders, onNext }) => {
 
                       {/* Remove button */}
                       <button className="remove-item-button" onClick={() => removeProductFromOrder(item.id)}>
-                        <RiDeleteBin6Line/>
+                        <RiDeleteBin6Line />
                       </button>
                     </div>
                   ))
                 )}
-                  <div className="total-amount-container">
-                    <div className="total-amount">
-                      <strong>Total Amount:</strong>
-                      <span>₱{totalAmount.toFixed(2)}</span>
-                    </div>
+                <div className="total-amount-container">
+                  <div className="total-amount">
+                    <strong>Total Amount:</strong>
+                    <span>₱{totalAmount.toFixed(2)}</span>
                   </div>
-
+                </div>
               </div>
             </div>
 
             {/* Buyer Info Page (back) */}
             <div className="back">
               <div className="buyer-info-container">
-
-              <div className="buyer-header-container">
                 <h4>Buyer Information</h4>
                 <button className="btn previous-btn" onClick={goToOrderPage}>
                   Previous
                 </button>
-              </div>
 
-                <form className="buyer-info-form">
+                <form className="buyer-info-form" onSubmit={handleCreateInvoice}>
                   <div className="form-group">
-                    <label htmlFor="buyerName">Buyer Name</label>
-                    <input type="text" id="buyerName" className="form-control" placeholder="Enter buyer name" />
+                    <label htmlFor="soldTo">Sold To</label>
+                    <input
+                      type="text"
+                      id="soldTo"
+                      name="soldTo"
+                      className="form-control"
+                      placeholder="Enter buyer name"
+                      value={buyerInfo.soldTo}
+                      onChange={handleBuyerInfoChange}
+                    />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="buyerAddress">Buyer Address</label>
-                    <input type="text" id="buyerAddress" className="form-control" placeholder="Enter buyer address" />
+                    <label htmlFor="address">Address</label>
+                    <input
+                      type="text"
+                      id="address"
+                      name="address"
+                      className="form-control"
+                      placeholder="Enter buyer address"
+                      value={buyerInfo.address}
+                      onChange={handleBuyerInfoChange}
+                    />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="buyerPhone">Buyer Phone</label>
-                    <input type="text" id="buyerPhone" className="form-control" placeholder="Enter buyer phone" />
+                    <label htmlFor="tin">TIN</label>
+                    <input
+                      type="text"
+                      id="tin"
+                      name="tin"
+                      className="form-control"
+                      placeholder="Enter buyer TIN"
+                      value={buyerInfo.tin}
+                      onChange={handleBuyerInfoChange}
+                    />
                   </div>
-
+                  <div className="form-group">
+                    <label htmlFor="shippedTo">Shipped To</label>
+                    <input
+                      type="text"
+                      id="shippedTo"
+                      name="shippedTo"
+                      className="form-control"
+                      placeholder="Enter shipping address"
+                      value={buyerInfo.shippedTo}
+                      onChange={handleBuyerInfoChange}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="drNo">DR No.</label>
+                    <input
+                      type="text"
+                      id="drNo"
+                      name="drNo"
+                      className="form-control"
+                      placeholder="Enter delivery receipt number"
+                      value={buyerInfo.drNo}
+                      onChange={handleBuyerInfoChange}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="date">Date</label>
+                    <input
+                      type="date"
+                      id="date"
+                      name="date"
+                      className="form-control"
+                      value={buyerInfo.date}
+                      onChange={handleBuyerInfoChange}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="terms">Terms</label>
+                    <input
+                      type="text"
+                      id="terms"
+                      name="terms"
+                      className="form-control"
+                      placeholder="Enter payment terms"
+                      value={buyerInfo.terms}
+                      onChange={handleBuyerInfoChange}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="salesman">Salesman</label>
+                    <input
+                      type="text"
+                      id="salesman"
+                      name="salesman"
+                      className="form-control"
+                      placeholder="Enter salesman name"
+                      value={buyerInfo.salesman}
+                      onChange={handleBuyerInfoChange}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="poNo">PO No.</label>
+                    <input
+                      type="text"
+                      id="poNo"
+                      name="poNo"
+                      className="form-control"
+                      placeholder="Enter purchase order number"
+                      value={buyerInfo.poNo}
+                      onChange={handleBuyerInfoChange}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="email">Email</label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      className="form-control"
+                      placeholder="Enter buyer email"
+                      value={buyerInfo.email}
+                      onChange={handleBuyerInfoChange}
+                    />
+                  </div>
                   <div className="action-buttons">
-                    <button className="btn btn-primary" onClick={onNext}>
+                    <button className="btn btn-primary" type="submit">
                       Create Invoice
                     </button>
                   </div>
@@ -319,7 +459,6 @@ const NewOrderForm = ({ onBackToOrders, onNext }) => {
         </div>
       </div>
     </div>
-
   );
 };
 
