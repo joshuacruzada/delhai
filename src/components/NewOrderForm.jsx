@@ -2,15 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { RiDeleteBin6Line } from 'react-icons/ri';
 import './NewOrderForm.css';
 import { database } from '../FirebaseConfig';
-import { ref, onValue, update } from 'firebase/database'; // Include Firebase push, set
-import { completeOrderProcess } from '../services/orderUtils'; 
+import { ref, onValue, update } from 'firebase/database';
+import { completeOrderProcess } from '../services/orderUtils';
 
 const NewOrderForm = ({ onBackToOrders, onNext = () => {} }) => {
   const [products, setProducts] = useState([]);
   const [order, setOrder] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState('order'); // Tracks whether to show order or buyer info page
+  const [currentPage, setCurrentPage] = useState('order');
 
   // Buyer information state
   const [buyerInfo, setBuyerInfo] = useState({
@@ -38,7 +38,9 @@ const NewOrderForm = ({ onBackToOrders, onNext = () => {} }) => {
           description: data[key].description || 'No description available',
           price: parseFloat(data[key].pricePerBox) || 0,
           imageUrl: data[key].imageUrl || '',
-          stock: data[key].quantity || 0,
+          quantity: data[key].quantity || 0,
+          minStockBox: data[key].minStockBox || 0,
+          minStockPcs: data[key].minStockPcs || 0,
           packagingOptions: ['pcs', 'box'],
         }));
         setProducts(items);
@@ -51,7 +53,13 @@ const NewOrderForm = ({ onBackToOrders, onNext = () => {} }) => {
     updateTotalAmount(order);
   }, [order]);
 
-  // Function to handle buyer info input changes
+  // Function to calculate and update the total amount based on order
+  const updateTotalAmount = (updatedOrder) => {
+    const total = updatedOrder.reduce((sum, item) => sum + item.editablePrice * item.quantity, 0);
+    setTotalAmount(total);
+  };
+
+  // Handle buyer info input changes
   const handleBuyerInfoChange = (e) => {
     const { name, value } = e.target;
     setBuyerInfo((prevInfo) => ({
@@ -60,26 +68,32 @@ const NewOrderForm = ({ onBackToOrders, onNext = () => {} }) => {
     }));
   };
 
- // Function to handle the form submission and complete the order process
-const handleCreateInvoice = (e) => {
-  e.preventDefault();
+  // Function to check if the product is below its minimum stock
+  const isBelowMinStock = (product) => {
+    const minStockBox = parseInt(product.minStockBox, 10) || 0;
+    const minStockPcs = parseInt(product.minStockPcs, 10) || 0;
+    const minStockLevel = Math.max(minStockBox, minStockPcs);
 
-  // Check if the order is not empty before submitting
-  if (order.length === 0) {
-    alert("No items in the order");
-    return;
-  }
+    return product.quantity < minStockLevel;
+  };
 
-  // Complete the order process (save order, create invoice, send email)
-  completeOrderProcess(buyerInfo, order, totalAmount)
-    .then(() => {
-      console.log('Order process completed successfully!');
-      onNext(); // Call the onNext prop function when order is created
-    })
-    .catch((error) => {
-      console.error('Error completing the order process:', error);
-    });
-};
+  // Handle form submission and complete the order process
+  const handleCreateInvoice = (e) => {
+    e.preventDefault();
+    if (order.length === 0) {
+      alert('No items in the order');
+      return;
+    }
+    completeOrderProcess(buyerInfo, order, totalAmount, products, setProducts)
+      .then(() => {
+        console.log('Order process completed successfully!');
+        onNext();
+      })
+      .catch((error) => {
+        console.error('Error completing the order process:', error);
+      });
+  };
+
   // Switch to buyer info page
   const goToBuyerInfo = () => {
     setCurrentPage('buyerInfo');
@@ -91,12 +105,12 @@ const handleCreateInvoice = (e) => {
     setCurrentPage('order');
   };
 
-  // Use the passed prop to go back to order history
+  // Back to order history
   const handleBackClick = () => {
     onBackToOrders();
   };
 
-  // Add product to order
+  // Add product to order and decrease quantity in Firebase
   const addProductToOrder = (product) => {
     const existingProduct = order.find((item) => item.id === product.id);
     if (existingProduct) {
@@ -111,34 +125,17 @@ const handleCreateInvoice = (e) => {
       const updatedOrder = [...order, { ...product, quantity: 1, packaging: 'pcs', editablePrice: product.price }];
       setOrder(updatedOrder);
     }
-    updateStock(product.id, -1); // Decrease stock when added to order
-  };
 
-  // Update stock in Firebase
-  const updateStock = (productId, quantityChange) => {
-    const productRef = ref(database, `stocks/${productId}`);
-    const product = products.find((p) => p.id === productId);
-    if (product) {
-      const currentStock = Number(product.stock) || 0;
-      const updatedStock = Math.max(currentStock + quantityChange, 0);
-      if (!isNaN(updatedStock)) {
-        update(productRef, { stock: updatedStock })
-          .then(() => {
-            setProducts(products.map((p) => (p.id === productId ? { ...p, stock: updatedStock } : p)));
-          })
-          .catch((error) => {
-            console.error('Error updating stock:', error);
-          });
-      } else {
-        console.error('Invalid stock value detected:', updatedStock);
-      }
-    }
-  };
-
-  // Calculate and update total amount based on order
-  const updateTotalAmount = (updatedOrder) => {
-    const total = updatedOrder.reduce((sum, item) => sum + item.editablePrice * item.quantity, 0);
-    setTotalAmount(total);
+    // Decrease quantity in Firebase
+    const productRef = ref(database, `stocks/${product.id}`);
+    const updatedQuantity = Math.max(product.quantity - 1, 0);
+    update(productRef, { quantity: updatedQuantity })
+      .then(() => {
+        setProducts(products.map((p) => (p.id === product.id ? { ...p, quantity: updatedQuantity } : p)));
+      })
+      .catch((error) => {
+        console.error('Error updating quantity in Firebase:', error);
+      });
   };
 
   // Update product details like quantity or price
@@ -149,26 +146,54 @@ const handleCreateInvoice = (e) => {
         if (key === 'quantity') {
           const newQuantity = Math.max(1, value);
           const quantityChange = newQuantity - item.quantity;
-          updateStock(productId, -quantityChange);
+
+          const productRef = ref(database, `stocks/${productId}`);
+          const product = products.find((p) => p.id === productId);
+          if (product) {
+            const updatedQuantity = Math.max(product.quantity - quantityChange, 0);
+            update(productRef, { quantity: updatedQuantity })
+              .then(() => {
+                setProducts(products.map((p) => (p.id === productId ? { ...p, quantity: updatedQuantity } : p)));
+              })
+              .catch((error) => {
+                console.error('Error updating quantity in Firebase:', error);
+              });
+          }
+
           updatedItem.quantity = newQuantity;
         }
+
         if (key === 'price') {
           const newPrice = parseFloat(value) || item.price;
           updatedItem.editablePrice = newPrice;
         }
+
         return updatedItem;
       }
       return item;
     });
+
     setOrder(updatedOrder);
   };
 
-  // Remove product from order
+  // Remove product from order and return quantity back to Firebase
   const removeProductFromOrder = (productId) => {
     const productToRemove = order.find((item) => item.id === productId);
     if (productToRemove) {
-      updateStock(productId, productToRemove.quantity);
+      const productRef = ref(database, `stocks/${productId}`);
+      const product = products.find((p) => p.id === productId);
+      if (product) {
+        const updatedQuantity = product.quantity + productToRemove.quantity;
+        update(productRef, { quantity: updatedQuantity })
+          .then(() => {
+            setProducts(products.map((p) => (p.id === productId ? { ...p, quantity: updatedQuantity } : p)));
+          })
+          .catch((error) => {
+            console.error('Error updating quantity in Firebase:', error);
+          });
+      }
     }
+
     const updatedOrder = order.filter((item) => item.id !== productId);
     setOrder(updatedOrder);
   };
@@ -198,14 +223,13 @@ const handleCreateInvoice = (e) => {
       </div>
 
       <div className="order-container full-screen">
-        {/* Left Section: Product List */}
         <div className="product-list-section">
           <div className="product-header-container">
             <h4>Product List</h4>
           </div>
 
           <div className="search-container">
-            <i className="bi bi-search search-icon"></i> {/* Bootstrap search icon */}
+            <i className="bi bi-search search-icon"></i>
             <input
               type="text"
               placeholder="Search product"
@@ -218,15 +242,20 @@ const handleCreateInvoice = (e) => {
           <div className="product-list">
             {filteredProducts.length > 0 ? (
               filteredProducts.map((product) => (
-                <div className="product-card" key={product.id}>
+                <div
+                  className={`product-card ${isBelowMinStock(product) ? 'low-stock-order' : ''}`}
+                  key={product.id}
+                >
                   <img src={product.imageUrl} alt={product.name} className="product-image" />
                   <div className="product-info">
                     <span className="product-name">{product.name}</span>
                     <p className="product-description">{product.description}</p>
                     <p className="product-price">₱{Number.isFinite(product.price) ? product.price.toFixed(2) : 'N/A'}</p>
                   </div>
-                  <div className="product-stock">Stock: {product.stock}</div>
-                  <button className="btn btn-success addto-order-btn" onClick={() => addProductToOrder(product)}>+</button>
+                  <div className="product-quantity">Stocks: {product.quantity}</div>
+                  <button className="btn btn-success addto-order-btn" onClick={() => addProductToOrder(product)}>
+                    +
+                  </button>
                 </div>
               ))
             ) : (
@@ -235,10 +264,8 @@ const handleCreateInvoice = (e) => {
           </div>
         </div>
 
-        {/* Right Section: Flip Effect */}
         <div className={`flip-container ${currentPage === 'buyerInfo' ? 'flipped' : ''}`}>
           <div className="flipper">
-            {/* Order Page (front) */}
             <div className="front">
               <div className="order-details-section">
                 <div className="order-header">
@@ -255,9 +282,11 @@ const handleCreateInvoice = (e) => {
                   order.map((item) => (
                     <div className="order-item" key={item.id}>
                       <img src={item.imageUrl} alt={item.name} className="order-item-image-small" />
-                      <span>{item.name}</span>
+                      <div className="order-product-info">
+                        <span className="product-name">{item.name}</span>
+                        <span className="product-description">{item.description}</span>
+                      </div>
 
-                      {/* Packaging Dropdown */}
                       <select
                         className="form-control packaging-dropdown-wide"
                         value={item.packaging}
@@ -270,7 +299,6 @@ const handleCreateInvoice = (e) => {
                         ))}
                       </select>
 
-                      {/* Quantity Control */}
                       <div className="quantity-control">
                         <button
                           className="btn btn-outline-secondary"
@@ -303,7 +331,6 @@ const handleCreateInvoice = (e) => {
                         />
                       </div>
 
-                      {/* Remove button */}
                       <button className="remove-item-button" onClick={() => removeProductFromOrder(item.id)}>
                         <RiDeleteBin6Line />
                       </button>
@@ -319,7 +346,6 @@ const handleCreateInvoice = (e) => {
               </div>
             </div>
 
-            {/* Buyer Info Page (back) */}
             <div className="back">
               <div className="buyer-info-container">
                 <h4>Buyer Information</h4>
@@ -328,131 +354,132 @@ const handleCreateInvoice = (e) => {
                 </button>
 
                 <form className="buyer-info-form" onSubmit={handleCreateInvoice}>
-                  <div className="form-group">
-                    <label htmlFor="soldTo">Sold To</label>
-                    <input
-                      type="text"
-                      id="soldTo"
-                      name="soldTo"
-                      className="form-control"
-                      placeholder="Enter buyer name"
-                      value={buyerInfo.soldTo}
-                      onChange={handleBuyerInfoChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="address">Address</label>
-                    <input
-                      type="text"
-                      id="address"
-                      name="address"
-                      className="form-control"
-                      placeholder="Enter buyer address"
-                      value={buyerInfo.address}
-                      onChange={handleBuyerInfoChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="tin">TIN</label>
-                    <input
-                      type="text"
-                      id="tin"
-                      name="tin"
-                      className="form-control"
-                      placeholder="Enter buyer TIN"
-                      value={buyerInfo.tin}
-                      onChange={handleBuyerInfoChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="shippedTo">Shipped To</label>
-                    <input
-                      type="text"
-                      id="shippedTo"
-                      name="shippedTo"
-                      className="form-control"
-                      placeholder="Enter shipping address"
-                      value={buyerInfo.shippedTo}
-                      onChange={handleBuyerInfoChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="drNo">DR No.</label>
-                    <input
-                      type="text"
-                      id="drNo"
-                      name="drNo"
-                      className="form-control"
-                      placeholder="Enter delivery receipt number"
-                      value={buyerInfo.drNo}
-                      onChange={handleBuyerInfoChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="date">Date</label>
-                    <input
-                      type="date"
-                      id="date"
-                      name="date"
-                      className="form-control"
-                      value={buyerInfo.date}
-                      onChange={handleBuyerInfoChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="terms">Terms</label>
-                    <input
-                      type="text"
-                      id="terms"
-                      name="terms"
-                      className="form-control"
-                      placeholder="Enter payment terms"
-                      value={buyerInfo.terms}
-                      onChange={handleBuyerInfoChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="salesman">Salesman</label>
-                    <input
-                      type="text"
-                      id="salesman"
-                      name="salesman"
-                      className="form-control"
-                      placeholder="Enter salesman name"
-                      value={buyerInfo.salesman}
-                      onChange={handleBuyerInfoChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="poNo">PO No.</label>
-                    <input
-                      type="text"
-                      id="poNo"
-                      name="poNo"
-                      className="form-control"
-                      placeholder="Enter purchase order number"
-                      value={buyerInfo.poNo}
-                      onChange={handleBuyerInfoChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="email">Email</label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      className="form-control"
-                      placeholder="Enter buyer email"
-                      value={buyerInfo.email}
-                      onChange={handleBuyerInfoChange}
-                    />
-                  </div>
-                  <div className="action-buttons">
-                    <button className="btn btn-primary" type="submit">
-                      Create Invoice
-                    </button>
-                  </div>
+                    <div className="form-group">
+                      <label htmlFor="soldTo">Sold To</label>
+                      <input
+                        type="text"
+                        id="soldTo"
+                        name="soldTo"
+                        className="form-control"
+                        placeholder="Enter buyer name"
+                        value={buyerInfo.soldTo}
+                        onChange={handleBuyerInfoChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="address">Address</label>
+                      <input
+                        type="text"
+                        id="address"
+                        name="address"
+                        className="form-control"
+                        placeholder="Enter buyer address"
+                        value={buyerInfo.address}
+                        onChange={handleBuyerInfoChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="tin">TIN</label>
+                      <input
+                        type="text"
+                        id="tin"
+                        name="tin"
+                        className="form-control"
+                        placeholder="Enter buyer TIN"
+                        value={buyerInfo.tin}
+                        onChange={handleBuyerInfoChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="shippedTo">Shipped To</label>
+                      <input
+                        type="text"
+                        id="shippedTo"
+                        name="shippedTo"
+                        className="form-control"
+                        placeholder="Enter shipping address"
+                        value={buyerInfo.shippedTo}
+                        onChange={handleBuyerInfoChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="drNo">DR No.</label>
+                      <input
+                        type="text"
+                        id="drNo"
+                        name="drNo"
+                        className="form-control"
+                        placeholder="Enter delivery receipt number"
+                        value={buyerInfo.drNo}
+                        onChange={handleBuyerInfoChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="date">Date</label>
+                      <input
+                        type="date"
+                        id="date"
+                        name="date"
+                        className="form-control"
+                        value={buyerInfo.date}
+                        onChange={handleBuyerInfoChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="terms">Terms</label>
+                      <input
+                        type="text"
+                        id="terms"
+                        name="terms"
+                        className="form-control"
+                        placeholder="Enter payment terms"
+                        value={buyerInfo.terms}
+                        onChange={handleBuyerInfoChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="salesman">Salesman</label>
+                      <input
+                        type="text"
+                        id="salesman"
+                        name="salesman"
+                        className="form-control"
+                        placeholder="Enter salesman name"
+                        value={buyerInfo.salesman}
+                        onChange={handleBuyerInfoChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="poNo">PO No.</label>
+                      <input
+                        type="text"
+                        id="poNo"
+                        name="poNo"
+                        className="form-control"
+                        placeholder="Enter purchase order number"
+                        value={buyerInfo.poNo}
+                        onChange={handleBuyerInfoChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="email">Email</label>
+                      <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        className="form-control"
+                        placeholder="Enter buyer email"
+                        value={buyerInfo.email}
+                        onChange={handleBuyerInfoChange}
+                      />
+                    </div>
+                    <div className="action-buttons">
+                      <button className="btn btn-primary" type="submit">
+                        Create Invoice
+                      </button>
+                    </div>
                 </form>
+
               </div>
             </div>
           </div>

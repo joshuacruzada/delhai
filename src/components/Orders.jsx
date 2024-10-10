@@ -22,7 +22,6 @@ const Orders = () => {
           id: key,
           ...data[key],  // Map the order data
         }));
-        console.log(orders);  // Log the data to check if fields exist
         setOrderHistory(orders);
       }
     });
@@ -32,16 +31,18 @@ const Orders = () => {
     <div className="orders-section">
       {!showNewOrderForm ? (
         <>
-          <h3>Order History</h3>
-
-          <div className="order-controls">
-            <input type="text" placeholder="Search" className="search-input" />
-            <button className="filter-button">
-              <FaFilter />
-            </button>
-            <button className="new-order-button" onClick={openNewOrderForm}>
-              New Order
-            </button>
+          
+          <div class="page-header">
+              <h3>Order History</h3>
+              <div class="order-controls">
+                <input type="text" placeholder="Search" class="search-input" />
+                <button class="filter-button">
+                  <FaFilter />
+                </button>
+                <button class="new-order-button" onClick={openNewOrderForm}>
+                  + Create Order
+                </button>
+              </div>
           </div>
 
           {/* Order History Table */}
@@ -54,7 +55,6 @@ const Orders = () => {
                     <th>Address</th>
                     <th>Shipped To</th>
                     <th>Total Amount</th>
-                    <th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -65,7 +65,6 @@ const Orders = () => {
                       <td>{order.buyerInfo?.address || 'N/A'}</td>
                       <td>{order.buyerInfo?.shippedTo || 'N/A'}</td>
                       <td>₱{order.totalAmount?.toFixed(2) || 'N/A'}</td>
-                      <td>{order.status || 'Pending'}</td>
                     </tr>
                   ))}
                 </tbody>

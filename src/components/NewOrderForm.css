@@ -157,7 +157,7 @@
 
 
 
-.product-stock {
+.product-quantity {
     font-size: 14px;
     color: #cb3503;
     margin-right: 54px;
@@ -415,3 +415,21 @@
 .previous-btn:hover{
     text-decoration: underline;
 }
+
+.order-product-info {
+    display: flex;
+    flex-direction: column; /* Stacks the name and description vertically */
+}
+  
+.product-name {
+    font-weight: 500; /* You can adjust styling as needed */
+}
+  
+.product-description {
+    font-size: 0.9rem; /* Slightly smaller font for description */
+    color: rgb(32, 32, 32); /* Different color for description */
+}
+
+.low-stock-order {
+    background-color: rgba(255, 99, 71, 0.3); /* Light red with opacity */
+  }

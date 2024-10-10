@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import './Sidebar.css';
 
-const Sidebar = () => {
+const Sidebar = ({ onLogout }) => {  // Receive onLogout function from parent (App.js)
   const [isCollapsed, setIsCollapsed] = useState(false); // State to handle collapsed sidebar
 
   // Function to handle collapsing and expanding
@@ -46,6 +46,11 @@ const Sidebar = () => {
           <NavLink className="nav-link settings-link" to="/settings" activeClassName="active">
             <i className="bi bi-gear"></i> {!isCollapsed && <span>Settings</span>}
           </NavLink>
+
+          {/* Logout option */}
+          <div className="nav-link logout-link" onClick={onLogout}>
+            <i className="bi bi-box-arrow-right"></i> {!isCollapsed && <span>Logout</span>}
+          </div>
         </nav>
       </div>
     </div>

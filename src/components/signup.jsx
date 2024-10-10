@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import './signup.css'; // Use the same style or create a new one
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { ref, set } from "firebase/database";
+import { auth, database } from '../FirebaseConfig';  // Import Firebase auth and database
 
 const SignUpForm = () => {
   const [formData, setFormData] = useState({
@@ -8,25 +9,37 @@ const SignUpForm = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    agreeToTerms: false,
+    role: 'employee', // Default role
   });
 
   const changeHandler = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === 'checkbox' ? checked : value,
-    });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
       alert('Passwords do not match!');
       return;
     }
-    // Add your sign-up logic here
-    console.log('Form submitted', formData);
+
+    try {
+      // Create user with email and password
+      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      const user = userCredential.user;
+
+      // Save additional user data in Realtime Database
+      await set(ref(database, 'users/' + user.uid), {
+        name: formData.name,
+        email: formData.email,
+        role: formData.role,
+      });
+
+      alert('User created successfully!');
+    } catch (error) {
+      alert('Error signing up: ' + error.message);
+    }
   };
 
   return (
@@ -44,7 +57,7 @@ const SignUpForm = () => {
               className="form-control"
               placeholder="Enter your name"
               value={formData.name}
-              onChange={changeHandler}
+              onChange={changeHandler}  // Use changeHandler
               required
             />
           </div>
@@ -59,7 +72,7 @@ const SignUpForm = () => {
               className="form-control"
               placeholder="Enter email"
               value={formData.email}
-              onChange={changeHandler}
+              onChange={changeHandler}  // Use changeHandler
               required
             />
           </div>
@@ -74,7 +87,7 @@ const SignUpForm = () => {
               className="form-control"
               placeholder="Enter password"
               value={formData.password}
-              onChange={changeHandler}
+              onChange={changeHandler}  // Use changeHandler
               required
             />
           </div>
@@ -89,25 +102,25 @@ const SignUpForm = () => {
               className="form-control"
               placeholder="Confirm password"
               value={formData.confirmPassword}
-              onChange={changeHandler}
+              onChange={changeHandler}  // Use changeHandler
               required
             />
           </div>
 
-          {/* Agree to terms */}
-          <div className="form-check mb-4">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              id="agreeToTerms"
-              name="agreeToTerms"
-              checked={formData.agreeToTerms}
-              onChange={changeHandler}
+          {/* Role Selection */}
+          <div className="form-outline mb-4">
+            <label className="form-label" htmlFor="role">Select Role</label>
+            <select
+              id="role"
+              name="role"
+              className="form-control"
+              value={formData.role}
+              onChange={changeHandler}  // Use changeHandler
               required
-            />
-            <label className="form-check-label" htmlFor="agreeToTerms">
-              I agree to the terms and conditions
-            </label>
+            >
+              <option value="employee">Employee</option>
+              <option value="admin">Admin</option>
+            </select>
           </div>
 
           {/* Sign Up button */}
