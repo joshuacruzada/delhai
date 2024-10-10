@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { ref, push } from 'firebase/database'; // Import ref and push for Firebase
+import { database } from './FirebaseConfig'; // Ensure this path is correct
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Sidebar from './components/Sidebar';
@@ -15,6 +17,8 @@ import EditProduct from './components/EditProduct';
 import LoginForm from './components/login';
 import SignUpForm from './components/signup';
 import Forbidden from './components/Forbidden';
+import AuditTrail from './components/AuditTrail'; // Import AuditTrail
+import Settings from './components/Settings'; // Import Settings
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -26,16 +30,59 @@ function App() {
     }
   }, []);
 
-  const handleLogin = (role) => {
+  const handleLogin = async (role, userId, userName) => {
+    // Set authentication state
     setIsAuthenticated(true);
-    localStorage.setItem('authToken', 'your-token');
-    localStorage.setItem('userRole', role); // Store user role in localStorage
+    localStorage.setItem('authToken', 'your-token'); // Store a mock token
+    localStorage.setItem('userRole', role); // Store user role
+    localStorage.setItem('userId', userId); // Store user ID
+    localStorage.setItem('userName', userName); // Store user name
+
+    // Create a new audit log entry for successful login
+    const auditLogEntry = {
+      userId: userId,
+      userName: userName,
+      action: "User Logged In",
+      timestamp: new Date().toISOString() // Use ISO format for consistency
+    };
+
+    // Reference to your audit trail in Firebase
+    const auditRef = ref(database, 'auditTrail/');
+    try {
+      await push(auditRef, auditLogEntry); // Use push to add a new log entry
+      console.log('Login audit log entry created successfully.');
+    } catch (error) {
+      console.error('Error creating login audit log entry:', error);
+    }
   };
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userRole');
+  const handleLogout = async () => {
+    const userId = localStorage.getItem('userId'); // Get user ID from localStorage
+    const userName = localStorage.getItem('userName'); // Get user name from localStorage
+
+    // Create a new audit log entry for logout
+    const auditLogEntry = {
+      userId: userId,
+      userName: userName,
+      action: "User Logged Out",
+      timestamp: new Date().toISOString() // Use ISO format for consistency
+    };
+
+    // Reference to your audit trail in Firebase
+    const auditRef = ref(database, 'auditTrail/');
+    try {
+      await push(auditRef, auditLogEntry); // Use push to add a new log entry
+      console.log('Logout audit log entry created successfully.');
+
+      // Proceed to logout
+      setIsAuthenticated(false);
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('userId'); // Clear user ID
+      localStorage.removeItem('userName'); // Clear user name
+    } catch (error) {
+      console.error('Error logging out and creating audit entry:', error);
+    }
   };
 
   const ProtectedRoute = ({ element: Component, allowedRoles }) => {
@@ -55,23 +102,17 @@ function App() {
           <Routes>
             <Route path="/login-page" element={<LoginForm onLogin={handleLogin} />} />
             <Route path="/signup-page" element={<SignUpForm />} />
-
-            {/* Admin only routes */}
             <Route path="/" element={<ProtectedRoute element={Dashboard} allowedRoles={['admin', 'employee']} />} />
             <Route path="/invoices" element={<ProtectedRoute element={Invoices} allowedRoles={['admin', 'employee']} />} />
             <Route path="/products" element={<ProtectedRoute element={Products} allowedRoles={['admin', 'employee']} />} />
             <Route path="/analytics" element={<ProtectedRoute element={Analytics} allowedRoles={['admin']} />} />
-
-            {/* Admin and Employee */}
             <Route path="/orders" element={<ProtectedRoute element={Orders} allowedRoles={['admin', 'employee']} />} />
             <Route path="/inventory" element={<ProtectedRoute element={Inventory} allowedRoles={['admin']} />} />
             <Route path="/stock-details" element={<ProtectedRoute element={StockDetails} allowedRoles={['admin', 'employee']} />} />
-
-            {/* Admin only for adding/editing products */}
             <Route path="/add-product" element={<ProtectedRoute element={AddNewProduct} allowedRoles={['admin']} />} />
             <Route path="/edit-product/:id" element={<ProtectedRoute element={EditProduct} allowedRoles={['admin']} />} />
-
-            {/* 403 page for forbidden access */}
+            <Route path="/settings" element={<ProtectedRoute element={Settings} allowedRoles={['admin']} />} />
+            <Route path="/audit-trail" element={<ProtectedRoute element={AuditTrail} allowedRoles={['admin']} />} />
             <Route path="/403" element={<Forbidden />} />
           </Routes>
         </div>

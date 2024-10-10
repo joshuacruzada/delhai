@@ -12,14 +12,14 @@ const AddNewProduct = () => {
     packaging: '',
     quantity: '',
     expiryDate: '',
-    date: '',
+    date: new Date().toISOString().split('T')[0], // Set current date as default
     imageUrl: '', 
-    pricePerTest: '',  // Price per test field
-    pricePerBox: '',   // Price per box field
-    pricePerPiece: '', // New field for price per piece
-    minStockPcs: '',   // Minimum stock for pieces
-    minStockBox: '',   // Minimum stock for boxes
-    description: '',   // New field for product description
+    pricePerTest: '',  
+    pricePerBox: '',   
+    pricePerPiece: '', 
+    minStockPcs: '',   
+    minStockBox: '',   
+    description: '',   
   });
 
   const [imageFile, setImageFile] = useState(null);
@@ -39,8 +39,6 @@ const AddNewProduct = () => {
     if (e.target.files[0]) {
       const file = e.target.files[0];
       setImageFile(file);
-
-      // Create a local URL for the image preview before upload
       const localImageUrl = URL.createObjectURL(file);
       setNewProduct({
         ...newProduct,
@@ -186,7 +184,7 @@ const AddNewProduct = () => {
               />
             </div>
             <div className="form-group">
-              <label>Price Per Piece:</label> {/* New field */}
+              <label>Price Per Piece:</label>
               <input
                 type="number"
                 name="pricePerPiece"
@@ -196,7 +194,7 @@ const AddNewProduct = () => {
               />
             </div>
             <div className="form-group">
-              <label>Minimum Stock (Pieces):</label> {/* New field */}
+              <label>Minimum Stock (Pieces):</label>
               <input
                 type="number"
                 name="minStockPcs"
@@ -206,7 +204,7 @@ const AddNewProduct = () => {
               />
             </div>
             <div className="form-group">
-              <label>Minimum Stock (Boxes):</label> {/* New field */}
+              <label>Minimum Stock (Boxes):</label>
               <input
                 type="number"
                 name="minStockBox"
@@ -242,6 +240,17 @@ const AddNewProduct = () => {
                 value={newProduct.description}
                 onChange={handleInputChange}
                 className="input-underline description-field"
+              />
+            </div>
+            <div className="form-group">
+              <label>Date:</label>
+              <input
+                type="date"
+                name="date"
+                value={newProduct.date}
+                onChange={handleInputChange}
+                className="input-underline"
+                readOnly
               />
             </div>
           </div>

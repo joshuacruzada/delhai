@@ -1,0 +1,54 @@
+.audit-trail-container {
+    padding: 20px;
+  }
+  
+  .header {
+    display: flex;
+    align-items: center; /* Center align items vertically */
+    margin-bottom: 20px; /* Space below the header */
+  }
+  
+  .back-button {
+    background: none;
+    border: none;
+    font-size: 24px; /* Adjust size as needed */
+    cursor: pointer;
+    margin-right: 10px; /* Space between button and title */
+  }
+  
+  .filters {
+    display: flex;
+    align-items: center; /* Vertically center align the items */
+    margin-bottom: 15px; /* Space below the filters */
+  }
+  
+  .filters input {
+    margin-right: 15px; /* Space between the inputs */
+  }
+  
+  .date-filters {
+    display: flex; /* Use flexbox for date filters */
+    align-items: center; /* Vertically center align the date filters */
+    margin-right: 15px; /* Space to the right of date filters */
+  }
+  
+  .date-filter {
+    margin-right: 15px; /* Space between the date fields */
+  }
+  
+  
+  .audit-trail-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .audit-trail-table th, .audit-trail-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+  }
+  
+  .audit-trail-table th {
+    background-color: #f2f2f2;
+  }
+  
+ 

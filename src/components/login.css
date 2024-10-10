@@ -1,20 +1,49 @@
-/* Styling for centering the form and making it larger */
+/* General container styling for centering */
 .login-page-wrapper {
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #f8f9fa; /* You can change this background if needed */
-  }
-  
-  .login-card {
-    width: 100%;
-    max-width: 500px; /* Adjust this width as needed to make it bigger */
-    padding: 30px; /* Padding inside the card for a spacious look */
-  }
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f8f9fa; /* Optional background color */
+}
+
+/* Styling for the login card */
+.login-card {
+  width: 100%;
+  max-width: 400px; /* Adjust this width for the form container */
+  padding: 30px;
+  border-radius: 8px; /* Adds rounded corners to the card */
+  text-align: center; 
+  background-color: #4D869C;
+  color: aliceblue;/* Center text inside the card */
+}
+
+/* Styling for the input fields */
+.form-control {
+  width: 100%; /* Ensure the input takes up full width */
+  max-width: 350px; /* Adjust max-width for input field */
+  margin: 10px auto; /* Center the input fields */
+}
+
+/* Adjust label styling */
+.form-label {
+  text-align: left; /* Align the text to the left */
+  font-weight: 500; /* Optional: Make the label a bit bolder for better readability */
+  margin-bottom: 5px; /* Spacing below labels */
+}
+
+/* Button styling */
+.btn-block {
+  width: 100%; /* Ensure the button takes up full width */
+  margin-top: 20px; /* Space above the button */
+}
+
+.register-btn p{
+  color: antiquewhite;
+}
   
   @media (min-width: 768px) {
     .login-card {
-      max-width: 600px; /* Adjust this width for larger screens */
+      max-width: 100vh; /* Adjust this width for larger screens */
     }
   }

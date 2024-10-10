@@ -1,20 +1,34 @@
-/* Centering the sign-up form */
 .signup-page-wrapper {
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #f8f9fa; /* Optional background color */
-  }
-  
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f8f9fa; /* Optional background color */
+}
+
+.signup-card {
+  width: 100%;
+  color: antiquewhite;
+  background-color: #4D869C;
+  max-width: 400px; /* Adjust this width as needed */
+  padding: 30px;
+  border-radius: 8px; /* Adds rounded corners to the card */
+}
+.form-label {
+  text-align: center;
+  float: center; /* Ensures the label stays on the left side */
+  font-weight: 500; /* Optional: Make the label a bit bolder for better readability */
+  margin-bottom: 5px;
+}
+
+/* Button styling */
+.btn-block {
+  width: 45vh !important; /* Ensure the button takes up full width */
+  margin-top: 20px; /* Space above the button */
+}
+
+@media (min-width: 768px) {
   .signup-card {
-    width: 100%;
-    max-width: 500px; /* Adjust this width as needed */
-    padding: 30px; /* Padding inside the card for a spacious look */
+      max-width: 100vh; /* Adjust this width for larger screens */
   }
-  
-  @media (min-width: 768px) {
-    .signup-card {
-      max-width: 600px; /* Adjust this width for larger screens */
-    }
-  }
+}

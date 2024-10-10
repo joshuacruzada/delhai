@@ -84,14 +84,15 @@ const NewOrderForm = ({ onBackToOrders, onNext = () => {} }) => {
       alert('No items in the order');
       return;
     }
+    // Complete order process
     completeOrderProcess(buyerInfo, order, totalAmount, products, setProducts)
-      .then(() => {
-        console.log('Order process completed successfully!');
-        onNext();
-      })
-      .catch((error) => {
-        console.error('Error completing the order process:', error);
-      });
+    .then(() => {
+      console.log('Order process completed successfully!');
+      onBackToOrders();  // Navigate back to order history after successful order processing
+    })
+    .catch((error) => {
+      console.error('Error completing the order process:', error);
+    });
   };
 
   // Switch to buyer info page

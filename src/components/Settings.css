@@ -1,0 +1,15 @@
+.settings-container {
+    padding: 20px;
+  }
+  
+  .audit-trail-section {
+    margin-top: 30px;
+    border: 1px solid #ddd;  /* Add a border for better visibility */
+    padding: 15px;
+    border-radius: 5px;
+  }
+  
+  .audit-trail-section h2 {
+    margin-bottom: 15px;
+  }
+  

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { ref, set } from "firebase/database";
-import { auth, database } from '../FirebaseConfig';  // Import Firebase auth and database
+import { ref, set, push } from "firebase/database";
+import { auth, database } from '../FirebaseConfig'; // Import Firebase auth and database
+import './signup.css';  // Ensure you are linking the CSS file properly
 
 const SignUpForm = () => {
   const [formData, setFormData] = useState({
@@ -9,7 +10,7 @@ const SignUpForm = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'employee', // Default role
+    role: 'employee',  // Default role
   });
 
   const changeHandler = (e) => {
@@ -25,7 +26,6 @@ const SignUpForm = () => {
     }
 
     try {
-      // Create user with email and password
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       const user = userCredential.user;
 
@@ -36,6 +36,18 @@ const SignUpForm = () => {
         role: formData.role,
       });
 
+      // Create audit log entry for user creation
+      const auditLogEntry = {
+        userId: user.uid,
+        userName: formData.name,
+        action: "User Created",
+        timestamp: new Date().toISOString() // Use ISO format for consistency
+      };
+
+      // Reference to your audit trail in Firebase
+      const auditRef = ref(database, 'auditTrail/');
+      await push(auditRef, auditLogEntry); // Use push to add a new log entry
+
       alert('User created successfully!');
     } catch (error) {
       alert('Error signing up: ' + error.message);
@@ -44,7 +56,7 @@ const SignUpForm = () => {
 
   return (
     <div className="signup-page-wrapper d-flex justify-content-center align-items-center">
-      <div className="card p-5 shadow-lg signup-card">
+      <div className="card p-5 shadow-lg signup-card text-center">
         <h3 className="text-center mb-4">Sign Up</h3>
         <form onSubmit={handleSubmit}>
           {/* Name input */}
@@ -57,7 +69,7 @@ const SignUpForm = () => {
               className="form-control"
               placeholder="Enter your name"
               value={formData.name}
-              onChange={changeHandler}  // Use changeHandler
+              onChange={changeHandler}
               required
             />
           </div>
@@ -72,7 +84,7 @@ const SignUpForm = () => {
               className="form-control"
               placeholder="Enter email"
               value={formData.email}
-              onChange={changeHandler}  // Use changeHandler
+              onChange={changeHandler}
               required
             />
           </div>
@@ -87,7 +99,7 @@ const SignUpForm = () => {
               className="form-control"
               placeholder="Enter password"
               value={formData.password}
-              onChange={changeHandler}  // Use changeHandler
+              onChange={changeHandler}
               required
             />
           </div>
@@ -102,7 +114,7 @@ const SignUpForm = () => {
               className="form-control"
               placeholder="Confirm password"
               value={formData.confirmPassword}
-              onChange={changeHandler}  // Use changeHandler
+              onChange={changeHandler}
               required
             />
           </div>
@@ -115,7 +127,7 @@ const SignUpForm = () => {
               name="role"
               className="form-control"
               value={formData.role}
-              onChange={changeHandler}  // Use changeHandler
+              onChange={changeHandler}
               required
             >
               <option value="employee">Employee</option>

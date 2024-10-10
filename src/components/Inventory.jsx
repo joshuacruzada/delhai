@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Inventory.css';
-import { fetchStocks, deleteProduct, duplicateProduct } from '../services/stockServices';
-
+import { fetchStocks, deleteProduct } from '../services/stockServices';
 
 const Inventory = () => {
   const [inventoryItems, setInventoryItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [expandedRows] = useState([]); // State for expanded rows
   const navigate = useNavigate();
 
   // Fetch products from Firebase on component mount
@@ -23,11 +21,6 @@ const Inventory = () => {
   // Navigate to add new product page
   const handleAddNewProduct = () => {
     navigate('/add-product');
-  };
-
-  // Duplicate the product
-  const handleDuplicate = (item) => {
-    duplicateProduct(item, () => fetchStocks(setInventoryItems));
   };
 
   // Delete the product
@@ -109,12 +102,6 @@ const Inventory = () => {
                         <td className="category">{item.category || 'Uncategorized'}</td>
                         <td className="actions">
                           <button
-                            className="duplicate-btn"
-                            onClick={() => handleDuplicate(item)}
-                          >
-                            <i className="bi bi-files"></i>
-                          </button>
-                          <button
                             className="edit-btn"
                             onClick={() => handleEdit(item.id)}
                           >
@@ -128,28 +115,11 @@ const Inventory = () => {
                           </button>
                         </td>
                       </tr>
-                      {expandedRows.includes(item.id) && (
-                        <tr className="expanded-row">
-                          <td colSpan="7">
-                            <div className="expanded-details">
-                              <p>
-                                <strong>Vendor:</strong> {item.vendor || 'N/A'}
-                              </p>
-                              <p>
-                                <strong>Batch Number:</strong> {item.batchNumber || 'N/A'}
-                              </p>
-                              <p>
-                                <strong>Expiration Date:</strong> {item.expiryDate || 'N/A'}
-                              </p>
-                            </div>
-                          </td>
-                        </tr>
-                      )}
                     </React.Fragment>
                   ))
               ) : (
                 <tr>
-                  <td colSpan="7">No products available.</td>
+                  <td colSpan="6">No products available.</td>
                 </tr>
               )}
             </tbody>

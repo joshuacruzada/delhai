@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fetchProductById, updateProduct } from '../services/stockServices';
-import './AddNewProduct.css';  // Assuming the same style as AddNewProduct
+import { storage } from '../FirebaseConfig'; // Adjust path based on your structure
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import './AddNewProduct.css'; // Assuming the same style as AddNewProduct
 
 const EditProduct = () => {
-  const { id } = useParams();  // Get the product ID from the URL
+  const { id } = useParams(); // Get the product ID from the URL
   const navigate = useNavigate();
 
   const [product, setProduct] = useState({
@@ -19,8 +21,10 @@ const EditProduct = () => {
     pricePerTest: '',
     pricePerBox: '',
     expirationDate: '',
+    imageUrl: '', // To store the product's image URL
   });
 
+  const [imageFile, setImageFile] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false); // To show a loading state during update
 
@@ -37,7 +41,21 @@ const EditProduct = () => {
     }));
   };
 
-  const handleUpdateProduct = () => {
+  const handleImageChange = (e) => {
+    if (e.target.files[0]) {
+      const file = e.target.files[0];
+      setImageFile(file);
+
+      // Create a local URL for the image preview before upload
+      const localImageUrl = URL.createObjectURL(file);
+      setProduct((prevProduct) => ({
+        ...prevProduct,
+        imageUrl: localImageUrl,
+      }));
+    }
+  };
+
+  const handleUpdateProduct = async () => {
     if (!product.name || !product.category || !product.quantity || !product.quantityUnit || !product.date) {
       setErrorMessage('Please fill in all required fields!');
       return;
@@ -45,9 +63,29 @@ const EditProduct = () => {
 
     setIsLoading(true);
 
-    updateProduct(id, product, () => {
+    let downloadUrl = product.imageUrl; // Retain current image URL by default
+
+    if (imageFile) {
+      const imageRef = storageRef(storage, `products/${imageFile.name}`);
+      try {
+        await uploadBytes(imageRef, imageFile);
+        downloadUrl = await getDownloadURL(imageRef);
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        setErrorMessage('Failed to upload image.');
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    const updatedProduct = {
+      ...product,
+      imageUrl: downloadUrl,
+    };
+
+    updateProduct(id, updatedProduct, () => {
       setIsLoading(false);
-      navigate('/inventory');  // Redirect to inventory after successful update
+      navigate('/inventory'); // Redirect to inventory after successful update
     });
   };
 
@@ -58,6 +96,31 @@ const EditProduct = () => {
         <h2 className="add-product-header">Edit Product</h2>
 
         <div className="add-product-content">
+          {/* Image Section */}
+          <div className="image-section">
+            <div className="image-preview">
+              {product.imageUrl ? (
+                <img src={product.imageUrl} alt="Product" className="product-image" />
+              ) : (
+                <p className="photo-placeholder">No image available</p>
+              )}
+            </div>
+            <div className="file-input-wrapper">
+              <input
+                type="file"
+                id="fileInput"
+                onChange={handleImageChange}
+                className="file-input"
+              />
+              <label htmlFor="fileInput" className="custom-file-label">
+                Choose File
+              </label>
+              <span className="file-name">
+                {imageFile ? imageFile.name : 'No file chosen'}
+              </span>
+            </div>
+          </div>
+
           {/* Form Section */}
           <div className="form-section">
             <div className="form-group">

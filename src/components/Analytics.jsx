@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Chart, BarElement, LinearScale, CategoryScale, Title, Tooltip, Legend, ArcElement, PointElement, LineElement, BarController, LineController } from 'chart.js';
+import { Chart, BarElement, LinearScale, CategoryScale, Title, Tooltip, Legend, ArcElement, PointElement, LineElement, BarController } from 'chart.js';
 import { ref, onValue } from 'firebase/database';
-import { database } from '../FirebaseConfig';  // Adjust path based on your structure
+import { database } from '../FirebaseConfig';
+import * as XLSX from 'xlsx'; // Import the xlsx library
 
-// Register necessary Chart.js components
 Chart.register(
   BarElement,
-  LinearScale,  // Register LinearScale
+  LinearScale,
   CategoryScale,
   Title,
   Tooltip,
@@ -14,8 +14,7 @@ Chart.register(
   ArcElement,
   PointElement,
   LineElement,
-  BarController,
-  LineController
+  BarController
 );
 
 const Analytics = () => {
@@ -23,40 +22,70 @@ const Analytics = () => {
   const [salesData, setSalesData] = useState([]);
   const stockChartRef = useRef(null);
   const salesChartRef = useRef(null);
+  const stockChartInstance = useRef(null);
+  const salesChartInstance = useRef(null);
 
   useEffect(() => {
-    // Fetch stocks from Firebase
     const stocksRef = ref(database, 'stocks/');
     onValue(stocksRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const formattedData = Object.values(data);  // Convert Firebase object to array
-        setStockData(formattedData);
+        const formattedData = Object.values(data);
+        const aggregatedStockData = formattedData.map(item => ({
+          quantity: parseInt(item.quantity) || 0,
+          date: item.date || new Date().toISOString()
+        }));
+        setStockData(aggregatedStockData);
       }
     });
 
-    // Fetch sales from Firebase
     const salesRef = ref(database, 'sales/');
     onValue(salesRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const formattedData = Object.values(data);  // Convert Firebase object to array
+        const formattedData = Object.values(data);
         setSalesData(formattedData);
       }
     });
   }, []);
 
-  // Adjust this function to handle both stock and sales charts
-  const initializeChart = (ref, data, label, backgroundColor, valueField) => {
+  const aggregateSalesData = (data) => {
+    const dailySales = {};
+    const monthlySales = {};
+    const yearlySales = {};
+
+    data.forEach(item => {
+      const date = new Date(item.date);
+      const day = date.toISOString().split('T')[0]; // YYYY-MM-DD
+      const month = date.toISOString().slice(0, 7); // YYYY-MM
+      const year = date.getFullYear(); // YYYY
+
+      // Daily
+      dailySales[day] = (dailySales[day] || 0) + (item.amount || 0);
+      // Monthly
+      monthlySales[month] = (monthlySales[month] || 0) + (item.amount || 0);
+      // Yearly
+      yearlySales[year] = (yearlySales[year] || 0) + (item.amount || 0);
+    });
+
+    return { dailySales, monthlySales, yearlySales };
+  };
+
+  const initializeChart = (ref, data, label, backgroundColor, chartInstance) => {
     if (ref && ref.current) {
-      const chart = new Chart(ref.current, {
+      if (chartInstance.current) {
+        chartInstance.current.destroy();
+      }
+
+      const filteredData = data.filter(item => item.date && (item.amount || item.quantity));
+      chartInstance.current = new Chart(ref.current, {
         type: 'bar',
         data: {
-          labels: data.map(item => new Date(item.date).toLocaleDateString()),  // Convert date to a readable format
+          labels: filteredData.map(item => new Date(item.date).toLocaleDateString()),
           datasets: [
             {
               label,
-              data: data.map(item => item[valueField]),  // Use the provided valueField to extract data
+              data: filteredData.map(item => item.amount || item.quantity),
               backgroundColor,
             },
           ],
@@ -69,22 +98,47 @@ const Analytics = () => {
           },
         },
       });
-      return () => chart.destroy();  // Cleanup on component unmount
     }
   };
 
   useEffect(() => {
     if (stockData.length) {
-      initializeChart(stockChartRef, stockData, 'Stock Levels', '#5AB2FF', 'quantity');  // Assuming 'quantity' is the stock value field
+      initializeChart(stockChartRef, stockData, 'Stock Levels', '#5AB2FF', stockChartInstance);
     }
     if (salesData.length) {
-      initializeChart(salesChartRef, salesData, 'Sales Data', '#FF6384', 'amount');  // Assuming 'amount' is the sales value field
+      const { dailySales } = aggregateSalesData(salesData);
+      const aggregatedSalesData = Object.keys(dailySales).map(date => ({
+        amount: dailySales[date],
+        date
+      }));
+      initializeChart(salesChartRef, aggregatedSalesData, 'Sales Data', '#FF6384', salesChartInstance);
     }
   }, [stockData, salesData]);
+
+  const exportToExcel = () => {
+    const wb = XLSX.utils.book_new();
+    const stockWorksheet = XLSX.utils.json_to_sheet(stockData);
+    XLSX.utils.book_append_sheet(wb, stockWorksheet, 'Stock Data');
+    
+    // Aggregate sales data for export
+    const { dailySales } = aggregateSalesData(salesData);
+    const aggregatedSalesData = Object.keys(dailySales).map(date => ({
+      date,
+      amount: dailySales[date],
+    }));
+    const salesWorksheet = XLSX.utils.json_to_sheet(aggregatedSalesData);
+    XLSX.utils.book_append_sheet(wb, salesWorksheet, 'Sales Data');
+
+    XLSX.writeFile(wb, 'analytics_data.xlsx');
+  };
 
   return (
     <div className="analytics container-fluid">
       <h2>Stock and Sales Analytics</h2>
+      
+      <button onClick={exportToExcel} style={{ marginBottom: '20px' }}>
+        Export to Excel
+      </button>
 
       <div className="charts-row">
         <div className="chart-container">

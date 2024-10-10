@@ -18,11 +18,13 @@ const Products = () => {
           imageUrl: data[key].imageUrl || '', // Add image URL
           pricePerBox: data[key].pricePerBox || 0, // Add price per box
           pricePerTest: data[key].pricePerTest || 0, // Add price per test
-          quantity: data[key].quantity || 0, 
-          expiryDate: data[key].expiryDate || '', 
-          measurementValue: data[key].measurementValue || '', 
-          measurementUnit: data[key].measurementUnit || '', 
-          name: data[key].name || '', 
+          quantity: data[key].quantity || 0,
+          minStockBox: data[key].minStockBox || 0, // Minimum stock for box
+          minStockPcs: data[key].minStockPcs || 0, // Minimum stock for pieces
+          expiryDate: data[key].expiryDate || '',
+          measurementValue: data[key].measurementValue || '',
+          measurementUnit: data[key].measurementUnit || '',
+          name: data[key].name || '',
         }));
         setProducts(items);
       }
@@ -63,7 +65,10 @@ const Products = () => {
             <tbody>
               {products.length > 0 ? (
                 products.map((product, index) => (
-                  <tr key={index}>
+                  <tr 
+                    key={index} 
+                    className={product.quantity < Math.max(product.minStockBox, product.minStockPcs) ? 'low-stock-highlight' : ''}
+                  >
                     <td className="products-image">
                       {product.imageUrl ? (
                         <img src={product.imageUrl} alt={product.name} className="product-image" />
