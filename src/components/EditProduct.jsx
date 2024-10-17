@@ -1,36 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { fetchProductById, updateProduct } from '../services/stockServices';
-import { storage } from '../FirebaseConfig'; // Adjust path based on your structure
+import { fetchProductById, updateProduct } from '../services/stockServices'; // Import service functions
+import { storage } from '../FirebaseConfig';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import './AddNewProduct.css'; // Assuming the same style as AddNewProduct
+import './AddNewProduct.css'; // Import CSS for styling
 
 const EditProduct = () => {
-  const { id } = useParams(); // Get the product ID from the URL
+  const { id } = useParams(); // Get product ID from URL
   const navigate = useNavigate();
 
   const [product, setProduct] = useState({
     name: '',
-    measurementValue: '',
-    measurementUnit: '',
-    quantity: '',
-    quantityUnit: '',
     category: '',
-    date: '',
     packaging: '',
+    quantity: '',
+    expiryDate: '',
+    date: '',
+    imageUrl: '',
     pricePerTest: '',
     pricePerBox: '',
-    expirationDate: '',
-    imageUrl: '', // To store the product's image URL
+    pricePerPiece: '',
+    minStockPcs: '',
+    minStockBox: '',
+    description: '',
   });
 
   const [imageFile, setImageFile] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false); // To show a loading state during update
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch the product details when the component mounts
+  // Fetch product details when the component mounts
   useEffect(() => {
-    fetchProductById(id, setProduct);
+    fetchProductById(id, (data) => {
+      if (data) {
+        setProduct(data);
+      } else {
+        setErrorMessage('Product not found');
+      }
+    });
   }, [id]);
 
   const handleInputChange = (e) => {
@@ -46,7 +53,7 @@ const EditProduct = () => {
       const file = e.target.files[0];
       setImageFile(file);
 
-      // Create a local URL for the image preview before upload
+      // Create a local URL for preview before upload
       const localImageUrl = URL.createObjectURL(file);
       setProduct((prevProduct) => ({
         ...prevProduct,
@@ -56,14 +63,23 @@ const EditProduct = () => {
   };
 
   const handleUpdateProduct = async () => {
-    if (!product.name || !product.category || !product.quantity || !product.quantityUnit || !product.date) {
-      setErrorMessage('Please fill in all required fields!');
+    if (
+      !product.name ||
+      !product.category ||
+      !product.pricePerTest ||
+      !product.pricePerBox ||
+      !product.pricePerPiece ||
+      !product.minStockPcs ||
+      !product.minStockBox ||
+      !product.expiryDate
+    ) {
+      setErrorMessage('Please fill all required fields.');
       return;
     }
 
     setIsLoading(true);
 
-    let downloadUrl = product.imageUrl; // Retain current image URL by default
+    let downloadUrl = product.imageUrl; // Retain current image if not updated
 
     if (imageFile) {
       const imageRef = storageRef(storage, `products/${imageFile.name}`);
@@ -78,25 +94,31 @@ const EditProduct = () => {
       }
     }
 
-    const updatedProduct = {
-      ...product,
-      imageUrl: downloadUrl,
-    };
+    const updatedProduct = { ...product, imageUrl: downloadUrl, id }; // Include `id`
 
-    updateProduct(id, updatedProduct, () => {
-      setIsLoading(false);
-      navigate('/inventory'); // Redirect to inventory after successful update
-    });
+    updateProduct(id, updatedProduct)
+      .then(() => {
+        setIsLoading(false);
+        navigate('/inventory'); // Redirect to inventory after update
+      })
+      .catch((error) => {
+        console.error('Error updating product:', error);
+        setErrorMessage('Failed to update product.');
+        setIsLoading(false);
+      });
+  };
+
+  const handleBack = () => {
+    navigate('/inventory');
   };
 
   return (
     <div className="add-product-page">
       <div className="add-product-container">
-        <i className="bi bi-arrow-left back-arrow" onClick={() => navigate('/inventory')}></i> {/* Back arrow */}
+        <i className="bi bi-arrow-left back-arrow" onClick={handleBack}></i>
         <h2 className="add-product-header">Edit Product</h2>
 
         <div className="add-product-content">
-          {/* Image Section */}
           <div className="image-section">
             <div className="image-preview">
               {product.imageUrl ? (
@@ -106,42 +128,22 @@ const EditProduct = () => {
               )}
             </div>
             <div className="file-input-wrapper">
-              <input
-                type="file"
-                id="fileInput"
-                onChange={handleImageChange}
-                className="file-input"
-              />
+              <input type="file" id="fileInput" onChange={handleImageChange} className="file-input" />
               <label htmlFor="fileInput" className="custom-file-label">
                 Choose File
               </label>
-              <span className="file-name">
-                {imageFile ? imageFile.name : 'No file chosen'}
-              </span>
+              <span className="file-name">{imageFile ? imageFile.name : 'No file chosen'}</span>
             </div>
           </div>
 
-          {/* Form Section */}
           <div className="form-section">
             <div className="form-group">
-              <label>Product Name:</label>
-              <input
-                type="text"
-                name="name"
-                value={product.name}
-                onChange={handleInputChange}
-                className="input-underline"
-              />
+              <label>Item Name:</label>
+              <input type="text" name="name" value={product.name} onChange={handleInputChange} className="input-underline" />
             </div>
-
             <div className="form-group">
               <label>Category:</label>
-              <select
-                name="category"
-                value={product.category}
-                onChange={handleInputChange}
-                className="input-underline"
-              >
+              <select name="category" value={product.category} onChange={handleInputChange} className="input-underline">
                 <option value="">Select Category</option>
                 <option value="Surgical">Surgical</option>
                 <option value="Pharmaceutical">Pharmaceutical</option>
@@ -150,98 +152,50 @@ const EditProduct = () => {
                 <option value="Medical Supplies">Medical Supplies</option>
               </select>
             </div>
-
             <div className="form-group">
               <label>Packaging:</label>
-              <input
-                type="text"
-                name="packaging"
-                value={product.packaging}
-                onChange={handleInputChange}
-                className="input-underline"
-              />
+              <input type="text" name="packaging" value={product.packaging} onChange={handleInputChange} className="input-underline" />
             </div>
-
             <div className="form-group">
               <label>Price Per Test:</label>
-              <input
-                type="number"
-                name="pricePerTest"
-                value={product.pricePerTest}
-                onChange={handleInputChange}
-                className="input-underline"
-              />
+              <input type="number" name="pricePerTest" value={product.pricePerTest} onChange={handleInputChange} className="input-underline" />
             </div>
-
             <div className="form-group">
               <label>Price Per Box:</label>
-              <input
-                type="number"
-                name="pricePerBox"
-                value={product.pricePerBox}
-                onChange={handleInputChange}
-                className="input-underline"
-              />
+              <input type="number" name="pricePerBox" value={product.pricePerBox} onChange={handleInputChange} className="input-underline" />
             </div>
-
             <div className="form-group">
-              <label>Measurement Unit:</label>
-              <input
-                type="text"
-                name="measurementUnit"
-                value={product.measurementUnit}
-                onChange={handleInputChange}
-                className="input-underline"
-              />
+              <label>Price Per Piece:</label>
+              <input type="number" name="pricePerPiece" value={product.pricePerPiece} onChange={handleInputChange} className="input-underline" />
             </div>
-
             <div className="form-group">
-              <label>Measurement Value:</label>
-              <input
-                type="text"
-                name="measurementValue"
-                value={product.measurementValue}
-                onChange={handleInputChange}
-                className="input-underline"
-              />
+              <label>Minimum Stock (Pieces):</label>
+              <input type="number" name="minStockPcs" value={product.minStockPcs} onChange={handleInputChange} className="input-underline" />
             </div>
-
             <div className="form-group">
-              <label>Quantity:</label>
-              <input
-                type="number"
-                name="quantity"
-                value={product.quantity}
-                onChange={handleInputChange}
-                className="input-underline"
-              />
+              <label>Minimum Stock (Boxes):</label>
+              <input type="number" name="minStockBox" value={product.minStockBox} onChange={handleInputChange} className="input-underline" />
             </div>
-
             <div className="form-group">
-              <label>Quantity Unit:</label>
-              <input
-                type="text"
-                name="quantityUnit"
-                value={product.quantityUnit}
-                onChange={handleInputChange}
-                className="input-underline"
-              />
+              <label>Expiry Date:</label>
+              <input type="date" name="expiryDate" value={product.expiryDate} onChange={handleInputChange} className="input-underline" />
             </div>
-
             <div className="form-group">
-              <label>Expiration Date:</label>
-              <input
-                type="date"
-                name="expirationDate"
-                value={product.expirationDate}
-                onChange={handleInputChange}
-                className="input-underline"
-              />
+              <label>Stocks:</label>
+              <input type="number" name="quantity" value={product.quantity} onChange={handleInputChange} className="input-underline" />
+            </div>
+            <div className="form-group">
+              <label>Product Description:</label>
+              <textarea name="description" value={product.description} onChange={handleInputChange} className="input-underline description-field" />
+            </div>
+            <div className="form-group">
+              <label>Date:</label>
+              <input type="date" name="date" value={product.date} onChange={handleInputChange} className="input-underline" readOnly />
             </div>
           </div>
         </div>
 
-        <button className="add-product-btn" onClick={handleUpdateProduct}>
+        <button onClick={handleUpdateProduct} className="add-product-btn">
           {isLoading ? 'Updating...' : 'Update Product'}
         </button>
         {errorMessage && <p className="error-message">{errorMessage}</p>}

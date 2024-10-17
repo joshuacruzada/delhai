@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { ref, push } from 'firebase/database'; // Import ref and push for Firebase
-import { database } from './FirebaseConfig'; // Ensure this path is correct
+import { ref, push } from 'firebase/database'; // Firebase ref and push functions
+import { database } from './FirebaseConfig'; // Firebase config
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Sidebar from './components/Sidebar';
+import SidebarEmployee from './components/SidebarEmployee';
 import Dashboard from './components/Dashboard';
 import Orders from './components/Orders';
 import Invoices from './components/Invoices';
@@ -17,39 +18,42 @@ import EditProduct from './components/EditProduct';
 import LoginForm from './components/login';
 import SignUpForm from './components/signup';
 import Forbidden from './components/Forbidden';
-import AuditTrail from './components/AuditTrail'; // Import AuditTrail
-import Settings from './components/Settings'; // Import Settings
+import AuditTrail from './components/AuditTrail';
+import Settings from './components/Settings';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState('');
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
+    const role = localStorage.getItem('userRole');
+
     if (token) {
       setIsAuthenticated(true);
+      setUserRole(role); // Store user role in state
     }
   }, []);
 
   const handleLogin = async (role, userId, userName) => {
-    // Set authentication state
     setIsAuthenticated(true);
-    localStorage.setItem('authToken', 'your-token'); // Store a mock token
-    localStorage.setItem('userRole', role); // Store user role
-    localStorage.setItem('userId', userId); // Store user ID
-    localStorage.setItem('userName', userName); // Store user name
+    setUserRole(role); // Set role in state
 
-    // Create a new audit log entry for successful login
+    localStorage.setItem('authToken', 'your-token'); // Store mock token
+    localStorage.setItem('userRole', role); // Store role in localStorage
+    localStorage.setItem('userId', userId);
+    localStorage.setItem('userName', userName);
+
     const auditLogEntry = {
       userId: userId,
       userName: userName,
-      action: "User Logged In",
-      timestamp: new Date().toISOString() // Use ISO format for consistency
+      action: 'User Logged In',
+      timestamp: new Date().toISOString(),
     };
 
-    // Reference to your audit trail in Firebase
     const auditRef = ref(database, 'auditTrail/');
     try {
-      await push(auditRef, auditLogEntry); // Use push to add a new log entry
+      await push(auditRef, auditLogEntry);
       console.log('Login audit log entry created successfully.');
     } catch (error) {
       console.error('Error creating login audit log entry:', error);
@@ -57,29 +61,28 @@ function App() {
   };
 
   const handleLogout = async () => {
-    const userId = localStorage.getItem('userId'); // Get user ID from localStorage
-    const userName = localStorage.getItem('userName'); // Get user name from localStorage
+    const userId = localStorage.getItem('userId');
+    const userName = localStorage.getItem('userName');
 
-    // Create a new audit log entry for logout
     const auditLogEntry = {
       userId: userId,
       userName: userName,
-      action: "User Logged Out",
-      timestamp: new Date().toISOString() // Use ISO format for consistency
+      action: 'User Logged Out',
+      timestamp: new Date().toISOString(),
     };
 
-    // Reference to your audit trail in Firebase
     const auditRef = ref(database, 'auditTrail/');
     try {
-      await push(auditRef, auditLogEntry); // Use push to add a new log entry
+      await push(auditRef, auditLogEntry);
       console.log('Logout audit log entry created successfully.');
 
-      // Proceed to logout
+      // Clear state and local storage
       setIsAuthenticated(false);
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('userId'); // Clear user ID
-      localStorage.removeItem('userName'); // Clear user name
+      setUserRole('');
+      localStorage.clear();
+
+      // Redirect to login page
+      window.location.assign('/login-page');
     } catch (error) {
       console.error('Error logging out and creating audit entry:', error);
     }
@@ -87,17 +90,20 @@ function App() {
 
   const ProtectedRoute = ({ element: Component, allowedRoles }) => {
     const token = localStorage.getItem('authToken');
-    const userRole = localStorage.getItem('userRole');
+    const role = localStorage.getItem('userRole');
 
     if (!token) return <Navigate to="/login-page" />;
-    if (allowedRoles.includes(userRole)) return <Component />;
+    if (allowedRoles.includes(role)) return <Component />;
     return <Navigate to="/403" />;
   };
 
   return (
     <div className="App">
       <BrowserRouter>
-        {isAuthenticated && <Sidebar onLogout={handleLogout} />}
+        {/* Conditionally render sidebars based on the user's role */}
+        {isAuthenticated && userRole === 'admin' && <Sidebar onLogout={handleLogout} />}
+        {isAuthenticated && userRole === 'employee' && <SidebarEmployee onLogout={handleLogout} />}
+
         <div className="content">
           <Routes>
             <Route path="/login-page" element={<LoginForm onLogin={handleLogin} />} />

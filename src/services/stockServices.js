@@ -68,29 +68,15 @@ export const addNewProduct = (newProduct, callback) => {
 };
 
 
-// Update an existing product in the database
-export const updateProduct = (updatedProduct, callback) => {
-  const stockRef = ref(database, `stocks/${updatedProduct.id}`);
+export const updateProduct = (id, updatedProduct) => {
+  const stockRef = ref(database, `stocks/${id}`);
 
-  const updatedData = {
-    name: updatedProduct.name,
-    category: updatedProduct.category,
-    quantity: updatedProduct.quantity,
-    quantityUnit: updatedProduct.quantityUnit || '',
-    date: updatedProduct.date,
-    measurementValue: updatedProduct.measurementValue || '',
-    measurementUnit: updatedProduct.measurementUnit || '',
-  };
-
-  set(stockRef, updatedData)
-    .then(() => {
-      console.log('Product updated successfully!');
-      if (callback) callback();
-    })
-    .catch((error) => {
-      console.error('Error updating product:', error);
-    });
+  return set(stockRef, {
+    ...updatedProduct,
+    date: updatedProduct.date || new Date().toISOString(),
+  });
 };
+
 
 // Delete a product from the database
 export const deleteProduct = (id, callback) => {

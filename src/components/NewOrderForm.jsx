@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext} from 'react';
 import { RiDeleteBin6Line } from 'react-icons/ri';
 import './NewOrderForm.css';
 import { database } from '../FirebaseConfig';
 import { ref, onValue, update } from 'firebase/database';
 import { completeOrderProcess } from '../services/orderUtils';
+import { AuthContext } from '../AuthContext';
 
 const NewOrderForm = ({ onBackToOrders, onNext = () => {} }) => {
   const [products, setProducts] = useState([]);
@@ -11,6 +12,7 @@ const NewOrderForm = ({ onBackToOrders, onNext = () => {} }) => {
   const [totalAmount, setTotalAmount] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState('order');
+  const { user } = useContext(AuthContext); // Get the logged-in user
 
   // Buyer information state
   const [buyerInfo, setBuyerInfo] = useState({
@@ -24,6 +26,7 @@ const NewOrderForm = ({ onBackToOrders, onNext = () => {} }) => {
     salesman: '',
     poNo: '',
     email: '',
+    userId: user.uid,
   });
 
   // Fetch products from Firebase
@@ -77,23 +80,26 @@ const NewOrderForm = ({ onBackToOrders, onNext = () => {} }) => {
     return product.quantity < minStockLevel;
   };
 
-  // Handle form submission and complete the order process
-  const handleCreateInvoice = (e) => {
+  // Handle form submission and complete the order processimport { completeOrderProcess } from '../services/orderUtils';
+
+  const handleCreateInvoice = async (e) => {
     e.preventDefault();
+
     if (order.length === 0) {
       alert('No items in the order');
       return;
     }
-    // Complete order process
-    completeOrderProcess(buyerInfo, order, totalAmount, products, setProducts)
-    .then(() => {
-      console.log('Order process completed successfully!');
-      onBackToOrders();  // Navigate back to order history after successful order processing
-    })
-    .catch((error) => {
-      console.error('Error completing the order process:', error);
-    });
+
+    try {
+      await completeOrderProcess(buyerInfo, order, totalAmount, products, setProducts);
+      alert('Order process completed successfully!');
+      onBackToOrders();
+    } catch (error) {
+      console.error('Error creating order:', error);
+      alert('Error creating order. Please try again.');
+    }
   };
+
 
   // Switch to buyer info page
   const goToBuyerInfo = () => {

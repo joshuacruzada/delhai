@@ -1,73 +1,78 @@
-import React, { useState, useEffect } from 'react';
-import { ref, onValue, update, push, set } from 'firebase/database'; // Import push and set for adding sales
+import React, { useState, useEffect, useContext } from 'react';
+import { ref, onValue, update, push, set } from 'firebase/database';
 import { database } from '../FirebaseConfig';
-import './Invoices.css'; // Assuming this is the CSS file
+import './Invoices.css';
+import { AuthContext } from '../AuthContext';
 
 const Invoices = () => {
   const [invoices, setInvoices] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
+  const { user } = useContext(AuthContext); // Get logged-in user info
 
   useEffect(() => {
     const invoicesRef = ref(database, 'invoices/');
+
     onValue(invoicesRef, (snapshot) => {
       const data = snapshot.val();
+      console.log('Fetched raw invoice data:', data); // Log the raw data
+
       if (data) {
-        const invoiceArray = Object.keys(data).map((key) => ({
+        const allInvoices = Object.keys(data).map((key) => ({
           id: key,
           ...data[key],
         }));
-        setInvoices(invoiceArray);
+        console.log('Processed invoices:', allInvoices); // Log the processed invoices
+
+        // Ensure userId is part of invoice creation process; if missing, skip the filter temporarily
+        const filteredInvoices = user.role === 'admin'
+          ? allInvoices
+          : allInvoices.filter((invoice) => invoice.userId === user.uid);
+
+        setInvoices(filteredInvoices);
+        console.log('Filtered invoices based on user role:', filteredInvoices); // Log filtered invoices
+      } else {
+        console.log('No invoices found');
+        setInvoices([]); // No invoices found
       }
     });
-  }, []);
+  }, [user]);
 
-  // Update payment status and add sale to sales node
   const updatePaymentStatus = (invoiceId, newStatus, amount) => {
     if (window.confirm(`Are you sure you want to mark this invoice as ${newStatus}?`)) {
       const invoiceRef = ref(database, `invoices/${invoiceId}`);
 
-      // Step 1: Update the payment status in the invoices node
+      // Use correct Firebase path notation
       update(invoiceRef, { paymentStatus: newStatus })
         .then(() => {
-          console.log(`Payment status updated to ${newStatus} for invoice ${invoiceId}`);
-
-          // Step 2: Add sales data to the sales node if status is "Paid"
+          console.log(`Payment status updated to ${newStatus}`);
           if (newStatus === 'Paid') {
-            const salesRef = ref(database, 'sales/'); // Reference to sales node
-            const newSaleKey = push(salesRef).key; // Create a new sale entry key
-
-            // Set the new sale data in Firebase
+            const salesRef = ref(database, 'sales/');
+            const newSaleKey = push(salesRef).key;
             set(ref(database, `sales/${newSaleKey}`), {
               date: new Date().toISOString(),
-              amount: amount,  // Add the total amount from the invoice
+              amount: amount,
             });
-            console.log('Sale added successfully to sales node.');
+            console.log('Sale added successfully.');
           }
         })
-        .catch((error) => {
-          console.error('Error updating payment status:', error);
-        });
+        .catch((error) => console.error('Error updating payment status:', error));
     }
   };
 
-  // Filter invoices based on search term and selected status
+  // Simplified filtering logic for invoices
   const filteredInvoices = invoices.filter((invoice) => {
-    const matchesSearchTerm =
-      invoice.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      invoice.buyerInfo?.soldTo.toLowerCase().includes(searchTerm.toLowerCase()); // Search by 'Sold To' name
-
-    const matchesStatus =
-      filterStatus === 'All' || invoice.paymentStatus === filterStatus;
-
-    return matchesSearchTerm && matchesStatus;
+    const matchesSearch =
+      (invoice.buyerInfo?.soldTo?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (invoice.invoiceNumber?.toLowerCase() || '').includes(searchTerm.toLowerCase());
+    const matchesStatus = filterStatus === 'All' || invoice.paymentStatus === filterStatus;
+    return matchesSearch && matchesStatus;
   });
 
   return (
     <div className="invoices-page">
       <h1 className="invoices-header">Invoices</h1>
 
-      {/* Search and Filter Section */}
       <div className="invoices-controls">
         <input
           type="text"
@@ -89,57 +94,55 @@ const Invoices = () => {
         </select>
       </div>
 
-      <div className="table-container">
-        <table className="invoices-table">
-          <thead>
-            <tr>
-              <th>Invoice Number</th>
-              <th>Sold To</th> {/* Updated header */}
-              <th>Total Amount</th>
-              <th>Issued At</th>
-              <th>Payment Status</th>
-              <th>Actions</th> {/* Add column for actions */}
-            </tr>
-          </thead>
-          <tbody>
-            {filteredInvoices.map((invoice) => (
+      <table className="invoices-table">
+        <thead>
+          <tr>
+            <th>Invoice Number</th>
+            <th>Sold To</th>
+            <th>Total Amount</th>
+            <th>Issued At</th>
+            <th>Payment Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredInvoices.length > 0 ? (
+            filteredInvoices.map((invoice) => (
               <tr key={invoice.id}>
-                <td>{invoice.invoiceNumber}</td>
-                <td>{invoice.buyerInfo?.soldTo || 'N/A'}</td> {/* Display Sold To */}
-                <td>₱{invoice.totalAmount.toFixed(2)}</td>
-                <td>{new Date(invoice.issuedAt).toLocaleDateString()}</td>
-                <td className={invoice.paymentStatus === 'Paid' ? 'paid' : 'pending'}>
-                  {invoice.paymentStatus}
+                <td>{invoice.invoiceNumber || 'N/A'}</td>
+                <td>{invoice.buyerInfo?.soldTo || 'N/A'}</td>
+                <td>₱{invoice.totalAmount ? invoice.totalAmount.toFixed(2) : 'N/A'}</td>
+                <td>{invoice.issuedAt ? new Date(invoice.issuedAt).toLocaleDateString() : 'N/A'}</td>
+                <td>
+                  <span className={invoice.paymentStatus === 'Paid' ? 'paid' : invoice.paymentStatus === 'Pending' ? 'pending' : 'unpaid'}>
+                    {invoice.paymentStatus || 'N/A'}
+                  </span>
                 </td>
                 <td>
-                  {/* Buttons to manually update the payment status */}
                   <button
-                    className="btn btn-success"
+                    className="action-button btn-paid"
                     onClick={() => updatePaymentStatus(invoice.id, 'Paid', invoice.totalAmount)}
-                    disabled={invoice.paymentStatus === 'Paid'} // Disable button if already paid
+                    disabled={invoice.paymentStatus === 'Paid'}
                   >
                     Paid
                   </button>
                   <button
-                    className="btn btn-danger"
+                    className="action-button btn-unpaid"
                     onClick={() => updatePaymentStatus(invoice.id, 'Unpaid', invoice.totalAmount)}
-                    disabled={invoice.paymentStatus === 'Unpaid'} // Disable button if already unpaid
+                    disabled={invoice.paymentStatus === 'Unpaid'}
                   >
                     Unpaid
                   </button>
                 </td>
               </tr>
-            ))}
-            {filteredInvoices.length === 0 && (
-              <tr>
-                <td colSpan="6" className="no-results">
-                  No matching invoices found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="6">No matching invoices found.</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
     </div>
   );
 };
