@@ -70,9 +70,8 @@
   font-weight: 500;
   color: #FFFFFF !important;
   text-decoration: none;
-  padding: 12px 15px;
+  padding: 11px 7px;
   transition: background-color 0.2s, color 0.2s;
-  margin-bottom: 10px;
   border-radius: 15px;
 }
 
@@ -105,8 +104,53 @@
   transform: scale(1.2);
 }
 
-/* Settings Link at Bottom */
-.settings-link {
-  margin-top: auto;
-  padding: 12px 15px;
+/* Account Section at the Bottom of the Sidebar */
+.account-section {
+  margin-top: auto; /* Pushes this section to the bottom of the sidebar */
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background-color: transparent; /* Set background color if needed */
+  border-radius: 10px;
+}
+
+.account-avatar {
+  font-size: 30px; /* Size of avatar icon */
+  color: #ebebeb; /* Avatar color */
+}
+
+.account-info {
+  display: flex;
+  flex-direction: column; /* Stack name and role vertically */
+  justify-content: center;
+}
+
+.account-name {
+  font-size: 13px;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 2px; /* Space between name and role */
+}
+
+.account-role {
+  font-size: 13px;
+  color: #ffffff;
+}
+
+.logout-icon {
+  font-size: 20px; /* Size of the logout icon */
+  color: #ffffff;
+  margin-left: auto; /* Align logout icon to the right */
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.logout-icon:hover {
+  color: #d9534f; /* Red color on hover */
+}
+
+/* Adjustments when Sidebar is collapsed */
+.sidebar.collapsed .account-section {
+  display: none; /* Hide account section when sidebar is collapsed */
 }

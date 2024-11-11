@@ -1,100 +1,127 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Chart, BarElement, LinearScale, CategoryScale, Title, Tooltip, Legend, ArcElement, PointElement, LineElement, BarController } from 'chart.js';
-import { ref, onValue } from 'firebase/database';
-import { database } from '../FirebaseConfig';
-import * as XLSX from 'xlsx'; // Import the xlsx library
-
-Chart.register(
-  BarElement,
+import {
+  Chart,
+  LineElement,
   LinearScale,
   CategoryScale,
   Title,
   Tooltip,
   Legend,
-  ArcElement,
   PointElement,
-  LineElement,
-  BarController
-);
+  LineController,
+} from 'chart.js';
+import { ref, onValue } from 'firebase/database';
+import { database } from '../FirebaseConfig';
+
+Chart.register(LineElement, LinearScale, CategoryScale, Title, Tooltip, Legend, PointElement, LineController);
+
+const aggregateData = (sales, stock) => {
+  const dailyData = { sales: {}, stockIn: {}, stockOut: {} };
+  const monthlyData = { sales: {}, stockIn: {}, stockOut: {} };
+  const yearlyData = { sales: {}, stockIn: {}, stockOut: {} };
+
+  sales.forEach((item) => {
+    const date = new Date(item.date);
+    if (isNaN(date.getTime())) return;
+
+    const day = date.toISOString().split('T')[0];
+    const month = date.toISOString().slice(0, 7);
+    const year = date.getFullYear();
+
+    dailyData.sales[day] = (dailyData.sales[day] || 0) + (item.amount || 0);
+    monthlyData.sales[month] = (monthlyData.sales[month] || 0) + (item.amount || 0);
+    yearlyData.sales[year] = (yearlyData.sales[year] || 0) + (item.amount || 0);
+  });
+
+  stock.forEach((item) => {
+    const date = new Date(item.date);
+    if (isNaN(date.getTime())) return;
+
+    const day = date.toISOString().split('T')[0];
+    const month = date.toISOString().slice(0, 7);
+    const year = date.getFullYear();
+
+    dailyData.stockIn[day] = (dailyData.stockIn[day] || 0) + (item.stockIn || 0);
+    dailyData.stockOut[day] = (dailyData.stockOut[day] || 0) + (item.stockOut || 0);
+
+    monthlyData.stockIn[month] = (monthlyData.stockIn[month] || 0) + (item.stockIn || 0);
+    monthlyData.stockOut[month] = (monthlyData.stockOut[month] || 0) + (item.stockOut || 0);
+
+    yearlyData.stockIn[year] = (yearlyData.stockIn[year] || 0) + (item.stockIn || 0);
+    yearlyData.stockOut[year] = (yearlyData.stockOut[year] || 0) + (item.stockOut || 0);
+  });
+
+  return { dailyData, monthlyData, yearlyData };
+};
 
 const Analytics = () => {
-  const [stockData, setStockData] = useState([]);
   const [salesData, setSalesData] = useState([]);
-  const stockChartRef = useRef(null);
+  const [stockData, setStockData] = useState([]);
+  const [salesView, setSalesView] = useState('daily');
+  const [stockView, setStockView] = useState('daily');
+
   const salesChartRef = useRef(null);
-  const stockChartInstance = useRef(null);
+  const stockChartRef = useRef(null);
   const salesChartInstance = useRef(null);
+  const stockChartInstance = useRef(null);
 
   useEffect(() => {
-    const stocksRef = ref(database, 'stocks/');
-    onValue(stocksRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const formattedData = Object.values(data);
-        const aggregatedStockData = formattedData.map(item => ({
-          quantity: parseInt(item.quantity) || 0,
-          date: item.date || new Date().toISOString()
-        }));
-        setStockData(aggregatedStockData);
-      }
-    });
-
     const salesRef = ref(database, 'sales/');
+    const stockRef = ref(database, 'stocks/');
+
     onValue(salesRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const formattedData = Object.values(data);
-        setSalesData(formattedData);
+        setSalesData(Object.values(data));
+      }
+    });
+
+    onValue(stockRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        setStockData(Object.values(data));
       }
     });
   }, []);
 
-  const aggregateSalesData = (data) => {
-    const dailySales = {};
-    const monthlySales = {};
-    const yearlySales = {};
-
-    data.forEach(item => {
-      const date = new Date(item.date);
-      const day = date.toISOString().split('T')[0]; // YYYY-MM-DD
-      const month = date.toISOString().slice(0, 7); // YYYY-MM
-      const year = date.getFullYear(); // YYYY
-
-      // Daily
-      dailySales[day] = (dailySales[day] || 0) + (item.amount || 0);
-      // Monthly
-      monthlySales[month] = (monthlySales[month] || 0) + (item.amount || 0);
-      // Yearly
-      yearlySales[year] = (yearlySales[year] || 0) + (item.amount || 0);
-    });
-
-    return { dailySales, monthlySales, yearlySales };
-  };
-
-  const initializeChart = (ref, data, label, backgroundColor, chartInstance) => {
+  const initializeChart = (ref, labels, datasets, chartInstance) => {
     if (ref && ref.current) {
       if (chartInstance.current) {
-        chartInstance.current.destroy();
+        chartInstance.current.destroy(); // Destroy previous instance if it exists
       }
 
-      const filteredData = data.filter(item => item.date && (item.amount || item.quantity));
       chartInstance.current = new Chart(ref.current, {
-        type: 'bar',
+        type: 'line',
         data: {
-          labels: filteredData.map(item => new Date(item.date).toLocaleDateString()),
-          datasets: [
-            {
-              label,
-              data: filteredData.map(item => item.amount || item.quantity),
-              backgroundColor,
-            },
-          ],
+          labels,
+          datasets,
         },
         options: {
           scales: {
             y: {
               beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Amount',
+              },
             },
+          },
+          plugins: {
+            tooltip: {
+              mode: 'index',
+              intersect: false,
+              callbacks: {
+                label: (context) => `${context.dataset.label}: $${context.parsed.y.toFixed(2)}`,
+              },
+            },
+            legend: {
+              display: true,
+              position: 'top',
+            },
+          },
+          interaction: {
+            mode: 'index',
+            intersect: false,
           },
         },
       });
@@ -102,52 +129,156 @@ const Analytics = () => {
   };
 
   useEffect(() => {
-    if (stockData.length) {
-      initializeChart(stockChartRef, stockData, 'Stock Levels', '#5AB2FF', stockChartInstance);
-    }
-    if (salesData.length) {
-      const { dailySales } = aggregateSalesData(salesData);
-      const aggregatedSalesData = Object.keys(dailySales).map(date => ({
-        amount: dailySales[date],
-        date
-      }));
-      initializeChart(salesChartRef, aggregatedSalesData, 'Sales Data', '#FF6384', salesChartInstance);
-    }
-  }, [stockData, salesData]);
+    if (salesData.length && stockData.length) {
+      const { dailyData, monthlyData, yearlyData } = aggregateData(salesData, stockData);
 
-  const exportToExcel = () => {
-    const wb = XLSX.utils.book_new();
-    const stockWorksheet = XLSX.utils.json_to_sheet(stockData);
-    XLSX.utils.book_append_sheet(wb, stockWorksheet, 'Stock Data');
-    
-    // Aggregate sales data for export
-    const { dailySales } = aggregateSalesData(salesData);
-    const aggregatedSalesData = Object.keys(dailySales).map(date => ({
-      date,
-      amount: dailySales[date],
-    }));
-    const salesWorksheet = XLSX.utils.json_to_sheet(aggregatedSalesData);
-    XLSX.utils.book_append_sheet(wb, salesWorksheet, 'Sales Data');
+      let salesLabels, salesDataset;
+      if (salesView === 'daily') {
+        salesLabels = Object.keys(dailyData.sales).sort();
+        salesDataset = [
+          {
+            label: 'Daily Sales',
+            data: salesLabels.map((label) => dailyData.sales[label]),
+            borderColor: '#FF6384',
+            fill: false,
+            tension: 0.4,
+            pointRadius: 3,
+          },
+        ];
+      } else if (salesView === 'monthly') {
+        salesLabels = Object.keys(monthlyData.sales).sort();
+        salesDataset = [
+          {
+            label: 'Monthly Sales',
+            data: salesLabels.map((label) => monthlyData.sales[label]),
+            borderColor: '#FF6384',
+            fill: false,
+            tension: 0.4,
+            pointRadius: 3,
+          },
+        ];
+      } else if (salesView === 'yearly') {
+        salesLabels = Object.keys(yearlyData.sales).sort();
+        salesDataset = [
+          {
+            label: 'Yearly Sales',
+            data: salesLabels.map((label) => yearlyData.sales[label]),
+            borderColor: '#FF6384',
+            fill: false,
+            tension: 0.4,
+            pointRadius: 3,
+          },
+        ];
+      }
 
-    XLSX.writeFile(wb, 'analytics_data.xlsx');
-  };
+      initializeChart(salesChartRef, salesLabels, salesDataset, salesChartInstance);
+
+      let stockLabels, stockDatasets;
+      if (stockView === 'daily') {
+        stockLabels = Object.keys(dailyData.stockIn).sort();
+        stockDatasets = [
+          {
+            label: 'Daily Stock In',
+            data: stockLabels.map((label) => dailyData.stockIn[label]),
+            borderColor: '#36A2EB',
+            fill: false,
+            tension: 0.4,
+            pointRadius: 3,
+          },
+          {
+            label: 'Daily Stock Out',
+            data: stockLabels.map((label) => dailyData.stockOut[label]),
+            borderColor: '#FFCE56',
+            fill: false,
+            tension: 0.4,
+            pointRadius: 3,
+          },
+        ];
+      } else if (stockView === 'monthly') {
+        stockLabels = Object.keys(monthlyData.stockIn).sort();
+        stockDatasets = [
+          {
+            label: 'Monthly Stock In',
+            data: stockLabels.map((label) => monthlyData.stockIn[label]),
+            borderColor: '#36A2EB',
+            fill: false,
+            tension: 0.4,
+            pointRadius: 3,
+          },
+          {
+            label: 'Monthly Stock Out',
+            data: stockLabels.map((label) => monthlyData.stockOut[label]),
+            borderColor: '#FFCE56',
+            fill: false,
+            tension: 0.4,
+            pointRadius: 3,
+          },
+        ];
+      } else if (stockView === 'yearly') {
+        stockLabels = Object.keys(yearlyData.stockIn).sort();
+        stockDatasets = [
+          {
+            label: 'Yearly Stock In',
+            data: stockLabels.map((label) => yearlyData.stockIn[label]),
+            borderColor: '#36A2EB',
+            fill: false,
+            tension: 0.4,
+            pointRadius: 3,
+          },
+          {
+            label: 'Yearly Stock Out',
+            data: stockLabels.map((label) => yearlyData.stockOut[label]),
+            borderColor: '#FFCE56',
+            fill: false,
+            tension: 0.4,
+            pointRadius: 3,
+          },
+        ];
+      }
+
+      initializeChart(stockChartRef, stockLabels, stockDatasets, stockChartInstance);
+    }
+  }, [salesView, stockView, salesData, stockData]);
 
   return (
     <div className="analytics container-fluid">
-      <h2>Stock and Sales Analytics</h2>
-      
-      <button onClick={exportToExcel} style={{ marginBottom: '20px' }}>
-        Export to Excel
-      </button>
+      <h2>Sales and Stock Analytics</h2>
 
+      {/* Sales Graph */}
       <div className="charts-row">
-        <div className="chart-container">
-          <h3>Stock Levels</h3>
-          <canvas ref={stockChartRef}></canvas>
+        <h3>Sales Data</h3>
+        <div className="chart-controls">
+          <button className={salesView === 'daily' ? 'active' : ''} onClick={() => setSalesView('daily')}>
+            Daily
+          </button>
+          <button className={salesView === 'monthly' ? 'active' : ''} onClick={() => setSalesView('monthly')}>
+            Monthly
+          </button>
+          <button className={salesView === 'yearly' ? 'active' : ''} onClick={() => setSalesView('yearly')}>
+            Yearly
+          </button>
         </div>
         <div className="chart-container">
-          <h3>Sales Data</h3>
           <canvas ref={salesChartRef}></canvas>
+        </div>
+      </div>
+
+      {/* Stock Graph */}
+      <div className="charts-row">
+        <h3>Stock Data</h3>
+        <div className="chart-controls">
+          <button className={stockView === 'daily' ? 'active' : ''} onClick={() => setStockView('daily')}>
+            Daily
+          </button>
+          <button className={stockView === 'monthly' ? 'active' : ''} onClick={() => setStockView('monthly')}>
+            Monthly
+          </button>
+          <button className={stockView === 'yearly' ? 'active' : ''} onClick={() => setStockView('yearly')}>
+            Yearly
+          </button>
+        </div>
+        <div className="chart-container">
+          <canvas ref={stockChartRef}></canvas>
         </div>
       </div>
     </div>

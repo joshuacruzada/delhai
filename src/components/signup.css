@@ -1,34 +1,153 @@
+/* General container styling for centering */
 .signup-page-wrapper {
   height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #f8f9fa; /* Optional background color */
+  background-color: #f8f9fa;
 }
 
+/* Styling for the signup card */
 .signup-card {
   width: 100%;
-  color: antiquewhite;
-  background-color: #4D869C;
-  max-width: 400px; /* Adjust this width as needed */
+  max-width: 800px; /* Same width as login-card */
   padding: 30px;
-  border-radius: 8px; /* Adds rounded corners to the card */
-}
-.form-label {
+  border-radius: 8px;
   text-align: center;
-  float: center; /* Ensures the label stays on the left side */
-  font-weight: 500; /* Optional: Make the label a bit bolder for better readability */
+  background-color: #4D869C;
+  color: aliceblue;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Logo container styling for inline alignment */
+.signup-logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+/* Logo image styling */
+.signup-logo-img {
+  width: 60px;
+  height: 60px;
+  margin-right: 10px;
+}
+
+/* Logo text styling */
+.signup-logo-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.signup-logo-title {
+  font-size: 2rem;
+  margin: 0;
+  color: #ffffff;
+}
+
+.signup-logo-subtitle {
+  font-size: 0.875rem;
+  color: #E0E0E0;
+  margin: 0;
+}
+
+/* Form title styling */
+.signup-title {
+  margin-top: 3rem;
+  font-size: 1.5rem;
+  color: #ffffff;
+}
+
+/* Form grid styling */
+.signup-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+/* Full-width fields */
+.signup-form-group.full-width {
+  grid-column: span 2;
+}
+
+/* Adjusted layout for balanced fields */
+.signup-grid .signup-form-group:nth-child(5) { /* Email Address */
+  grid-column: 1 / 2;
+}
+
+.signup-grid .signup-form-group:nth-child(6) { /* Select Role */
+  grid-column: 2 / 3;
+}
+
+/* Input field styling */
+.signup-form-control {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+  background-color: #ffffff;
+}
+
+/* Label styling */
+.signup-form-label {
+  text-align: left; /* Align label to the left */
+  font-weight: 500;
+  color: #ffffff;
   margin-bottom: 5px;
+  display: block; /* Ensures the label is positioned above the input field */
 }
 
 /* Button styling */
-.btn-block {
-  width: 45vh !important; /* Ensure the button takes up full width */
-  margin-top: 20px; /* Space above the button */
+.signup-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: #007bff;
+  color: #ffffff;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  margin-top: 20px;
 }
 
-@media (min-width: 768px) {
+/* Footer link styling */
+.signup-footer {
+  color: #ffffff;
+  margin-top: 20px;
+}
+
+.signup-footer a {
+  color: #d4e4fc;
+  text-decoration: underline;
+}
+
+/* Error alert styling */
+.signup-alert {
+  color: #d9534f;
+  background-color: #f2dede;
+  padding: 10px;
+  border-radius: 5px;
+  margin-top: 15px;
+  font-size: 0.875rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
   .signup-card {
-      max-width: 100vh; /* Adjust this width for larger screens */
+    max-width: 90%;
+  }
+
+  .signup-logo-title {
+    font-size: 1.75rem;
+  }
+
+  /* Stack email and role vertically on smaller screens */
+  .signup-grid .signup-form-group:nth-child(5), 
+  .signup-grid .signup-form-group:nth-child(6) {
+    grid-column: span 2;
   }
 }

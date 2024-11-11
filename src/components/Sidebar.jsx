@@ -1,11 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
+import { getDatabase, ref, onValue } from 'firebase/database';
+import { getAuth } from 'firebase/auth';
 import './Sidebar.css';
 
-const Sidebar = ({ onLogout }) => {  // Receive onLogout function from parent (App.js)
-  const [isCollapsed, setIsCollapsed] = useState(false); // State to handle collapsed sidebar
+const Sidebar = ({ onLogout }) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [user, setUser] = useState({ name: '', role: '' });
 
-  // Function to handle collapsing and expanding
+  useEffect(() => {
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+
+    if (currentUser) {
+      const db = getDatabase();
+      const userRef = ref(db, `users/${currentUser.uid}`);
+
+      onValue(userRef, (snapshot) => {
+        const userData = snapshot.val();
+        if (userData) {
+          setUser({
+            name: userData.name || 'User',
+            role: userData.role || 'Role',
+          });
+        }
+      });
+    }
+  }, []);
+
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
   };
@@ -13,16 +35,12 @@ const Sidebar = ({ onLogout }) => {  // Receive onLogout function from parent (A
   return (
     <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-header" onClick={toggleSidebar}>
-        {/* Clicking the logo or the header triggers the collapse/expand */}
         <span className="sidebar-logo">
           <img src="/delhailogo.ico" alt="DELHAI Logo" className="delhai-logo-img" />
         </span>
-        {!isCollapsed && (
-          <span className="sidebar-text">
-            DELHAI
-          </span>
-        )}
+        {!isCollapsed && <span className="sidebar-text">DELHAI</span>}
       </div>
+      
       <div className="nav-links-wrapper">
         <nav className="nav flex-column">
           <NavLink className="nav-link" to="/" exact activeClassName="active">
@@ -43,15 +61,31 @@ const Sidebar = ({ onLogout }) => {  // Receive onLogout function from parent (A
           <NavLink className="nav-link" to="/analytics" activeClassName="active">
             <i className="bi bi-bar-chart"></i> {!isCollapsed && <span>Reports</span>}
           </NavLink>
-          <NavLink className="nav-link settings-link" to="/settings" activeClassName="active">
+          <NavLink className="nav-link" to="/settings" activeClassName="active">
             <i className="bi bi-gear"></i> {!isCollapsed && <span>Settings</span>}
           </NavLink>
-
-          {/* Logout option */}
-          <div className="nav-link logout-link" onClick={onLogout}>
-            <i className="bi bi-box-arrow-right"></i> {!isCollapsed && <span>Logout</span>}
-          </div>
         </nav>
+      </div>
+
+      {/* Account section at the bottom */}
+      <div className="account-section">
+        {!isCollapsed && (
+          <>
+            <i className="bi bi-person-circle account-avatar"></i>
+            <div className="account-info">
+              <span className="account-name">{user.name}</span>
+              <span className="account-role">{user.role}</span>
+            </div>
+            <div className="logout-icon" onClick={onLogout}>
+              <i className="bi bi-box-arrow-right"></i>
+            </div>
+          </>
+        )}
+        {isCollapsed && (
+          <div className="logout-icon-collapsed" onClick={onLogout}>
+            <i className="bi bi-box-arrow-right"></i>
+          </div>
+        )}
       </div>
     </div>
   );

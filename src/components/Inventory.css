@@ -1,7 +1,7 @@
 /* Container for the entire inventory page */
 .inventory-page {
   padding: 20px;
-  background-color: rgb(239, 238, 238); /* Light background for better readability */
+  background-color: transparent; /* Light background for better readability */
 }
 
 /* Header styles for the inventory page */
@@ -150,7 +150,7 @@
  
 }
 
-.duplicate-btn,.edit-btn, .delete-btn {
+.restock-btn,.edit-btn, .delete-btn {
   background: none;
   border-style: none;
   cursor: pointer;
@@ -161,11 +161,18 @@
   color: #ffffff;
 }
 
-.edit-btn:hover {
-  background-color: #4D869C;
+.restock-btn:hover {
+  background-color: #41b75e;
   opacity: 0.8;
 }
-
+.edit-btn:hover {
+  background-color: #3b9dc4;
+  opacity: 0.8;
+}
+.delete-btn:hover {
+  background-color: #e4110d;
+  opacity: 0.8;
+}
 
 /* Responsive adjustments */
 @media (max-width: 768px) {

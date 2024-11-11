@@ -92,27 +92,3 @@ export const deleteProduct = (id, callback) => {
     });
 };
 
-// Duplicate a product in the database
-export const duplicateProduct = (stock, callback) => {
-  const stocksRef = ref(database, 'stocks/');
-  const newStockRef = push(stocksRef);
-
-  const newStockData = {
-    name: stock.name,
-    measurementValue: stock.measurementValue || '', // Ensure measurement value is duplicated
-    measurementUnit: stock.measurementUnit || '', // Ensure measurement unit is duplicated
-    category: stock.category,
-    quantity: stock.quantity,
-    quantityUnit: stock.quantityUnit || '', // Ensure unit is duplicated as well
-    date: stock.date,
-  };
-
-  set(newStockRef, newStockData)
-    .then(() => {
-      console.log('Product duplicated successfully!');
-      if (callback) callback();
-    })
-    .catch((error) => {
-      console.error('Error duplicating product:', error);
-    });
-};

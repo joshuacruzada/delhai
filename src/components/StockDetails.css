@@ -1,77 +1,98 @@
 /* Container for the stock details page */
 .stock-details-page {
-  padding: 15px;
+  padding: 20px;
+  background-color: transparent;
 }
 
-/* Header section */
-.stock-details-header {
+/* Header styles for stock details */
+.header-container {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  font-size: 28px; /* Match font size with dashboard header */
-  color: #5a5d63;
   margin-bottom: 20px;
 }
 
-.dashboard-link {
-  color: #5a5d63;
+.header-content {
+  display: flex;
+  align-items: center;
+}
+
+.back-button {
+  margin-right: 10px;
+  font-size: 16px;
+  color: #6c757d;
+  cursor: pointer;
+}
+
+.back-button:hover {
+  transform: scale(1.05);
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+  cursor: pointer;
+}
+
+.total-stock-actions {
+  display: flex;
+  gap: 15px;
+}
+
+.action-link {
+  font-size: 16px;
+  color: #6c757d;
   cursor: pointer;
   text-decoration: none;
 }
 
-.dashboard-link:hover {
-  opacity: 0.50;
-  color: #DC5F00;
+.action-link:hover {
+  text-decoration: underline;
 }
 
-.header-separator {
-  margin: 0 10px;
-}
-
-.header-title {
-  font-weight: 500;
-}
-
-/* Styling for the Stock Details table */
+/* Stock details table */
 .stock-details-table {
   width: 100%;
-  margin-top: 20px;
-  border-collapse: separate;
-  border-spacing: 0;
-  border-radius: 14px;
-  overflow: hidden;
-  background: #f7f3f3;
+  border-collapse: collapse;
+  background-color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
 }
 
-/* Table header styling */
-.stock-details-table thead th {
-  color: #e6e6e8;
-  background-color: #373A40;
-  padding: 10px;
-  text-align: center;
+.stock-details-table th,
+.stock-details-table td {
+  padding: 12px 15px;
+  border-radius: 10px;
+  text-align: left;
+  border-bottom: 4px solid rgb(239, 238, 238);
 }
 
-/* Table body rows */
-.stock-details-table tbody tr {
-  border-bottom: 1px solid #ddd;
-  transition: background-color 0.3s;
+.stock-details-table th {
+  background-color: #fff;
+  color: #373A40;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+}c
+
+.stock-details-table td {
+  font-size: 16px;
+  color: #5a5d63;
 }
 
-.stock-details-table tbody tr:hover {
-  background-color: #f1f1f1;
+.product-image {
+  max-width: 100%;
+  max-height: 60px;
+  object-fit: contain;
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  background-color: #f9f9f9;
 }
 
-/* Table body cells */
-.stock-details-table tbody td {
-  padding: 10px;
-  color: #333;
-  background-color: #f8f8f8;
-  text-align: center;
-}
-
-.stock-details-table tbody tr:last-child td:first-child {
-  border-bottom-left-radius: 14px;
-}
-
-.stock-details-table tbody tr:last-child td:last-child {
-  border-bottom-right-radius: 14px;
+.product-image:hover {
+  transform: scale(1.05);
+  transition: transform 0.3s ease;
 }

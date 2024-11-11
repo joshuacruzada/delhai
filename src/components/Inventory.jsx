@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Inventory.css';
 import { fetchStocks, deleteProduct } from '../services/stockServices';
+import RestockModal from './RestockModal'; // Import the RestockModal
 
 const Inventory = () => {
   const [inventoryItems, setInventoryItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [showRestockModal, setShowRestockModal] = useState(false); // State to control the modal visibility
+  const [selectedProduct, setSelectedProduct] = useState(null); // State for the selected product
   const navigate = useNavigate();
 
   // Fetch products from Firebase on component mount
@@ -18,19 +21,31 @@ const Inventory = () => {
     navigate(`/edit-product/${id}`);
   };
 
-  // Navigate to add new product page
-  const handleAddNewProduct = () => {
-    navigate('/add-product');
+  // Open the restock modal for a specific product
+  const handleRestock = (id) => {
+    const selectedItem = inventoryItems.find(item => item.id === id);
+    setSelectedProduct(selectedItem); // Set the selected product
+    setShowRestockModal(true); // Show the restock modal
+  };
+
+  // Close the restock modal
+  const handleCloseRestockModal = () => {
+    setShowRestockModal(false); // Hide the modal
   };
 
   // Delete the product
   const handleDelete = (id) => {
-    deleteProduct(id, () => fetchStocks(setInventoryItems));
+    deleteProduct(id, () => fetchStocks(setInventoryItems)); // Fetch stocks again after deletion
   };
 
   // Filter by category
   const handleCategoryChange = (e) => {
     setSelectedCategory(e.target.value);
+  };
+
+  // Navigate to add new product page
+  const handleAddNewProduct = () => {
+    navigate('/add-product');
   };
 
   return (
@@ -78,44 +93,38 @@ const Inventory = () => {
                       selectedCategory === 'All' || item.category === selectedCategory
                   )
                   .map((item) => (
-                    <React.Fragment key={item.id}>
-                      <tr>
-                        {/* Display product image */}
-                        <td className="image-column">
-                          {item.imageUrl ? (
-                            <img
-                              src={item.imageUrl}
-                              alt={item.name}
-                              className="product-image"
-                            />
-                          ) : (
-                            <span>No Image</span>
-                          )}
-                        </td>
-                        <td className="stock">{`${item.quantity} ${item.quantityUnit || ''}`}</td>
-                        <td className="packaging">{item.packaging || 'N/A'}</td>
-                        <td className="item-description">
-                          <strong>{item.name}</strong>
-                          <br />
-                          {item.description || 'No description available'}
-                        </td> {/* Display both the name and the description */}
-                        <td className="category">{item.category || 'Uncategorized'}</td>
-                        <td className="actions">
-                          <button
-                            className="edit-btn"
-                            onClick={() => handleEdit(item.id)}
-                          >
-                            <i className="bi bi-pencil"></i>
-                          </button>
-                          <button
-                            className="delete-btn"
-                            onClick={() => handleDelete(item.id)}
-                          >
-                            <i className="bi bi-trash"></i>
-                          </button>
-                        </td>
-                      </tr>
-                    </React.Fragment>
+                    <tr key={item.id}>
+                      <td className="image-column">
+                        {item.imageUrl ? (
+                          <img
+                            src={item.imageUrl}
+                            alt={item.name}
+                            className="product-image"
+                          />
+                        ) : (
+                          <span>No Image</span>
+                        )}
+                      </td>
+                      <td className="stock">{`${item.quantity} ${item.quantityUnit || ''}`}</td>
+                      <td className="packaging">{item.packaging || 'N/A'}</td>
+                      <td className="item-description">
+                        <strong>{item.name}</strong>
+                        <br />
+                        {item.description || 'No description available'}
+                      </td>
+                      <td className="category">{item.category || 'Uncategorized'}</td>
+                      <td className="actions">
+                        <button className="restock-btn" onClick={() => handleRestock(item.id)}>
+                          <i className="bi bi-box-seam"></i>
+                        </button>
+                        <button className="edit-btn" onClick={() => handleEdit(item.id)}>
+                          <i className="bi bi-pencil"></i>
+                        </button>
+                        <button className="delete-btn" onClick={() => handleDelete(item.id)}>
+                          <i className="bi bi-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
                   ))
               ) : (
                 <tr>
@@ -126,6 +135,14 @@ const Inventory = () => {
           </table>
         </div>
       </div>
+
+      {/* Render RestockModal when showRestockModal is true */}
+      {showRestockModal && (
+        <RestockModal
+          product={selectedProduct} // Pass the currently selected product
+          onClose={handleCloseRestockModal} // Function to close the modal
+        />
+      )}
     </div>
   );
 };

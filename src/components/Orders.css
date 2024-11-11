@@ -1,22 +1,14 @@
 /* Container for the entire orders page */
 .orders-section {
   padding: 20px;
-  background-color: rgb(239, 238, 238);
+  background-color: transparent;
 }
 
 /* Header styles for the orders page */
-.orders-section h3 {
-  margin-bottom: 20px;
-  font-size: 28px;
-  font-weight: 700;
-  color: #333;
-}
-
-/* Controls section */
 .page-header {
   display: flex;
   justify-content: space-between;
-  align-items: center; /* Aligns items vertically in the center */
+  align-items: center;
   margin-bottom: 20px;
   border-bottom: 2px solid #cdcdcd;
   padding-bottom: 10px;
@@ -26,24 +18,29 @@
   margin: 0;
   font-size: 28px;
   font-weight: 700;
-  color: #333; /* Darker color for better contrast */
+  color: #333;
+}
+
+/* Order controls container */
+.order-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
 
 /* Search input field */
 .search-input {
   padding: 8px;
   font-size: 14px;
-  border: 1px solid #ddd; /* Softer border */
-  background-color: #fff; /* White background */
+  border: 1px solid #ddd;
+  background-color: #fff;
   border-radius: 6px;
-  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1); /* Subtle shadow for input */
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
-  margin-right: 10px;
-  width: 84vh; 
 }
 
 .search-input:focus {
-  border-color: #6c757d; /* Focused border */
+  border-color: #6c757d;
   outline: none;
 }
 
@@ -55,37 +52,35 @@
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1);
-  margin-right: 15px;
-  width: 43px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .filter-button:hover {
-  background-color: #5a6268;
+  background-color: #f0f0f0;
 }
 
 /* New order button */
-.new-order-button,
-.add-new-product-button {
+.new-order-button {
   background-color: #4D869C;
   color: #fff;
   border: none;
-  padding: 8px;
+  padding: 8px 16px;
   border-radius: 5px;
   font-size: 14px;
   cursor: pointer;
   transition: background-color 0.3s ease;
-  width: 150px; /* Adjust the width of the button */
 }
 
-.new-order-button:hover,
-.add-new-product-button:hover {
+.new-order-button:hover {
   background-color: #7AB2B2;
 }
 
 /* Order table styling */
 .order-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: collapse; 
   background-color: #fff;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
@@ -95,15 +90,15 @@
 .order-table th, .order-table td {
   padding: 12px 15px;
   text-align: left;
-  border-bottom: 4px solid rgb(239, 238, 238);
+  border-bottom: 3px solid rgb(239, 238, 238); 
 }
 
 .order-table th {
-  background-color: #fff;
   color: #373A40;
   font-size: 14px;
   font-weight: 600;
   text-transform: uppercase;
+  background-color: #ffffff; 
 }
 
 .order-table td {
@@ -111,18 +106,80 @@
   color: #5a5d63;
 }
 
-.order-table tbody tr {
+/* Payment Status Styling */
+.status {
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.status.paid {
+  color: #155724;
+}
+
+.status.unpaid {
+  color: #721c24;
+ 
+}
+
+.status.pending {
+  color: #856404;
+ 
+}
+
+/* Action buttons */
+.action-button {
+  padding: 6px 10px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 5px;
+  cursor: pointer;
   transition: background-color 0.2s ease;
+  margin-right: 5px;
 }
 
-.order-table tbody tr:hover {
-  background-color: whitesmoke;
+.btn-paid {
+  background-color: #28a745;
+  color: #fff;
+  border: none;
 }
 
-/* No order history message */
-.no-order-history {
-  text-align: center;
-  color: #999;
-  font-style: italic;
-  margin-top: 20px;
+.btn-paid:hover {
+  background-color: #218838;
+}
+
+.btn-unpaid {
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+}
+
+.btn-unpaid:hover {
+  background-color: #c82333;
+}
+
+/* Responsive styling */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .order-controls {
+    width: 100%;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .search-input,
+  .filter-button,
+  .new-order-button {
+    width: 100%;
+  }
+
+  .order-table th,
+  .order-table td {
+    padding: 10px;
+  }
 }

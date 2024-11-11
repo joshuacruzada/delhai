@@ -13,37 +13,110 @@
   max-width: 400px; /* Adjust this width for the form container */
   padding: 30px;
   border-radius: 8px; /* Adds rounded corners to the card */
-  text-align: center; 
+  text-align: center;
   background-color: #4D869C;
-  color: aliceblue;/* Center text inside the card */
+  color: aliceblue;
+}
+
+/* Logo container styling */
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+/* Logo image styling */
+/* Logo container styling */
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+/* Logo image styling */
+.logo-img {
+  width: 80px; /* Adjust width if needed */
+  height: 80px; /* Adjust height to match logo aspect ratio */
+  margin-right: 10px; /* Spacing between logo and text */
+}
+
+/* Title and subtitle styling */
+.logo-text {
+  display: flex;
+  flex-direction: column; /* Stack title and subtitle vertically */
+  align-items: flex-start;
+}
+
+.logo-text h3 {
+  font-size: 2.5rem;
+  margin: 0;
+}
+
+.logo-text p {
+  font-size: 0.875rem; /* Smaller font for subtitle */
+  margin: 0;
+  color: #E0E0E0; /* Lighter color for subtitle */
 }
 
 /* Styling for the input fields */
-.form-control {
-  width: 100%; /* Ensure the input takes up full width */
-  max-width: 350px; /* Adjust max-width for input field */
-  margin: 10px auto; /* Center the input fields */
+.login-form-control {
+  width: 100%;
+  max-width: 350px;
+  margin: 10px auto;
+  padding: 8px;
+  border: none;
+  border-bottom: 2px solid #ffffff;
+  background: transparent;
+  color: #ffffff;
+  outline: none;
 }
 
 /* Adjust label styling */
-.form-label {
-  text-align: left; /* Align the text to the left */
-  font-weight: 500; /* Optional: Make the label a bit bolder for better readability */
-  margin-bottom: 5px; /* Spacing below labels */
+.login-form-label {
+  text-align: left;
+  font-weight: 500;
+  color: #ffffff;
+  margin-bottom: 5px;
 }
-
+.login-form-control::placeholder {
+  color: #ffffff; /* White placeholder text */
+  opacity: 0.8;   /* Slight transparency for better readability */
+}
+.login-text{
+  margin-top: 3rem;
+  font-size: 1.5rem;
+}
 /* Button styling */
-.btn-block {
-  width: 100%; /* Ensure the button takes up full width */
-  margin-top: 20px; /* Space above the button */
+.login-btn{
+  width: 36vh;
+  margin-top: 20px;
+  padding: 10px;
+  border-radius: 8px;
+  background-color: #e4e5e6;
+  color: #626161;
+  cursor: pointer;
+  border: none;
+  border-radius: 15px;
+  
+}
+.login-btn:hover{
+  background-color: rgb(62, 171, 254);
+  color: #E0E0E0;
 }
 
-.register-btn p{
+.register-btn p {
   color: antiquewhite;
 }
-  
-  @media (min-width: 768px) {
-    .login-card {
-      max-width: 100vh; /* Adjust this width for larger screens */
-    }
+
+.register-btn a {
+  color: #d4e4fc; /* Link color within the login card */
+  text-decoration: underline;
+}
+
+@media (min-width: 768px) {
+  .login-card {
+    max-width: 100vh; /* Adjust this width for larger screens */
   }
+}

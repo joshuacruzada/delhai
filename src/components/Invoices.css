@@ -1,9 +1,7 @@
-/* Invoices.css */
-
 /* Container for the entire invoices page */
 .invoices-page {
   padding: 20px;
-  background-color: rgb(239, 238, 238); /* Light background like in orders */
+  background-color: transparent;
 }
 
 /* Header styles for the invoices page */
@@ -17,15 +15,16 @@
 /* Controls section */
 .invoices-controls {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
   margin-bottom: 20px;
-  border-bottom: 2px solid #cdcdcd;
+  
   padding-bottom: 10px;
 }
 
-/* Search input field */
-.invoices-search {
+/* Search and filter input fields */
+.invoices-search,
+.date-filter {
   padding: 8px;
   font-size: 14px;
   border: 1px solid #ddd;
@@ -33,24 +32,13 @@
   border-radius: 6px;
   box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
-  margin-right: 10px;
-  width: 84vh;
+  min-width: 200px;
 }
 
-.invoices-search:focus {
+.invoices-search:focus,
+.date-filter:focus {
   border-color: #6c757d;
   outline: none;
-}
-
-/* Filter select box */
-.status-filter {
-  padding: 8px;
-  font-size: 14px;
-  border: 1px solid #ddd;
-  background-color: #fff;
-  border-radius: 6px;
-  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1);
-  margin-left: 10px;
 }
 
 /* Invoices table styling */
@@ -63,15 +51,13 @@
   overflow: hidden;
 }
 
-.invoices-table th, 
-.invoices-table td {
+.invoices-table th, .invoices-table td {
   padding: 12px 15px;
   text-align: left;
   border-bottom: 4px solid rgb(239, 238, 238);
 }
 
 .invoices-table th {
-  background-color: #fff;
   color: #373A40;
   font-size: 14px;
   font-weight: 600;
@@ -79,7 +65,7 @@
 }
 
 .invoices-table td {
-  font-size: 16px;
+  font-size: 14px;
   color: #5a5d63;
 }
 
@@ -92,72 +78,26 @@
 }
 
 
-/* Button styles for Paid and Unpaid actions */
-.paid, .unpaid, .pending {
-  display: inline-block;
-  font-weight: bold;
-  text-align: center;
-  padding: 5px 10px;
-}
-
-.action-button {
-  display: inline-block;
-  padding: 8px 12px;
-  margin-right: 5px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-/* Additional centering for the action buttons */
-.btn-paid, .btn-unpaid {
-  text-align: center;
-  align-items: center;
-}
-
-.action-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-.btn-paid {
-  background-color: #28a745;
-  color: white;
-}
-
-.btn-paid:hover {
-  background-color: #218838;
-}
-
-.btn-unpaid {
-  background-color: #dc3545;
-  color: white;
-}
-
-.btn-unpaid:hover {
-  background-color: #c82333;
-}
-
-/* Status styles */
-.paid {
-  color: #28a745;
-  font-weight: 600;
-}
-
-.unpaid {
-  color: #dc3545;
-  font-weight: bold;
-}
-
-.pending {
-  color: #565454;
-  font-weight: 500;
-}
-
 /* No results message */
 .no-results {
   text-align: center;
   color: #999;
   font-style: italic;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .invoices-controls {
+    flex-direction: column;
+  }
+
+  .invoices-search,
+  .date-filter {
+    width: 100%;
+  }
+
+  .invoices-table th,
+  .invoices-table td {
+    padding: 10px;
+  }
 }

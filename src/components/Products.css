@@ -1,7 +1,7 @@
 /* Container for the entire products page */
 .products-page {
   padding: 20px;
-  background-color: rgb(239, 238, 238); /* Light background for better readability */
+  background-color: transparent; 
 }
 
 /* Header styles for the products page */
@@ -176,3 +176,45 @@
 }
 
 
+/* Remove bottom border of the product row when it's expanded */
+.products-table tbody tr.expanded-row td {
+  border-bottom: 4px solid rgb(239, 238, 238); /* Removes the product list's bottom border */
+}
+
+/* Ensure the expanded content is part of the same visual container */
+.expanded-content {
+  position: relative; /* Remove absolute positioning to keep it part of the same row */
+  width: 100%;
+  background-color: #fff; /* Match the background color */
+  padding: 10px; /* Ensure consistent padding */
+  border-bottom: none !important; /* Remove any bottom border */
+  box-shadow: none !important; /* Remove shadow if there is any */
+  z-index: 1; /* Adjust z-index if necessary */
+}
+
+/* Remove bottom padding from last element inside expanded content to keep consistency */
+.expanded-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* Styles for the toggle button to remove background and border */
+.toggle-btn {
+  background-color: transparent; /* Remove background color */
+  border: none; /* Remove border */
+  cursor: pointer; /* Make the button look clickable */
+  padding: 0; /* Remove padding */
+  margin: 0; /* Remove margin */
+}
+
+.toggle-btn:hover {
+  background-color: transparent; /* No background on hover */
+}
+
+.toggle-btn:focus {
+  outline: none; /* Remove the default focus outline */
+}
+
+/* Optional: Adjust icon size */
+.toggle-btn i {
+  font-size: 18px; /* You can change the icon size here */
+}

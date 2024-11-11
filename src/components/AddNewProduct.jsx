@@ -17,8 +17,8 @@ const AddNewProduct = () => {
     pricePerTest: '',  
     pricePerBox: '',   
     pricePerPiece: '', 
-    minStockPcs: '',   
-    minStockBox: '',   
+    piecesPerBox: '',  // Added field for Pieces per Box
+    criticalStock: '', // New field for Critical Stock
     description: '',   
   });
 
@@ -48,7 +48,7 @@ const AddNewProduct = () => {
   };
 
   const handleAddProduct = async () => {
-    if (!newProduct.name || !newProduct.category || !newProduct.quantity || !newProduct.pricePerTest || !newProduct.pricePerBox || !newProduct.pricePerPiece || !newProduct.minStockPcs || !newProduct.minStockBox || !newProduct.expiryDate) {
+    if (!newProduct.name || !newProduct.category || !newProduct.quantity || !newProduct.pricePerTest || !newProduct.pricePerBox || !newProduct.pricePerPiece || !newProduct.piecesPerBox || !newProduct.criticalStock || !newProduct.expiryDate) {
       setErrorMessage('Please fill all required fields.');
       return;
     }
@@ -145,12 +145,11 @@ const AddNewProduct = () => {
                 className="input-underline"
               >
                 <option value="">Select Category</option>
-                <option value="Surgical">Surgical</option>
-                <option value="Pharmaceutical">Pharmaceutical</option>
-                <option value="Laboratory">Laboratory</option>
-                <option value="Diagnostic">Diagnostic</option>
+                {/* Updated Categories to match the ones from the Dashboard */}
+                <option value="Rapid Tests & Diagnostic Products">Rapid Tests & Diagnostic Products</option>
+                <option value="X-Ray & Imaging Products">X-Ray & Imaging Products</option>
+                <option value="Laboratory Reagents & Supplies">Laboratory Reagents & Supplies</option>
                 <option value="Medical Supplies">Medical Supplies</option>
-                <option value="Rapid Test">Rapid Test</option>
               </select>
             </div>
             <div className="form-group">
@@ -194,21 +193,21 @@ const AddNewProduct = () => {
               />
             </div>
             <div className="form-group">
-              <label>Minimum Stock (Pieces):</label>
+              <label>Pieces per Box:</label> {/* New field for Pieces per Box */}
               <input
                 type="number"
-                name="minStockPcs"
-                value={newProduct.minStockPcs}
+                name="piecesPerBox"
+                value={newProduct.piecesPerBox}
                 onChange={handleInputChange}
                 className="input-underline"
               />
             </div>
             <div className="form-group">
-              <label>Minimum Stock (Boxes):</label>
+              <label>Critical Stock (Low Stock Trigger):</label> {/* Changed label for clarity */}
               <input
                 type="number"
-                name="minStockBox"
-                value={newProduct.minStockBox}
+                name="criticalStock"
+                value={newProduct.criticalStock}
                 onChange={handleInputChange}
                 className="input-underline"
               />

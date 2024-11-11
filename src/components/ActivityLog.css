@@ -41,11 +41,12 @@
 .activity-log-table thead {
   display: table; /* Ensure the thead behaves like a table */
   width: 100%;
-  table-layout: fixed; /* Prevent columns from shifting */
+  table-layout: fixed;
+  border-bottom: 1px solid #d0d1d2; /* Prevent columns from shifting */
 }
 
 .activity-log-table thead th {
-  background-color: #eee;
+  background-color: transparent !important;
   color: #595757;
   text-align: center; /* Horizontal centering */
   vertical-align: middle; /* Vertical centering */
@@ -53,7 +54,8 @@
   top: 0;
   z-index: 10;
   padding: 10px; /* Adjust padding if necessary */
-  width: auto; /* Ensure width auto-adjusts to the content */
+  width: auto;
+   /* Ensure width auto-adjusts to the content */
 }
 
 .activity-log-table tbody {

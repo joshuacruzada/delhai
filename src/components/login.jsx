@@ -98,23 +98,25 @@ const LoginForm = ({ onLogin }) => {
     <div className="login-page-wrapper d-flex justify-content-center align-items-center">
       <div className="card p-5 shadow-lg login-card text-center">
         {/* Logo and subtitle */}
-        <div className="logo-container mb-4">
+        <div className="logo-container">
           <img src="/delhailogo.ico" alt="Delhai Logo" className="logo-img" />
-          <h3 className="mt-3">Delhai</h3>
-          <p className="small">Medical Enterprise System</p>
+          <div className="logo-text">
+            <h3>DELHAI</h3>
+            <p>Medical Enterprise System</p>
+          </div>
         </div>
 
-        <h3 className="text-center mb-4">Login</h3>
+
+        <h3 className="login-text text-center mb-4">Login</h3>
 
         <form onSubmit={handleSubmit}>
           {/* Identifier input (Username or Email) */}
           <div className="form-outline mb-4">
-            <label className="form-label" htmlFor="identifier">Username or Email</label>
             <input
               type="text"
               id="identifier"
               name="identifier"
-              className="form-control"
+              className="login-form-control"
               placeholder="Enter username or email"
               value={formData.identifier}
               onChange={changeHandler}
@@ -123,12 +125,12 @@ const LoginForm = ({ onLogin }) => {
           </div>
 
           <div className="form-outline mb-4">
-            <label className="form-label" htmlFor="password">Password</label>
+            
             <input
               type="password"
               id="password"
               name="password"
-              className="form-control"
+              className="login-form-control"
               placeholder="Enter password"
               value={formData.password}
               onChange={changeHandler}
@@ -136,7 +138,7 @@ const LoginForm = ({ onLogin }) => {
             />
           </div>
 
-          <button type="submit" className="btn btn-primary btn-block w-100">Login</button>
+          <button type="submit" className="login-btn signup-btn-block">Login</button>
 
           <div className="text-center mt-3 register-btn">
             <p>Not a member? <a href="/signup-page">Register</a></p>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext} from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { RiDeleteBin6Line } from 'react-icons/ri';
 import './NewOrderForm.css';
 import { database } from '../FirebaseConfig';
@@ -6,15 +6,13 @@ import { ref, onValue, update } from 'firebase/database';
 import { completeOrderProcess } from '../services/orderUtils';
 import { AuthContext } from '../AuthContext';
 
-const NewOrderForm = ({ onBackToOrders, onNext = () => {} }) => {
+const NewOrderForm = ({ onBackToOrders }) => {
   const [products, setProducts] = useState([]);
   const [order, setOrder] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState('order');
-  const { user } = useContext(AuthContext); // Get the logged-in user
+  const { user } = useContext(AuthContext);
 
-  // Buyer information state
   const [buyerInfo, setBuyerInfo] = useState({
     soldTo: '',
     address: '',
@@ -29,7 +27,6 @@ const NewOrderForm = ({ onBackToOrders, onNext = () => {} }) => {
     userId: user.uid,
   });
 
-  // Fetch products from Firebase
   useEffect(() => {
     const productsRef = ref(database, 'stocks/');
     onValue(productsRef, (snapshot) => {
@@ -42,110 +39,45 @@ const NewOrderForm = ({ onBackToOrders, onNext = () => {} }) => {
           price: parseFloat(data[key].pricePerBox) || 0,
           imageUrl: data[key].imageUrl || '',
           quantity: data[key].quantity || 0,
-          minStockBox: data[key].minStockBox || 0,
-          minStockPcs: data[key].minStockPcs || 0,
-          packagingOptions: ['pcs', 'box'],
+          criticalStock: data[key].criticalStock || 0,
         }));
         setProducts(items);
       }
     });
   }, []);
 
-  // Automatically update total amount when the order changes
   useEffect(() => {
-    updateTotalAmount(order);
+    const total = order.reduce((sum, item) => sum + item.editablePrice * item.quantity, 0);
+    setTotalAmount(total);
   }, [order]);
 
-  // Function to calculate and update the total amount based on order
-  const updateTotalAmount = (updatedOrder) => {
-    const total = updatedOrder.reduce((sum, item) => sum + item.editablePrice * item.quantity, 0);
-    setTotalAmount(total);
-  };
-
-  // Handle buyer info input changes
   const handleBuyerInfoChange = (e) => {
     const { name, value } = e.target;
-    setBuyerInfo((prevInfo) => ({
-      ...prevInfo,
-      [name]: value,
-    }));
+    setBuyerInfo((prevInfo) => ({ ...prevInfo, [name]: value }));
   };
 
-  // Function to check if the product is below its minimum stock
-  const isBelowMinStock = (product) => {
-    const minStockBox = parseInt(product.minStockBox, 10) || 0;
-    const minStockPcs = parseInt(product.minStockPcs, 10) || 0;
-    const minStockLevel = Math.max(minStockBox, minStockPcs);
-
-    return product.quantity < minStockLevel;
-  };
-
-  // Handle form submission and complete the order processimport { completeOrderProcess } from '../services/orderUtils';
-
-  const handleCreateInvoice = async (e) => {
-    e.preventDefault();
-
-    if (order.length === 0) {
-      alert('No items in the order');
-      return;
-    }
-
-    try {
-      await completeOrderProcess(buyerInfo, order, totalAmount, products, setProducts);
-      alert('Order process completed successfully!');
-      onBackToOrders();
-    } catch (error) {
-      console.error('Error creating order:', error);
-      alert('Error creating order. Please try again.');
-    }
-  };
-
-
-  // Switch to buyer info page
-  const goToBuyerInfo = () => {
-    setCurrentPage('buyerInfo');
-  };
-
-  // Go back to order page
-  const goToOrderPage = (e) => {
-    e.preventDefault();
-    setCurrentPage('order');
-  };
-
-  // Back to order history
-  const handleBackClick = () => {
-    onBackToOrders();
-  };
-
-  // Add product to order and decrease quantity in Firebase
   const addProductToOrder = (product) => {
     const existingProduct = order.find((item) => item.id === product.id);
     if (existingProduct) {
-      const updatedOrder = order.map((item) => {
-        if (item.id === product.id) {
-          return { ...item, quantity: item.quantity + 1 };
-        }
-        return item;
-      });
-      setOrder(updatedOrder);
+      setOrder(order.map((item) =>
+        item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+      ));
     } else {
-      const updatedOrder = [...order, { ...product, quantity: 1, packaging: 'pcs', editablePrice: product.price }];
-      setOrder(updatedOrder);
+      setOrder([...order, { ...product, quantity: 1, packaging: 'pcs', editablePrice: product.price }]);
     }
-
-    // Decrease quantity in Firebase
-    const productRef = ref(database, `stocks/${product.id}`);
-    const updatedQuantity = Math.max(product.quantity - 1, 0);
-    update(productRef, { quantity: updatedQuantity })
-      .then(() => {
-        setProducts(products.map((p) => (p.id === product.id ? { ...p, quantity: updatedQuantity } : p)));
-      })
-      .catch((error) => {
-        console.error('Error updating quantity in Firebase:', error);
-      });
+    setProducts(products.map((p) => (p.id === product.id ? { ...p, quantity: p.quantity - 1 } : p)));
   };
 
-  // Update product details like quantity or price
+  const removeProductFromOrder = (productId) => {
+    const productToRemove = order.find((item) => item.id === productId);
+    if (productToRemove) {
+      setProducts(products.map((p) =>
+        p.id === productId ? { ...p, quantity: p.quantity + productToRemove.quantity } : p
+      ));
+    }
+    setOrder(order.filter((item) => item.id !== productId));
+  };
+
   const updateProductDetails = (productId, key, value) => {
     const updatedOrder = order.map((item) => {
       if (item.id === productId) {
@@ -153,7 +85,6 @@ const NewOrderForm = ({ onBackToOrders, onNext = () => {} }) => {
         if (key === 'quantity') {
           const newQuantity = Math.max(1, value);
           const quantityChange = newQuantity - item.quantity;
-
           const productRef = ref(database, `stocks/${productId}`);
           const product = products.find((p) => p.id === productId);
           if (product) {
@@ -166,7 +97,6 @@ const NewOrderForm = ({ onBackToOrders, onNext = () => {} }) => {
                 console.error('Error updating quantity in Firebase:', error);
               });
           }
-
           updatedItem.quantity = newQuantity;
         }
 
@@ -183,40 +113,23 @@ const NewOrderForm = ({ onBackToOrders, onNext = () => {} }) => {
     setOrder(updatedOrder);
   };
 
-  // Remove product from order and return quantity back to Firebase
-  const removeProductFromOrder = (productId) => {
-    const productToRemove = order.find((item) => item.id === productId);
-    if (productToRemove) {
-      const productRef = ref(database, `stocks/${productId}`);
-      const product = products.find((p) => p.id === productId);
-      if (product) {
-        const updatedQuantity = product.quantity + productToRemove.quantity;
-        update(productRef, { quantity: updatedQuantity })
-          .then(() => {
-            setProducts(products.map((p) => (p.id === productId ? { ...p, quantity: updatedQuantity } : p)));
-          })
-          .catch((error) => {
-            console.error('Error updating quantity in Firebase:', error);
-          });
-      }
+  const handleCreateInvoice = async (e) => {
+    e.preventDefault();
+    if (order.length === 0) {
+      alert('No items in the order');
+      return;
     }
 
-    const updatedOrder = order.filter((item) => item.id !== productId);
-    setOrder(updatedOrder);
+    try {
+      await completeOrderProcess(buyerInfo, order, totalAmount, products, setProducts);
+      alert('Order process completed successfully!');
+      onBackToOrders();
+    } catch (error) {
+      console.error('Error creating order:', error);
+      alert('Error creating order. Please try again.');
+    }
   };
 
-  // Update packaging selection
-  const updateProductPackaging = (productId, newPackaging) => {
-    const updatedOrder = order.map((item) => {
-      if (item.id === productId) {
-        return { ...item, packaging: newPackaging };
-      }
-      return item;
-    });
-    setOrder(updatedOrder);
-  };
-
-  // Search and filter products
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -224,19 +137,16 @@ const NewOrderForm = ({ onBackToOrders, onNext = () => {} }) => {
   return (
     <div className="new-order-form">
       <div className="header-section">
-        <button className="btn btn-link back-button" onClick={handleBackClick}>
+        <button className="btn btn-link back-button" onClick={onBackToOrders}>
           ← Back
         </button>
       </div>
 
-      <div className="order-container full-screen">
+      <div className="order-container">
+        {/* Product List Section */}
         <div className="product-list-section">
-          <div className="product-header-container">
-            <h4>Product List</h4>
-          </div>
-
+          <h4>Product List</h4>
           <div className="search-container">
-            <i className="bi bi-search search-icon"></i>
             <input
               type="text"
               placeholder="Search product"
@@ -247,248 +157,81 @@ const NewOrderForm = ({ onBackToOrders, onNext = () => {} }) => {
           </div>
 
           <div className="product-list">
-            {filteredProducts.length > 0 ? (
-              filteredProducts.map((product) => (
-                <div
-                  className={`product-card ${isBelowMinStock(product) ? 'low-stock-order' : ''}`}
-                  key={product.id}
-                >
-                  <img src={product.imageUrl} alt={product.name} className="product-image" />
-                  <div className="product-info">
-                    <span className="product-name">{product.name}</span>
-                    <p className="product-description">{product.description}</p>
-                    <p className="product-price">₱{Number.isFinite(product.price) ? product.price.toFixed(2) : 'N/A'}</p>
-                  </div>
-                  <div className="product-quantity">Stocks: {product.quantity}</div>
-                  <button className="btn btn-success addto-order-btn" onClick={() => addProductToOrder(product)}>
-                    +
-                  </button>
+            {filteredProducts.map((product) => (
+              <div key={product.id} className={`product-card ${product.quantity < product.criticalStock ? 'low-stock-order' : ''}`}>
+                <img src={product.imageUrl} alt={product.name} className="product-image" />
+                <div className="product-info">
+                  <span className="product-name">{product.name}</span>
+                  <p className="product-description">{product.description}</p>
+                  <p className="product-price">₱{product.price.toFixed(2)}</p>
                 </div>
-              ))
-            ) : (
-              <p>No products found.</p>
-            )}
+                <div className="product-quantity">Stocks: {product.quantity}</div>
+                <button className="btn btn-success addto-order-btn" onClick={() => addProductToOrder(product)}>
+                  +
+                </button>
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className={`flip-container ${currentPage === 'buyerInfo' ? 'flipped' : ''}`}>
-          <div className="flipper">
-            <div className="front">
-              <div className="order-details-section">
-                <div className="order-header">
-                  <h4>Order Information</h4>
-                  <div className="next-btn-container">
-                    <button className="btn next-btn" onClick={goToBuyerInfo}>
-                      Next Page
-                    </button>
+        {/* Combined Buyer and Order Information Section */}
+        <div className="buyer-order-section">
+          {/* Buyer Information */}
+          <div className="buyer-info-container">
+            <h4>Buyer Information</h4>
+            <form className="buyer-info-form">
+              <div className="buyer-info-grid">
+                {['soldTo', 'address', 'tin', 'shippedTo', 'drNo', 'date', 'terms', 'salesman', 'poNo', 'email'].map((field) => (
+                  <div className="buyer-form-group" key={field}>
+                    <label htmlFor={field}>{field}</label>
+                    <input
+                      type={field === 'date' ? 'date' : 'text'}
+                      id={field}
+                      name={field}
+                      className="form-control"
+                      placeholder={`Enter ${field}`}
+                      value={buyerInfo[field]}
+                      onChange={handleBuyerInfoChange}
+                    />
                   </div>
-                </div>
-                {order.length === 0 ? (
-                  <p>No products in order</p>
-                ) : (
-                  order.map((item) => (
-                    <div className="order-item" key={item.id}>
-                      <img src={item.imageUrl} alt={item.name} className="order-item-image-small" />
-                      <div className="order-product-info">
-                        <span className="product-name">{item.name}</span>
-                        <span className="product-description">{item.description}</span>
-                      </div>
+                ))}
+              </div>
+            </form>
+          </div>
 
-                      <select
-                        className="form-control packaging-dropdown-wide"
-                        value={item.packaging}
-                        onChange={(e) => updateProductPackaging(item.id, e.target.value)}
-                      >
-                        {item.packagingOptions.map((option, i) => (
-                          <option key={i} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                      </select>
-
-                      <div className="quantity-control">
-                        <button
-                          className="btn btn-outline-secondary"
-                          onClick={() => updateProductDetails(item.id, 'quantity', item.quantity - 1)}
-                        >
-                          -
-                        </button>
-                        <input
-                          type="number"
-                          className="form-control"
-                          value={item.quantity}
-                          onChange={(e) => updateProductDetails(item.id, 'quantity', parseInt(e.target.value, 10))}
-                          min="1"
-                        />
-                        <button
-                          className="btn btn-outline-secondary"
-                          onClick={() => updateProductDetails(item.id, 'quantity', item.quantity + 1)}
-                        >
-                          +
-                        </button>
-                      </div>
-
-                      <div className="price-wrapper">
-                        <span>₱</span>
-                        <input
-                          type="number"
-                          className="form-control editable-price-input"
-                          value={item.editablePrice}
-                          onChange={(e) => updateProductDetails(item.id, 'price', e.target.value)}
-                        />
-                      </div>
-
-                      <button className="remove-item-button" onClick={() => removeProductFromOrder(item.id)}>
-                        <RiDeleteBin6Line />
-                      </button>
-                    </div>
-                  ))
-                )}
-                <div className="total-amount-container">
-                  <div className="total-amount">
-                    <strong>Total Amount:</strong>
-                    <span>₱{totalAmount.toFixed(2)}</span>
+          {/* Order Information */}
+          <div className="order-details-section">
+            <h4>Order Information</h4>
+            {order.length === 0 ? (
+              <p>No products in order</p>
+            ) : (
+              order.map((item) => (
+                <div className="order-item" key={item.id}>
+                  <img src={item.imageUrl} alt={item.name} />
+                  <div className="order-product-info">
+                    <span className="product-name">{item.name}</span>
+                    <span className="product-description">{item.description}</span>
                   </div>
+                  <div className="quantity-control">
+                    <button onClick={() => updateProductDetails(item.id, 'quantity', item.quantity - 1)}>-</button>
+                    <input type="number" value={item.quantity} onChange={(e) => updateProductDetails(item.id, 'quantity', parseInt(e.target.value, 10))} min="1" />
+                    <button onClick={() => updateProductDetails(item.id, 'quantity', item.quantity + 1)}>+</button>
+                  </div>
+                  <div className="price-wrapper">
+                    <span>₱</span>
+                    <input type="number" value={item.editablePrice} onChange={(e) => updateProductDetails(item.id, 'price', e.target.value)} />
+                  </div>
+                  <button onClick={() => removeProductFromOrder(item.id)}>
+                    <RiDeleteBin6Line />
+                  </button>
                 </div>
-              </div>
-            </div>
-
-            <div className="back">
-              <div className="buyer-info-container">
-                <h4>Buyer Information</h4>
-                <button className="btn previous-btn" onClick={goToOrderPage}>
-                  Previous
-                </button>
-
-                <form className="buyer-info-form" onSubmit={handleCreateInvoice}>
-                    <div className="form-group">
-                      <label htmlFor="soldTo">Sold To</label>
-                      <input
-                        type="text"
-                        id="soldTo"
-                        name="soldTo"
-                        className="form-control"
-                        placeholder="Enter buyer name"
-                        value={buyerInfo.soldTo}
-                        onChange={handleBuyerInfoChange}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="address">Address</label>
-                      <input
-                        type="text"
-                        id="address"
-                        name="address"
-                        className="form-control"
-                        placeholder="Enter buyer address"
-                        value={buyerInfo.address}
-                        onChange={handleBuyerInfoChange}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="tin">TIN</label>
-                      <input
-                        type="text"
-                        id="tin"
-                        name="tin"
-                        className="form-control"
-                        placeholder="Enter buyer TIN"
-                        value={buyerInfo.tin}
-                        onChange={handleBuyerInfoChange}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="shippedTo">Shipped To</label>
-                      <input
-                        type="text"
-                        id="shippedTo"
-                        name="shippedTo"
-                        className="form-control"
-                        placeholder="Enter shipping address"
-                        value={buyerInfo.shippedTo}
-                        onChange={handleBuyerInfoChange}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="drNo">DR No.</label>
-                      <input
-                        type="text"
-                        id="drNo"
-                        name="drNo"
-                        className="form-control"
-                        placeholder="Enter delivery receipt number"
-                        value={buyerInfo.drNo}
-                        onChange={handleBuyerInfoChange}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="date">Date</label>
-                      <input
-                        type="date"
-                        id="date"
-                        name="date"
-                        className="form-control"
-                        value={buyerInfo.date}
-                        onChange={handleBuyerInfoChange}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="terms">Terms</label>
-                      <input
-                        type="text"
-                        id="terms"
-                        name="terms"
-                        className="form-control"
-                        placeholder="Enter payment terms"
-                        value={buyerInfo.terms}
-                        onChange={handleBuyerInfoChange}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="salesman">Salesman</label>
-                      <input
-                        type="text"
-                        id="salesman"
-                        name="salesman"
-                        className="form-control"
-                        placeholder="Enter salesman name"
-                        value={buyerInfo.salesman}
-                        onChange={handleBuyerInfoChange}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="poNo">PO No.</label>
-                      <input
-                        type="text"
-                        id="poNo"
-                        name="poNo"
-                        className="form-control"
-                        placeholder="Enter purchase order number"
-                        value={buyerInfo.poNo}
-                        onChange={handleBuyerInfoChange}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="email">Email</label>
-                      <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        className="form-control"
-                        placeholder="Enter buyer email"
-                        value={buyerInfo.email}
-                        onChange={handleBuyerInfoChange}
-                      />
-                    </div>
-                    <div className="action-buttons">
-                      <button className="btn btn-primary" type="submit">
-                        Create Invoice
-                      </button>
-                    </div>
-                </form>
-
-              </div>
-            </div>
+              ))
+            )}
+          </div>
+          
+          <div className="total-amount-container">
+            <strong>Total Amount:</strong> ₱{totalAmount.toFixed(2)}
+            <button className="btn btn-primary" onClick={handleCreateInvoice}>Create Invoice</button>
           </div>
         </div>
       </div>

@@ -1,148 +1,131 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { ref, onValue, update, push, set } from 'firebase/database';
+import React, { useState, useEffect } from 'react';
 import { database } from '../FirebaseConfig';
+import { ref, onValue } from 'firebase/database';
 import './Invoices.css';
-import { AuthContext } from '../AuthContext';
+
+// Function to format the invoice number with leading zeroes
+const formatInvoiceNumber = (number) => {
+  return String(number).padStart(6, '0');
+};
 
 const Invoices = () => {
   const [invoices, setInvoices] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('All');
-  const { user } = useContext(AuthContext); // Get logged-in user info
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [buyerFilter, setBuyerFilter] = useState('');
+  const [dateFilter, setDateFilter] = useState('');
 
   useEffect(() => {
-    const invoicesRef = ref(database, 'invoices/');
+    const fetchInvoices = () => {
+      const ordersRef = ref(database, 'orders/');
+      onValue(
+        ordersRef,
+        (snapshot) => {
+          if (snapshot.exists()) {
+            const data = snapshot.val();
+            const allInvoices = Object.keys(data).map((key) => ({
+              id: key,
+              ...data[key],
+            }));
 
-    onValue(invoicesRef, (snapshot) => {
-      const data = snapshot.val();
-      console.log('Fetched raw invoice data:', data); // Log the raw data
-
-      if (data) {
-        const allInvoices = Object.keys(data).map((key) => ({
-          id: key,
-          ...data[key],
-        }));
-        console.log('Processed invoices:', allInvoices); // Log the processed invoices
-
-        // Ensure userId is part of invoice creation process; if missing, skip the filter temporarily
-        const filteredInvoices = user.role === 'admin'
-          ? allInvoices
-          : allInvoices.filter((invoice) => invoice.userId === user.uid);
-
-        setInvoices(filteredInvoices);
-        console.log('Filtered invoices based on user role:', filteredInvoices); // Log filtered invoices
-      } else {
-        console.log('No invoices found');
-        setInvoices([]); // No invoices found
-      }
-    });
-  }, [user]);
-
-  const updatePaymentStatus = (invoiceId, newStatus, amount) => {
-    if (window.confirm(`Are you sure you want to mark this invoice as ${newStatus}?`)) {
-      const invoiceRef = ref(database, `invoices/${invoiceId}`);
-
-      // Use correct Firebase path notation
-      update(invoiceRef, { paymentStatus: newStatus })
-        .then(() => {
-          console.log(`Payment status updated to ${newStatus}`);
-          if (newStatus === 'Paid') {
-            const salesRef = ref(database, 'sales/');
-            const newSaleKey = push(salesRef).key;
-            set(ref(database, `sales/${newSaleKey}`), {
-              date: new Date().toISOString(),
-              amount: amount,
+            // Generate and assign formatted invoice numbers
+            allInvoices.forEach((invoice, index) => {
+              if (!invoice.buyerInfo?.invoiceNumber) {
+                // Assign a sequential invoice number if it doesn’t already have one
+                const newInvoiceNumber = formatInvoiceNumber(index + 1);
+                invoice.buyerInfo = {
+                  ...invoice.buyerInfo,
+                  invoiceNumber: newInvoiceNumber,
+                };
+              }
             });
-            console.log('Sale added successfully.');
-          }
-        })
-        .catch((error) => console.error('Error updating payment status:', error));
-    }
-  };
 
-  // Simplified filtering logic for invoices
+            setInvoices(allInvoices);
+          } else {
+            setInvoices([]);
+          }
+          setLoading(false);
+        },
+        (error) => {
+          console.error("Error fetching invoices:", error);
+          setLoading(false);
+        }
+      );
+    };
+
+    fetchInvoices();
+  }, []);
+
+  // Filter invoices based on search, buyer, and date filters
   const filteredInvoices = invoices.filter((invoice) => {
-    const matchesSearch =
-      (invoice.buyerInfo?.soldTo?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (invoice.invoiceNumber?.toLowerCase() || '').includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'All' || invoice.paymentStatus === filterStatus;
-    return matchesSearch && matchesStatus;
+    const matchesSearch = invoice.buyerInfo?.invoiceNumber?.toLowerCase().includes(searchQuery.toLowerCase()) ?? true;
+    const matchesBuyer = buyerFilter ? (invoice.buyerInfo?.soldTo?.toLowerCase().includes(buyerFilter.toLowerCase()) ?? false) : true;
+    const matchesDate = dateFilter ? invoice.date?.startsWith(dateFilter) : true;
+    return matchesSearch && matchesBuyer && matchesDate;
   });
 
   return (
     <div className="invoices-page">
       <h1 className="invoices-header">Invoices</h1>
-
+      
       <div className="invoices-controls">
         <input
           type="text"
-          placeholder="Search by Invoice Number or Sold To"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search by Invoice Number"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="invoices-search"
+        />
+        
+        <input
+          type="text"
+          placeholder="Filter by Buyer"
+          value={buyerFilter}
+          onChange={(e) => setBuyerFilter(e.target.value)}
           className="invoices-search"
         />
 
-        <select
-          className="status-filter"
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-        >
-          <option value="All">All</option>
-          <option value="Paid">Paid</option>
-          <option value="Pending">Pending</option>
-          <option value="Unpaid">Unpaid</option>
-        </select>
+        <input
+          type="date"
+          placeholder="Filter by Date"
+          value={dateFilter}
+          onChange={(e) => setDateFilter(e.target.value)}
+          className="date-filter"
+        />
       </div>
 
-      <table className="invoices-table">
-        <thead>
-          <tr>
-            <th>Invoice Number</th>
-            <th>Sold To</th>
-            <th>Total Amount</th>
-            <th>Issued At</th>
-            <th>Payment Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredInvoices.length > 0 ? (
-            filteredInvoices.map((invoice) => (
-              <tr key={invoice.id}>
-                <td>{invoice.invoiceNumber || 'N/A'}</td>
-                <td>{invoice.buyerInfo?.soldTo || 'N/A'}</td>
-                <td>₱{invoice.totalAmount ? invoice.totalAmount.toFixed(2) : 'N/A'}</td>
-                <td>{invoice.issuedAt ? new Date(invoice.issuedAt).toLocaleDateString() : 'N/A'}</td>
-                <td>
-                  <span className={invoice.paymentStatus === 'Paid' ? 'paid' : invoice.paymentStatus === 'Pending' ? 'pending' : 'unpaid'}>
-                    {invoice.paymentStatus || 'N/A'}
-                  </span>
-                </td>
-                <td>
-                  <button
-                    className="action-button btn-paid"
-                    onClick={() => updatePaymentStatus(invoice.id, 'Paid', invoice.totalAmount)}
-                    disabled={invoice.paymentStatus === 'Paid'}
-                  >
-                    Paid
-                  </button>
-                  <button
-                    className="action-button btn-unpaid"
-                    onClick={() => updatePaymentStatus(invoice.id, 'Unpaid', invoice.totalAmount)}
-                    disabled={invoice.paymentStatus === 'Unpaid'}
-                  >
-                    Unpaid
-                  </button>
-                </td>
-              </tr>
-            ))
-          ) : (
+      {loading ? (
+        <p>Loading invoices...</p>
+      ) : (
+        <table className="invoices-table">
+          <thead>
             <tr>
-              <td colSpan="6">No matching invoices found.</td>
+              <th>Invoice Number</th>
+              <th>Sold To</th>
+              <th>Total Amount</th>
+              <th>Payment Status</th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredInvoices.length > 0 ? (
+              filteredInvoices.map((invoice) => (
+                <tr key={invoice.id}>
+                  <td>{invoice.buyerInfo?.invoiceNumber || 'N/A'}</td>
+                  <td>{invoice.buyerInfo?.soldTo || 'N/A'}</td>
+                  <td>₱{(invoice.totalAmount || 0).toFixed(2)}</td>
+                  <td className={`status ${invoice.paymentStatus?.toLowerCase() || 'pending'}`}>
+                    {invoice.paymentStatus || 'Pending'}
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="4" className="no-results">No invoices available.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 };
