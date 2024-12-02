@@ -42,38 +42,36 @@ const Dashboard = () => {
     let totalStocks = 0;
     let lowStocks = 0;
     let outOfStocks = 0;
-
+  
     const now = new Date(); // Get the current date
-
+  
     stockArray.forEach((stock) => {
       if (stock.category.trim().toLowerCase() === category.trim().toLowerCase()) {
         const quantity = parseInt(stock.quantity, 10);
-        const minStockBox = parseInt(stock.minStockBox, 10) || 0;
-        const minStockPcs = parseInt(stock.minStockPcs, 10) || 0;
-        const minStockLevel = Math.max(minStockBox, minStockPcs);
-
+        const criticalStock = parseInt(stock.criticalStock, 10) || 0;
+  
         if (!isNaN(quantity)) {
-          totalStocks += quantity;
+          totalStocks += quantity; // Add to total stock count
           if (quantity === 0) {
-            outOfStocks += 1;
-          } else if (quantity < minStockLevel) {
-            lowStocks += 1;
+            outOfStocks += 1; // Count out-of-stock items
+          } else if (quantity < criticalStock) {
+            lowStocks += 1; // Count low-stock items
           }
         }
-
+  
         // Check if the product is nearly expired (e.g., expires within 30 days)
         if (stock.expiryDate) {
           const expiryDate = new Date(stock.expiryDate);
           const timeDifference = expiryDate - now;
           const daysToExpire = Math.floor(timeDifference / (1000 * 60 * 60 * 24)); // Convert time difference to days
-
+  
           if (daysToExpire >= 0 && daysToExpire <= 30) {
-            nearlyExpired += 1;
+            nearlyExpired += 1; // Count nearly expired items
           }
         }
       }
     });
-
+  
     setTotals({
       nearlyExpired, // Update the nearly expired count
       totalStocks,
@@ -81,6 +79,7 @@ const Dashboard = () => {
       outOfStocks,
     });
   };
+  
 
   const handleTabChange = (category) => {
     setActiveTab(category);
@@ -88,30 +87,29 @@ const Dashboard = () => {
   };
 
   const handleCardClick = (type) => {
-    let filteredData = [];
-
-    if (type === 'nearly-expired') {
-      filteredData = stockData.filter((stock) => {
-        const expiryDate = new Date(stock.expiryDate);
-        const now = new Date();
-        const daysToExpire = Math.floor((expiryDate - now) / (1000 * 60 * 60 * 24));
-        return daysToExpire >= 0 && daysToExpire <= 30;
-      });
-    } else if (type === 'total-stocks') {
-      filteredData = stockData.filter((stock) => parseInt(stock.quantity, 10) > 0);
-    } else if (type === 'low-stocks') {
-      filteredData = stockData.filter((stock) => {
-        const minStockBox = parseInt(stock.minStockBox, 10) || 0;
-        const minStockPcs = parseInt(stock.minStockPcs, 10) || 0;
-        const minStockLevel = Math.max(minStockBox, minStockPcs);
-        return parseInt(stock.quantity, 10) < minStockLevel;
-      });
+    // Filter stocks by the selected category
+    const filteredStocks = stockData.filter(
+      (stock) => stock.category.trim().toLowerCase() === activeTab.trim().toLowerCase()
+    );
+  
+    if (type === 'low-stocks') {
+      // Filter low stock items
+      const lowStocks = filteredStocks.filter(
+        (stock) => stock.quantity > 0 && stock.quantity < stock.criticalStock
+      );
+      navigate('/low-stocks', { state: { stocks: lowStocks, category: activeTab } });
     } else if (type === 'out-of-stocks') {
-      filteredData = stockData.filter((stock) => parseInt(stock.quantity, 10) === 0);
+      // Filter out of stock items
+      const outStocks = filteredStocks.filter((stock) => stock.quantity === 0);
+      navigate('/out-stocks', { state: { stocks: outStocks, category: activeTab } });
+    } else if (type === 'total-stocks') {
+      // Pass all stocks in the selected category
+      navigate('/stock-details', { state: { stocks: filteredStocks, category: activeTab } });
     }
-
-    navigate('/stock-details', { state: { stocks: filteredData, category: activeTab, type } });
   };
+  
+  
+  
 
   return (
     <div className="dashboard-wrapper">
@@ -126,9 +124,9 @@ const Dashboard = () => {
           <div className="category-and-stats-container">
             <div className="button-group-container">
               {[
-                'Rapid Tests & Diagnostic Products',
-                'X-Ray & Imaging Products',
-                'Laboratory Reagents & Supplies',
+                'Rapid Tests ',
+                'X-Ray Products',
+                'Laboratory Reagents ',
                 'Medical Supplies',
               ].map((category) => (
                 <button

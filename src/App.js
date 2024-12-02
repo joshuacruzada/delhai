@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { ref, push } from 'firebase/database'; // Firebase ref and push functions
-import { database } from './FirebaseConfig'; // Firebase config
+import { ref, push, get } from 'firebase/database'; // Firebase ref and push functions
+import { database } from './FirebaseConfig';
+import { getAuth } from 'firebase/auth';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Sidebar from './components/Sidebar';
@@ -13,11 +14,13 @@ import Products from './components/Products';
 import Inventory from './components/Inventory';
 import Analytics from './components/Analytics';
 import StockDetails from './components/StockDetails';
+import LowStocksTable from './components/LowStocksTable'; // Import LowStocksTable component
+import OutStockTable from './components/OutStockTable';
 import AddNewProduct from './components/AddNewProduct';
 import EditProduct from './components/EditProduct';
 import LoginForm from './components/login';
 import SignUpForm from './components/signup';
-import Forbidden from './components/Forbidden';
+import ForgotPassword from './components/ForgotPassword';
 import AuditTrail from './components/AuditTrail';
 import Settings from './components/Settings';
 
@@ -61,32 +64,56 @@ function App() {
   };
 
   const handleLogout = async () => {
-    const userId = localStorage.getItem('userId');
-    const userName = localStorage.getItem('userName');
-
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+    let userId = null;
+    let userName = null;
+  
+    if (currentUser) {
+      userId = currentUser.uid; // Get the user's UID from authentication
+  
+      // Fetch user details from the 'users' node using the UID
+      try {
+        const userRef = ref(database, `users/${userId}`);
+        const snapshot = await get(userRef);
+  
+        if (snapshot.exists()) {
+          const userData = snapshot.val();
+          userName = userData.name || 'Unknown User'; // Get user's name
+        } else {
+          console.warn('User not found in the database.');
+        }
+      } catch (error) {
+        console.error('Error fetching user details during logout:', error);
+      }
+    }
+  
     const auditLogEntry = {
-      userId: userId,
-      userName: userName,
+      userId: userId || 'Unknown ID',
+      userName: userName || 'Unknown User',
       action: 'User Logged Out',
       timestamp: new Date().toISOString(),
     };
-
+  
     const auditRef = ref(database, 'auditTrail/');
     try {
       await push(auditRef, auditLogEntry);
       console.log('Logout audit log entry created successfully.');
-
+  
       // Clear state and local storage
       setIsAuthenticated(false);
       setUserRole('');
       localStorage.clear();
-
+  
       // Redirect to login page
       window.location.assign('/login-page');
     } catch (error) {
       console.error('Error logging out and creating audit entry:', error);
     }
   };
+  
+  
+  
 
   const ProtectedRoute = ({ element: Component, allowedRoles }) => {
     const token = localStorage.getItem('authToken');
@@ -100,13 +127,13 @@ function App() {
   return (
     <div className="App">
       <BrowserRouter>
-        {/* Conditionally render sidebars based on the user's role */}
         {isAuthenticated && userRole === 'admin' && <Sidebar onLogout={handleLogout} />}
         {isAuthenticated && userRole === 'employee' && <SidebarEmployee onLogout={handleLogout} />}
 
         <div className="content">
           <Routes>
             <Route path="/login-page" element={<LoginForm onLogin={handleLogin} />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/signup-page" element={<SignUpForm />} />
             <Route path="/" element={<ProtectedRoute element={Dashboard} allowedRoles={['admin', 'employee']} />} />
             <Route path="/invoices" element={<ProtectedRoute element={Invoices} allowedRoles={['admin', 'employee']} />} />
@@ -115,11 +142,12 @@ function App() {
             <Route path="/orders" element={<ProtectedRoute element={Orders} allowedRoles={['admin', 'employee']} />} />
             <Route path="/inventory" element={<ProtectedRoute element={Inventory} allowedRoles={['admin']} />} />
             <Route path="/stock-details" element={<ProtectedRoute element={StockDetails} allowedRoles={['admin', 'employee']} />} />
+            <Route path="/low-stocks" element={<ProtectedRoute element={LowStocksTable} allowedRoles={['admin', 'employee']} />} />
+            <Route path="/out-stocks" element={<ProtectedRoute element={OutStockTable} allowedRoles={['admin', 'employee']} />} />
             <Route path="/add-product" element={<ProtectedRoute element={AddNewProduct} allowedRoles={['admin']} />} />
             <Route path="/edit-product/:id" element={<ProtectedRoute element={EditProduct} allowedRoles={['admin']} />} />
             <Route path="/settings" element={<ProtectedRoute element={Settings} allowedRoles={['admin']} />} />
             <Route path="/audit-trail" element={<ProtectedRoute element={AuditTrail} allowedRoles={['admin']} />} />
-            <Route path="/403" element={<Forbidden />} />
           </Routes>
         </div>
       </BrowserRouter>

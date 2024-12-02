@@ -114,6 +114,35 @@
   color: #d4e4fc; /* Link color within the login card */
   text-decoration: underline;
 }
+.forgot-password-container {
+  text-align: left !important; /* Aligns the link to the left */
+  margin-top: 20px;
+  margin-left: 150px; 
+}
+
+.forgot-password-link {
+  color: #ffffff !important;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.forgot-password-link:hover {
+  text-decoration: underline;
+  color: #7AB2B2 !important;
+}
+
+/* Center the alert message */
+.login-card .alert {
+  font-size: 12px; /* Smaller font size for alerts */
+  padding: 8px;
+  border-radius: 5px;
+  margin-top: 10px;
+  margin-left: auto; /* Auto margin to center */
+  margin-right: auto; /* Auto margin to center */
+  text-align: center; /* Center the text inside the alert */
+  max-width: 80%; /* Optional: Restrict the width of the alert for better layout */
+}
+
 
 @media (min-width: 768px) {
   .login-card {

@@ -4,15 +4,17 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { ref, get, push } from "firebase/database";
 import { auth, database } from '../FirebaseConfig';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './login.css';  // Ensure you add styles here
+import './login.css'; 
 
 const LoginForm = ({ onLogin }) => {
   const [formData, setFormData] = useState({
-    identifier: '',  // Either username or email
+    identifier: '',
     password: '',
   });
 
-  const navigate = useNavigate();  // Use this hook for navigation
+  const [errors, setErrors] = useState({ identifier: '', password: '', general: '' });
+  const [successMessage, setSuccessMessage] = useState('');
+  const navigate = useNavigate();
 
   const changeHandler = (e) => {
     const { name, value } = e.target;
@@ -20,17 +22,27 @@ const LoginForm = ({ onLogin }) => {
       ...formData,
       [name]: value,
     });
+    setErrors({ ...errors, [name]: '', general: '' }); 
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrors({ identifier: '', password: '', general: '' });
+    setSuccessMessage('');
+
+    if (!formData.identifier) {
+      setErrors((prev) => ({ ...prev, identifier: 'Please enter your username or email.' }));
+      return;
+    }
+    if (!formData.password) {
+      setErrors((prev) => ({ ...prev, password: 'Please enter your password.' }));
+      return;
+    }
 
     try {
       let emailToUse = formData.identifier;
 
-      // Check if the input is not an email (assume it's a username)
       if (!/\S+@\S+\.\S+/.test(formData.identifier)) {
-        // Search for the username in Firebase
         const usernameRef = ref(database, 'usernames/' + formData.identifier);
         const usernameSnapshot = await get(usernameRef);
 
@@ -39,22 +51,20 @@ const LoginForm = ({ onLogin }) => {
           const userRef = ref(database, 'users/' + uid);
           const userSnapshot = await get(userRef);
           if (userSnapshot.exists()) {
-            emailToUse = userSnapshot.val().email;  // Use the email associated with the username
+            emailToUse = userSnapshot.val().email;
           } else {
-            alert('User data not found');
+            setErrors((prev) => ({ ...prev, identifier: 'User data not found' }));
             return;
           }
         } else {
-          alert('Username not found');
+          setErrors((prev) => ({ ...prev, identifier: 'Username not found' }));
           return;
         }
       }
 
-      // Sign in with the found email or directly if the user entered an email
       const userCredential = await signInWithEmailAndPassword(auth, emailToUse, formData.password);
       const user = userCredential.user;
 
-      // Fetch user data from Realtime Database
       const userRef = ref(database, 'users/' + user.uid);
       const snapshot = await get(userRef);
 
@@ -65,7 +75,6 @@ const LoginForm = ({ onLogin }) => {
         localStorage.setItem('userId', user.uid);
         localStorage.setItem('userName', userData.name);
 
-        // Create audit log entry for successful login
         const auditLogEntry = {
           userId: user.uid,
           userName: userData.name,
@@ -73,23 +82,26 @@ const LoginForm = ({ onLogin }) => {
           timestamp: new Date().toISOString(),
         };
 
-        // Reference to your audit trail in Firebase
         const auditRef = ref(database, 'auditTrail/');
         await push(auditRef, auditLogEntry);
 
-        alert(`Logged in successfully as ${userData.role}`);
-        onLogin(userData.role);
-        navigate('/');  // Redirect to the dashboard
+        setSuccessMessage(`Logged in successfully as ${userData.role}`);
+        setTimeout(() => {
+          onLogin(userData.role);
+          navigate('/');
+        }, 2000);
       } else {
-        alert("User data not found");
+        setErrors((prev) => ({ ...prev, general: 'User data not found' }));
       }
     } catch (error) {
-      if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
-        alert('Invalid email or password. Please try again.');
+      if (error.code === 'auth/wrong-password') {
+        setErrors((prev) => ({ ...prev, password: 'Invalid password. Please try again.' }));
       } else if (error.code === 'auth/user-not-found') {
-        alert('No user found with this email or username.');
+        setErrors((prev) => ({ ...prev, identifier: 'No user found with this email or username.' }));
+      } else if (error.code === 'auth/invalid-email') {
+        setErrors((prev) => ({ ...prev, identifier: 'Invalid email format.' }));
       } else {
-        alert('Error logging in: ' + error.message);
+        setErrors((prev) => ({ ...prev, general: 'Error logging in. Please try again later.' }));
       }
     }
   };
@@ -97,7 +109,6 @@ const LoginForm = ({ onLogin }) => {
   return (
     <div className="login-page-wrapper d-flex justify-content-center align-items-center">
       <div className="card p-5 shadow-lg login-card text-center">
-        {/* Logo and subtitle */}
         <div className="logo-container">
           <img src="/delhailogo.ico" alt="Delhai Logo" className="logo-img" />
           <div className="logo-text">
@@ -106,36 +117,42 @@ const LoginForm = ({ onLogin }) => {
           </div>
         </div>
 
-
         <h3 className="login-text text-center mb-4">Login</h3>
 
         <form onSubmit={handleSubmit}>
-          {/* Identifier input (Username or Email) */}
           <div className="form-outline mb-4">
             <input
               type="text"
               id="identifier"
               name="identifier"
-              className="login-form-control"
+              className={`login-form-control ${errors.identifier ? 'is-invalid' : ''}`}
               placeholder="Enter username or email"
               value={formData.identifier}
               onChange={changeHandler}
               required
             />
+            {errors.identifier && <div className="invalid-feedback">{errors.identifier}</div>}
           </div>
 
-          <div className="form-outline mb-4">
-            
+          <div className="form-outline mb-2">
             <input
               type="password"
               id="password"
               name="password"
-              className="login-form-control"
+              className={`login-form-control ${errors.password ? 'is-invalid' : ''}`}
               placeholder="Enter password"
               value={formData.password}
               onChange={changeHandler}
               required
             />
+            {errors.password && <div className="invalid-feedback">{errors.password}</div>}
+          </div>
+
+          {errors.general && <div className="alert alert-danger mt-3">{errors.general}</div>}
+          {successMessage && <div className="alert alert-success mt-3">{successMessage}</div>}
+
+          <div className="forgot-password-container text-end mb-4">
+            <a href="/forgot-password" className="forgot-password-link">Forgot Password?</a>
           </div>
 
           <button type="submit" className="login-btn signup-btn-block">Login</button>

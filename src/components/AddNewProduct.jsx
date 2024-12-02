@@ -9,17 +9,18 @@ const AddNewProduct = () => {
   const [newProduct, setNewProduct] = useState({
     name: '',
     category: '',
+    subCategory: '', // Added Subcategory
     packaging: '',
     quantity: '',
     expiryDate: '',
     date: new Date().toISOString().split('T')[0], // Set current date as default
-    imageUrl: '', 
-    pricePerTest: '',  
-    pricePerBox: '',   
-    pricePerPiece: '', 
-    piecesPerBox: '',  // Added field for Pieces per Box
-    criticalStock: '', // New field for Critical Stock
-    description: '',   
+    imageUrl: '',
+    pricePerTest: '',
+    pricePerBox: '',
+    pricePerPiece: '',
+    piecesPerBox: '',
+    criticalStock: '',
+    description: '',
   });
 
   const [imageFile, setImageFile] = useState(null);
@@ -27,12 +28,64 @@ const AddNewProduct = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Subcategories based on selected category
+  const subCategoryOptions = {
+    'Rapid Tests ': [
+      'COVID Tests',
+      'Dengue Tests',
+      'HIV Tests',
+      'Urine Strips',
+      'RPR Tests',
+      'HCV Tests', // New
+      'Syphilis Tests', // New
+      'Malaria Tests', // New
+      'Troponin Tests', // New
+      'HBsAg Tests', // New
+      'HAV Tests', // New
+      'Fecal Occult Blood', // New
+    ],
+    'X-Ray Products': [
+      'Envelope',
+      'Film (Fuji)',
+      'Film (Pixel)',
+      'Solutions',
+      'Thermal Paper',
+    ],
+    'Laboratory Reagents ': [
+      'Crescent Blood Chemistry Reagents',
+      'ERBA',
+    ],
+    'Medical Supplies': [
+      'Syringes',
+      'Gloves',
+      'Prepared Media Agar',
+      'Cotton Products',
+      'Specimen Containers',
+      'Alcohol Products', // New
+      'Pipette Tips', // New
+      'Blood Collectors', // New
+      'Glass Slides', // New
+      'Micropore', // New
+      'Typing Sera', // New
+    ],
+  };
+  
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewProduct({
       ...newProduct,
       [name]: value,
     });
+
+    // Reset subCategory when category changes
+    if (name === 'category') {
+      setNewProduct({
+        ...newProduct,
+        category: value,
+        subCategory: '', // Reset subcategory
+      });
+    }
   };
 
   const handleImageChange = (e) => {
@@ -48,7 +101,18 @@ const AddNewProduct = () => {
   };
 
   const handleAddProduct = async () => {
-    if (!newProduct.name || !newProduct.category || !newProduct.quantity || !newProduct.pricePerTest || !newProduct.pricePerBox || !newProduct.pricePerPiece || !newProduct.piecesPerBox || !newProduct.criticalStock || !newProduct.expiryDate) {
+    if (
+      !newProduct.name ||
+      !newProduct.category ||
+      !newProduct.subCategory ||
+      !newProduct.quantity ||
+      !newProduct.pricePerTest ||
+      !newProduct.pricePerBox ||
+      !newProduct.pricePerPiece ||
+      !newProduct.piecesPerBox ||
+      !newProduct.criticalStock ||
+      !newProduct.expiryDate
+    ) {
       setErrorMessage('Please fill all required fields.');
       return;
     }
@@ -145,13 +209,31 @@ const AddNewProduct = () => {
                 className="input-underline"
               >
                 <option value="">Select Category</option>
-                {/* Updated Categories to match the ones from the Dashboard */}
-                <option value="Rapid Tests & Diagnostic Products">Rapid Tests & Diagnostic Products</option>
-                <option value="X-Ray & Imaging Products">X-Ray & Imaging Products</option>
-                <option value="Laboratory Reagents & Supplies">Laboratory Reagents & Supplies</option>
-                <option value="Medical Supplies">Medical Supplies</option>
+                {Object.keys(subCategoryOptions).map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
               </select>
             </div>
+            {newProduct.category && (
+              <div className="form-group">
+                <label>Subcategory:</label>
+                <select
+                  name="subCategory"
+                  value={newProduct.subCategory}
+                  onChange={handleInputChange}
+                  className="input-underline"
+                >
+                  <option value="">Select Subcategory</option>
+                  {subCategoryOptions[newProduct.category].map((sub) => (
+                    <option key={sub} value={sub}>
+                      {sub}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div className="form-group">
               <label>Packaging:</label>
               <input
@@ -193,7 +275,7 @@ const AddNewProduct = () => {
               />
             </div>
             <div className="form-group">
-              <label>Pieces per Box:</label> {/* New field for Pieces per Box */}
+              <label>Pieces per Box:</label>
               <input
                 type="number"
                 name="piecesPerBox"
@@ -203,7 +285,7 @@ const AddNewProduct = () => {
               />
             </div>
             <div className="form-group">
-              <label>Critical Stock (Low Stock Trigger):</label> {/* Changed label for clarity */}
+              <label>Critical Stock (Low Stock Trigger):</label>
               <input
                 type="number"
                 name="criticalStock"
@@ -265,3 +347,4 @@ const AddNewProduct = () => {
 };
 
 export default AddNewProduct;
+

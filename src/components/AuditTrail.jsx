@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ref, onValue } from 'firebase/database';
-import { database } from '../FirebaseConfig';  // Adjust path as needed
+import { database } from '../FirebaseConfig'; // Adjust path as needed
+import { fetchUserProfile } from '../services/UserProfile'; // Import fetchUserProfile
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import './AuditTrail.css';
 
@@ -9,24 +10,55 @@ const AuditTrail = () => {
   const [filterUser, setFilterUser] = useState('');
   const [filterAction, setFilterAction] = useState('');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [userCache, setUserCache] = useState({}); // Cache for resolved user profiles
   const navigate = useNavigate(); // Initialize useNavigate
 
   useEffect(() => {
-    const auditRef = ref(database, 'auditTrail/');
-    onValue(auditRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const formattedData = Object.values(data);
-        setAuditLogs(formattedData);
-      }
-    });
-  }, []);
+    const fetchAuditLogs = async () => {
+      const resolveUserNames = async (logs) => {
+        const cache = { ...userCache }; // Copy the cache
 
-  const filteredLogs = auditLogs.filter(log => {
-    const withinDateRange = (!dateRange.start || new Date(log.timestamp) >= new Date(dateRange.start)) &&
-                            (!dateRange.end || new Date(log.timestamp) <= new Date(dateRange.end));
-    const matchesUser = !filterUser || log.userName.includes(filterUser);
-    const matchesAction = !filterAction || log.action.includes(filterAction);
+        const resolvedLogs = await Promise.all(
+          logs.map(async (log) => {
+            if (!cache[log.userId] && log.userId) {
+              // If user is not cached, fetch profile
+              const userProfile = await fetchUserProfile(log.userId);
+              cache[log.userId] = userProfile.name; // Cache the user name
+            }
+
+            return {
+              ...log,
+              userName: cache[log.userId] || log.userName || 'Unknown User', // Use cache or fallback
+            };
+          })
+        );
+
+        setUserCache(cache); // Update cache state
+        return resolvedLogs;
+      };
+
+      const auditRef = ref(database, 'auditTrail/');
+      onValue(auditRef, async (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          const logs = Object.values(data);
+          const updatedLogs = await resolveUserNames(logs); // Resolve user names
+          setAuditLogs(updatedLogs);
+        } else {
+          setAuditLogs([]); // No logs available
+        }
+      });
+    };
+
+    fetchAuditLogs();
+  }, [userCache]);
+
+  const filteredLogs = auditLogs.filter((log) => {
+    const withinDateRange =
+      (!dateRange.start || new Date(log.timestamp) >= new Date(dateRange.start)) &&
+      (!dateRange.end || new Date(log.timestamp) <= new Date(dateRange.end));
+    const matchesUser = !filterUser || log.userName.toLowerCase().includes(filterUser.toLowerCase());
+    const matchesAction = !filterAction || log.action.toLowerCase().includes(filterAction.toLowerCase());
     return withinDateRange && matchesUser && matchesAction;
   });
 
@@ -86,7 +118,7 @@ const AuditTrail = () => {
                 <td>{log.userId}</td>
                 <td>{log.userName}</td>
                 <td>{log.action}</td>
-                <td>{new Date(log.timestamp).toLocaleString()}</td>
+                <td>{log.timestamp !== 'No Timestamp' ? new Date(log.timestamp).toLocaleString() : 'No Timestamp'}</td>
               </tr>
             ))
           ) : (

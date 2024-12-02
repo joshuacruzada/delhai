@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { fetchProductById, updateProduct } from '../services/stockServices'; // Import service functions
 import { storage } from '../FirebaseConfig';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import './AddNewProduct.css'; // Import CSS for styling
+import './AddNewProduct.css'; // Import CSS for consistent styling
 
 const EditProduct = () => {
   const { id } = useParams(); // Get product ID from URL
@@ -12,6 +12,7 @@ const EditProduct = () => {
   const [product, setProduct] = useState({
     name: '',
     category: '',
+    subCategory: '', // Added Subcategory
     packaging: '',
     quantity: '',
     expiryDate: '',
@@ -20,8 +21,8 @@ const EditProduct = () => {
     pricePerTest: '',
     pricePerBox: '',
     pricePerPiece: '',
-    minStockPcs: '',
-    minStockBox: '',
+    piecesPerBox: '',
+    criticalStock: '',
     description: '',
   });
 
@@ -29,6 +30,48 @@ const EditProduct = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Subcategories based on selected category
+  const subCategoryOptions = {
+    'Rapid Tests ': [
+      'COVID Tests',
+      'Dengue Tests',
+      'HIV Tests',
+      'Urine Strips',
+      'RPR Tests',
+      'HCV Tests', // New
+      'Syphilis Tests', // New
+      'Malaria Tests', // New
+      'Troponin Tests', // New
+      'HBsAg Tests', // New
+      'HAV Tests', // New
+      'Fecal Occult Blood', // New
+    ],
+    'X-Ray Products': [
+      'Envelope',
+      'Film (Fuji)',
+      'Film (Pixel)',
+      'Solutions',
+      'Thermal Paper',
+    ],
+    'Laboratory Reagents ': [
+      'Crescent Blood Chemistry Reagents',
+      'ERBA',
+    ],
+    'Medical Supplies': [
+      'Syringes',
+      'Gloves',
+      'Prepared Media Agar',
+      'Cotton Products',
+      'Specimen Containers',
+      'Alcohol Products', // New
+      'Pipette Tips', // New
+      'Blood Collectors', // New
+      'Glass Slides', // New
+      'Micropore', // New
+      'Typing Sera', // New
+    ],
+  };
+  
   // Fetch product details when the component mounts
   useEffect(() => {
     fetchProductById(id, (data) => {
@@ -42,10 +85,20 @@ const EditProduct = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setProduct((prevProduct) => ({
-      ...prevProduct,
-      [name]: value,
-    }));
+
+    // Handle category change and reset subcategory
+    if (name === 'category') {
+      setProduct((prevProduct) => ({
+        ...prevProduct,
+        category: value,
+        subCategory: '', // Reset subcategory when category changes
+      }));
+    } else {
+      setProduct((prevProduct) => ({
+        ...prevProduct,
+        [name]: value,
+      }));
+    }
   };
 
   const handleImageChange = (e) => {
@@ -66,11 +119,12 @@ const EditProduct = () => {
     if (
       !product.name ||
       !product.category ||
+      !product.subCategory || // Ensure subcategory is selected
       !product.pricePerTest ||
       !product.pricePerBox ||
       !product.pricePerPiece ||
-      !product.minStockPcs ||
-      !product.minStockBox ||
+      !product.piecesPerBox ||
+      !product.criticalStock ||
       !product.expiryDate
     ) {
       setErrorMessage('Please fill all required fields.');
@@ -145,13 +199,31 @@ const EditProduct = () => {
               <label>Category:</label>
               <select name="category" value={product.category} onChange={handleInputChange} className="input-underline">
                 <option value="">Select Category</option>
-                <option value="Surgical">Surgical</option>
-                <option value="Pharmaceutical">Pharmaceutical</option>
-                <option value="Laboratory">Laboratory</option>
-                <option value="Diagnostic">Diagnostic</option>
-                <option value="Medical Supplies">Medical Supplies</option>
+                {Object.keys(subCategoryOptions).map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
               </select>
             </div>
+            {product.category && (
+              <div className="form-group">
+                <label>Subcategory:</label>
+                <select
+                  name="subCategory"
+                  value={product.subCategory}
+                  onChange={handleInputChange}
+                  className="input-underline"
+                >
+                  <option value="">Select Subcategory</option>
+                  {subCategoryOptions[product.category].map((sub) => (
+                    <option key={sub} value={sub}>
+                      {sub}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div className="form-group">
               <label>Packaging:</label>
               <input type="text" name="packaging" value={product.packaging} onChange={handleInputChange} className="input-underline" />
@@ -169,12 +241,12 @@ const EditProduct = () => {
               <input type="number" name="pricePerPiece" value={product.pricePerPiece} onChange={handleInputChange} className="input-underline" />
             </div>
             <div className="form-group">
-              <label>Minimum Stock (Pieces):</label>
-              <input type="number" name="minStockPcs" value={product.minStockPcs} onChange={handleInputChange} className="input-underline" />
+              <label>Pieces per Box:</label>
+              <input type="number" name="piecesPerBox" value={product.piecesPerBox} onChange={handleInputChange} className="input-underline" />
             </div>
             <div className="form-group">
-              <label>Minimum Stock (Boxes):</label>
-              <input type="number" name="minStockBox" value={product.minStockBox} onChange={handleInputChange} className="input-underline" />
+              <label>Critical Stock (Low Stock Trigger):</label>
+              <input type="number" name="criticalStock" value={product.criticalStock} onChange={handleInputChange} className="input-underline" />
             </div>
             <div className="form-group">
               <label>Expiry Date:</label>
@@ -186,22 +258,29 @@ const EditProduct = () => {
             </div>
             <div className="form-group">
               <label>Product Description:</label>
-              <textarea name="description" value={product.description} onChange={handleInputChange} className="input-underline description-field" />
-            </div>
-            <div className="form-group">
-              <label>Date:</label>
-              <input type="date" name="date" value={product.date} onChange={handleInputChange} className="input-underline" readOnly />
-            </div>
+              <textarea name="description" value={product.description} onChange={handleInputChange} classname="description" className="input-underline description-field"/>
+          </div>
+          <div className="form-group">
+            <label>Date:</label>
+            <input
+              type="date"
+              name="date"
+              value={product.date}
+              onChange={handleInputChange}
+              className="input-underline"
+              readOnly
+            />
           </div>
         </div>
-
-        <button onClick={handleUpdateProduct} className="add-product-btn">
-          {isLoading ? 'Updating...' : 'Update Product'}
-        </button>
-        {errorMessage && <p className="error-message">{errorMessage}</p>}
       </div>
+
+      <button onClick={handleUpdateProduct} className="add-product-btn">
+        {isLoading ? "Updating..." : "Update Product"}
+      </button>
+      {errorMessage && <p className="error-message">{errorMessage}</p>}
     </div>
-  );
+  </div>
+);
 };
 
 export default EditProduct;

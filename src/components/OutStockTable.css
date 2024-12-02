@@ -1,0 +1,65 @@
+/* Container for the out of stock page */
+.out-stocks-page {
+    padding: 20px;
+    background-color: transparent;
+  }
+  
+  /* Header styles for out of stock page */
+  .header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .back-button {
+    margin-right: 10px;
+    font-size: 16px;
+    color: #6c757d;
+    cursor: pointer;
+  }
+  
+  .back-button:hover {
+    transform: scale(1.05);
+  }
+  
+  h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+    margin: 0;
+  }
+  
+  /* Out of stock table styles */
+  .out-stocks-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .out-stocks-table th,
+  .out-stocks-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 4px solid rgb(239, 238, 238);
+  }
+  
+  .out-stocks-table th {
+    background-color: #fff;
+    color: #373A40;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  
+  .out-stocks-table td {
+    font-size: 16px;
+    color: #5a5d63;
+  }
+  
+  
+  .product-image:hover {
+    transform: scale(1.05);
+    transition: transform 0.3s ease;
+  }
+  

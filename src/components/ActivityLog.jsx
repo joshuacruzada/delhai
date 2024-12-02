@@ -12,7 +12,10 @@ const ActivityLog = () => {
     const unsubscribe = onValue(logsRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const logsArray = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        const logsArray = Object.keys(data).map((key) => ({
+          id: key,
+          ...data[key],
+        }));
         setActivityLogs(logsArray);
       } else {
         setActivityLogs([]); // Handle the case where there's no data
@@ -22,6 +25,13 @@ const ActivityLog = () => {
     // Cleanup subscription on unmount
     return () => unsubscribe();
   }, []);
+
+  // Helper function to format the user
+  const formatUser = (user) => {
+    if (!user) return 'Unknown User';
+    const [firstName] = user.name.split(' '); // Extract first name
+    return firstName; // Return only the first name
+  };
 
   return (
     <Card className="activity-log-container">
@@ -34,6 +44,7 @@ const ActivityLog = () => {
             <tr>
               <th>Time Stamp</th>
               <th>User</th>
+              <th>Role</th> {/* Add Role Column */}
               <th>Action</th>
               <th>Details</th>
             </tr>
@@ -43,14 +54,15 @@ const ActivityLog = () => {
               activityLogs.map((log, index) => (
                 <tr key={log.id || index}>
                   <td>{log.timestamp}</td>
-                  <td>{log.user}</td>
+                  <td>{formatUser(log.user)}</td>
+                  <td>{log.user?.role || 'Unknown Role'}</td> {/* Display Role */}
                   <td>{log.action}</td>
                   <td>{log.details}</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="4" className="text-center">No activity logs available.</td>
+                <td colSpan="5" className="text-center">No activity logs available.</td>
               </tr>
             )}
           </tbody>

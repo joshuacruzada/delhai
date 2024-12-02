@@ -1,0 +1,59 @@
+/* Page container */
+.low-stocks-page, .out-stocks-page {
+    padding: 20px;
+    background-color: transparent;
+  }
+  
+  /* Header styles */
+  .header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .back-button {
+    margin-right: 10px;
+    font-size: 16px;
+    color: #6c757d;
+    cursor: pointer;
+  }
+  
+  .back-button:hover {
+    transform: scale(1.05);
+  }
+  
+  h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+    margin: 0;
+  }
+  
+  /* Table styles */
+  .low-stocks-table, .out-stocks-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .low-stocks-table th, .out-stocks-table th,
+  .low-stocks-table td, .out-stocks-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 4px solid rgb(239, 238, 238);
+  }
+  
+  .low-stocks-table th, .out-stocks-table th {
+    background-color: #fff;
+    color: #373A40;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  
+  .low-stocks-table td, .out-stocks-table td {
+    font-size: 16px;
+    color: #5a5d63;
+  }
+  

@@ -218,19 +218,58 @@
     color: #f5432b;
 }
 
-/* Total amount and create invoice button */
 .total-amount-container {
-    border-top: 1px solid #d1d0d0;
-    padding-top: 10px;
+    position: sticky;
+    bottom: 0;
+    background-color: #fff;
+    padding: 10px;
+    border-top: 1px solid #ddd;
+    text-align: right;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 20px;
-}
+    z-index: 100;
+  }
+  
+  .total-amount-container strong {
+    font-size: 16px;
+    margin-right: 10px;
+  }
+  
+  .btn-primary {
+    background-color: #007bff;
+    color: #fff;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .btn-primary:hover {
+    background-color: #0056b3;
+  }
+  
+.sticky-footer {
+    position: sticky;
+    bottom: 0;
+    background-color: #fff;
+    padding: 15px;
+    border-top: 1px solid #ddd;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
 
-.total-amount {
-    font-size: 20px;
+.required-asterisk {
+    color: red;
+    margin-left: 4px;
 }
+.error-message {
+    color: red;
+    font-size: 10px;
+  }
+  
 
 /* Responsive adjustments */
 @media (max-width: 768px) {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { ref, set, push, get } from "firebase/database";
+import { get,ref, set } from "firebase/database";
 import { auth, database } from '../FirebaseConfig';
 import './signup.css';
 
@@ -15,6 +15,7 @@ const SignUpForm = () => {
   });
 
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
   const changeHandler = (e) => {
     const { name, value } = e.target;
@@ -24,56 +25,66 @@ const SignUpForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-
+    setSuccess(null);
+  
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match!');
       return;
     }
-
+  
     try {
+      // Check if the username already exists in the "usernames" node
       const usernameRef = ref(database, `usernames/${formData.username}`);
       const usernameSnapshot = await get(usernameRef);
-
+  
       if (usernameSnapshot.exists()) {
         setError('Username already exists. Please choose another.');
         return;
       }
-
-      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+  
+      // Step 1: Register the user with Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
       const user = userCredential.user;
-
+  
+      // Step 2: Store additional user data in the Realtime Database
       await set(ref(database, `users/${user.uid}`), {
         username: formData.username,
         name: formData.name,
         email: formData.email,
         role: formData.role,
       });
-
+  
+      // Step 3: Save the username as a separate reference for validation
       await set(ref(database, `usernames/${formData.username}`), {
-        uid: user.uid
+        uid: user.uid,
       });
-
-      const auditLogEntry = {
-        userId: user.uid,
-        userName: formData.name,
-        action: "User Created",
-        timestamp: new Date().toISOString(),
-      };
-
-      const auditRef = ref(database, 'auditTrail/');
-      await push(auditRef, auditLogEntry);
-
-      alert('User created successfully!');
-    } catch (error) {
-      setError('Error signing up: ' + error.message);
+  
+      setSuccess('Account created successfully! You can now log in.');
+      setFormData({
+        username: '',
+        name: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        role: 'employee',
+      });
+    } catch (err) {
+      if (err.code === 'auth/email-already-in-use') {
+        setError('The email address is already in use.');
+      } else {
+        setError('Error signing up: ' + err.message);
+      }
     }
   };
+  
 
   return (
     <div className="signup-page-wrapper d-flex justify-content-center align-items-center">
       <div className="signup-card p-5 shadow-lg text-center">
-        
-        {/* Updated logo and title structure */}
         <div className="signup-logo-container">
           <img src="/delhailogo.ico" alt="Delhai Logo" className="signup-logo-img" />
           <div className="signup-logo-text">
@@ -172,7 +183,8 @@ const SignUpForm = () => {
             </div>
           </div>
 
-          {error && <div className="signup-alert" role="alert">{error}</div>}
+          {error && <div className="signup-alert error">{error}</div>}
+          {success && <div className="signup-alert success">{success}</div>}
 
           <button type="submit" className="signup-btn">Sign Up</button>
 

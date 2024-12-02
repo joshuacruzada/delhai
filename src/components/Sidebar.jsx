@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { getDatabase, ref, onValue } from 'firebase/database';
+import { getDatabase, ref, get } from 'firebase/database';
 import { getAuth } from 'firebase/auth';
 import './Sidebar.css';
 
@@ -9,24 +9,38 @@ const Sidebar = ({ onLogout }) => {
   const [user, setUser] = useState({ name: '', role: '' });
 
   useEffect(() => {
-    const auth = getAuth();
-    const currentUser = auth.currentUser;
+    const fetchUserData = async () => {
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
 
-    if (currentUser) {
-      const db = getDatabase();
-      const userRef = ref(db, `users/${currentUser.uid}`);
+      if (currentUser) {
+        try {
+          const db = getDatabase();
+          const userRef = ref(db, `users/${currentUser.uid}`);
+          const snapshot = await get(userRef);
 
-      onValue(userRef, (snapshot) => {
-        const userData = snapshot.val();
-        if (userData) {
-          setUser({
-            name: userData.name || 'User',
-            role: userData.role || 'Role',
-          });
+          if (snapshot.exists()) {
+            const userData = snapshot.val();
+            setUser({
+              name: userData.name || 'User',
+              role: userData.role || 'Role',
+            });
+          } else {
+            console.warn('No user data found in Firebase.');
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
         }
-      });
-    }
+      }
+    };
+
+    fetchUserData();
   }, []);
+
+  const handleLogout = () => {
+    setUser({ name: '', role: '' }); // Clear user state on logout
+    onLogout(); // Call the parent logout function
+  };
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
@@ -76,13 +90,13 @@ const Sidebar = ({ onLogout }) => {
               <span className="account-name">{user.name}</span>
               <span className="account-role">{user.role}</span>
             </div>
-            <div className="logout-icon" onClick={onLogout}>
+            <div className="logout-icon" onClick={handleLogout}>
               <i className="bi bi-box-arrow-right"></i>
             </div>
           </>
         )}
         {isCollapsed && (
-          <div className="logout-icon-collapsed" onClick={onLogout}>
+          <div className="logout-icon-collapsed" onClick={handleLogout}>
             <i className="bi bi-box-arrow-right"></i>
           </div>
         )}
