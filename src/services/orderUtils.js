@@ -1,63 +1,62 @@
-import { ref, push, set, update, get } from 'firebase/database';
-import { database } from '../FirebaseConfig';
-import emailjs from 'emailjs-com';
+import { ref, push, set, update, get } from "firebase/database";
+import { database } from "../FirebaseConfig";
+import emailjs from "emailjs-com";
 
 // Save order to Firebase
 export const saveOrderToFirebase = (buyerInfo, order, totalAmount, userId) => {
   // Structure the order data correctly before saving
   const orderData = {
-    userId: buyerInfo.userId,  // Must be present
-    totalAmount: totalAmount,  // Must be present
+    userId, // From AuthContext, indicates who created the order
+    totalAmount, // Must be present
     createdAt: new Date().toISOString(),
-    buyerInfo: {  // Store buyer info separately
-      soldTo: buyerInfo.soldTo,  // Buyer's name
-      address: buyerInfo.address,  // Buyer's address
-      shippedTo: buyerInfo.shippedTo,  // Shipping address
-      tin: buyerInfo.tin,  // Buyer's TIN
-      drNo: buyerInfo.drNo,  // Delivery receipt number
-      terms: buyerInfo.terms,  // Payment terms
-      salesman: buyerInfo.salesman,  // Salesman
-      poNo: buyerInfo.poNo,  // Purchase order number
-      email: buyerInfo.email  // Buyer's email
+    buyerInfo: {
+      name: buyerInfo.name, // Buyer's name
+      address: `${buyerInfo.street}, ${buyerInfo.barangay}, ${buyerInfo.city}, ${buyerInfo.province}, ${buyerInfo.zipCode}`, // Concatenate full address
+      shippedTo: buyerInfo.shippedTo, // Shipping address
+      drNo: buyerInfo.drNo, // Delivery receipt number
+      poNo: buyerInfo.poNo, // Purchase order number
+      terms: buyerInfo.terms, // Payment terms
+      salesman: buyerInfo.salesman, // Salesman
+      email: buyerInfo.email, // Buyer's email
     },
     products: order.map((item) => ({
       name: item.name,
       price: item.editablePrice,
       quantity: item.quantity,
       packaging: item.packaging,
-    }))
+    })),
   };
 
-  const ordersRef = ref(database, 'orders');
+  const ordersRef = ref(database, "orders");
   const newOrderRef = push(ordersRef);
 
   return set(newOrderRef, orderData)
     .then(() => {
-      console.log('Order saved successfully');
+      console.log("Order saved successfully");
       return { orderId: newOrderRef.key, orderData };
     })
     .catch((error) => {
-      console.error('Error saving order:', error);
+      console.error("Error saving order:", error);
       throw error;
     });
 };
 
 // Create invoice in Firebase
 export const createInvoice = (orderId, totalAmount, buyerInfo, orderData) => {
-  const invoicesRef = ref(database, 'invoices');
+  const invoicesRef = ref(database, "invoices");
 
   return new Promise((resolve, reject) => {
     get(invoicesRef)
       .then((snapshot) => {
         const data = snapshot.val();
-        let newInvoiceNumber = '000001'; // Default starting invoice number
+        let newInvoiceNumber = "000001"; // Default starting invoice number
 
         if (data) {
           const invoiceNumbers = Object.values(data).map((invoice) => invoice.invoiceNumber);
           const maxInvoiceNumber = Math.max(
             ...invoiceNumbers.map((num) => parseInt(num.slice(4), 10)) // Get numeric part
           );
-          newInvoiceNumber = (maxInvoiceNumber + 1).toString().padStart(6, '0');
+          newInvoiceNumber = (maxInvoiceNumber + 1).toString().padStart(6, "0");
         }
 
         const newInvoiceRef = push(invoicesRef);
@@ -68,51 +67,50 @@ export const createInvoice = (orderId, totalAmount, buyerInfo, orderData) => {
           orderId,
           invoiceNumber: `${newInvoiceNumber}`,
           totalAmount,
-          paymentStatus: 'Pending',
+          paymentStatus: "Pending",
           issuedAt: new Date().toISOString(),
           buyerInfo: buyerInfoWithoutEmail,
           orderDetails: orderData.products,
-          userId: buyerInfo.userId // Ensure the userId is saved in the invoice
+           // Ensure the userId is saved in the invoice
         };
 
         set(newInvoiceRef, invoiceData)
           .then(() => {
-            console.log('Invoice created successfully');
+            console.log("Invoice created successfully");
             resolve();
           })
           .catch((error) => {
-            console.error('Error creating invoice:', error);
+            console.error("Error creating invoice:", error);
             reject(error);
           });
       })
       .catch((error) => {
-        console.error('Error fetching invoice data:', error);
+        console.error("Error fetching invoice data:", error);
         reject(error);
       });
   });
 };
 
-
 // Send email notification using EmailJS
 export const sendEmailNotification = (buyerInfo, orderData, totalAmount) => {
   const emailParams = {
-    to_name: buyerInfo.soldTo,
+    to_name: buyerInfo.name,
     to_email: buyerInfo.email,
     order_summary: orderData.products
       .map((item) => `${item.name} x ${item.quantity} - ₱${item.price.toFixed(2)}`)
-      .join('\n'),
+      .join("\n"),
     total_amount: `₱${totalAmount.toFixed(2)}`,
   };
 
-  console.log('Email Params:', emailParams); // Log email params for debugging
+  console.log("Email Params:", emailParams); // Log email params for debugging
 
   emailjs
-    .send('service_xbzwe8f', 'template_op31jrk', emailParams, 'Eaa7gEQkmCzf4Prdz')
+    .send("service_xbzwe8f", "template_op31jrk", emailParams, "Eaa7gEQkmCzf4Prdz")
     .then((response) => {
-      console.log('Email successfully sent!', response.status, response.text);
+      console.log("Email successfully sent!", response.status, response.text);
     })
     .catch((error) => {
-      console.error('Failed to send email:', error);
+      console.error("Failed to send email:", error);
     });
 };
 
@@ -133,40 +131,35 @@ export const updateStock = async (productId, quantityChange, products, setProduc
         );
         console.log(`Stock updated successfully for product: ${productId}`);
       } catch (error) {
-        console.error('Error updating stock in Firebase:', error);
+        console.error("Error updating stock in Firebase:", error);
       }
     } else {
-      console.error('Invalid stock value detected:', updatedStock);
+      console.error("Invalid stock value detected:", updatedStock);
     }
   } else {
-    console.error('Product not found for stock update');
+    console.error("Product not found for stock update");
   }
 };
 
 // Complete order process with proper stock updates
 export const completeOrderProcess = async (buyerInfo, order, totalAmount, products, setProducts) => {
   try {
-    // Validate that userId is provided
     if (!buyerInfo.userId) {
-      throw new Error('User ID is missing in buyerInfo');
+      throw new Error("User ID is missing in buyerInfo");
     }
 
-    // Save the order
     const { orderId, orderData } = await saveOrderToFirebase(buyerInfo, order, totalAmount, buyerInfo.userId);
 
-    // Create invoice with all order data but without the email
     await createInvoice(orderId, totalAmount, buyerInfo, orderData);
 
-    // Send email notification
     await sendEmailNotification(buyerInfo, orderData, totalAmount);
 
-    // Update stock for each item in the order
     for (const item of order) {
-      await updateStock(item.id, -item.quantity, products, setProducts); // Decrease stock by quantity ordered
+      await updateStock(item.id, -item.quantity, products, setProducts); // Decrease stock
     }
 
-    console.log('Order process completed successfully!');
+    console.log("Order process completed successfully!");
   } catch (error) {
-    console.error('Error completing the order process:', error);
+    console.error("Error completing the order process:", error);
   }
 };

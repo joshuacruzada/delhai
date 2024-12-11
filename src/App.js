@@ -9,11 +9,13 @@ import Sidebar from './components/Sidebar';
 import SidebarEmployee from './components/SidebarEmployee';
 import Dashboard from './components/Dashboard';
 import Orders from './components/Orders';
+import CustomerList from './components/CustomerList';
 import Invoices from './components/Invoices';
 import Products from './components/Products';
 import Inventory from './components/Inventory';
 import Analytics from './components/Analytics';
 import StockDetails from './components/StockDetails';
+import StockHistory from './components/StockHIstory'
 import LowStocksTable from './components/LowStocksTable'; // Import LowStocksTable component
 import OutStockTable from './components/OutStockTable';
 import AddNewProduct from './components/AddNewProduct';
@@ -140,6 +142,7 @@ function App() {
             <Route path="/products" element={<ProtectedRoute element={Products} allowedRoles={['admin', 'employee']} />} />
             <Route path="/analytics" element={<ProtectedRoute element={Analytics} allowedRoles={['admin']} />} />
             <Route path="/orders" element={<ProtectedRoute element={Orders} allowedRoles={['admin', 'employee']} />} />
+            <Route path="/customers"element={<ProtectedRoute element={CustomerList} allowedRoles={['admin', 'employee']} />}/>
             <Route path="/inventory" element={<ProtectedRoute element={Inventory} allowedRoles={['admin']} />} />
             <Route path="/stock-details" element={<ProtectedRoute element={StockDetails} allowedRoles={['admin', 'employee']} />} />
             <Route path="/low-stocks" element={<ProtectedRoute element={LowStocksTable} allowedRoles={['admin', 'employee']} />} />
@@ -148,6 +151,7 @@ function App() {
             <Route path="/edit-product/:id" element={<ProtectedRoute element={EditProduct} allowedRoles={['admin']} />} />
             <Route path="/settings" element={<ProtectedRoute element={Settings} allowedRoles={['admin']} />} />
             <Route path="/audit-trail" element={<ProtectedRoute element={AuditTrail} allowedRoles={['admin']} />} />
+            <Route path="/stock-history" element={<ProtectedRoute element={StockHistory} allowedRoles={['admin', 'employee']} />} />
           </Routes>
         </div>
       </BrowserRouter>

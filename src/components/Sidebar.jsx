@@ -63,6 +63,9 @@ const Sidebar = ({ onLogout }) => {
           <NavLink className="nav-link" to="/orders" activeClassName="active">
             <i className="bi bi-list-check"></i> {!isCollapsed && <span>Orders</span>}
           </NavLink>
+          <NavLink className="nav-link" to="/customers" activeClassName="active">
+            <i className="bi bi-people-fill"></i> {!isCollapsed && <span>Customers</span>}
+          </NavLink>
           <NavLink className="nav-link" to="/products" activeClassName="active">
             <i className="bi bi-box-seam"></i> {!isCollapsed && <span>Products</span>}
           </NavLink>
