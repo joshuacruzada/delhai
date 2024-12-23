@@ -6,12 +6,12 @@
     background-color: white;
     padding: 30px;
     border-radius: 12px;
-    box-shadow: 1px 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 1px 4px 6px rgba(1, 1, 1, 0.2);
     display: flex;
     flex-direction: column;
   }
   
-  /* Form Header */
+/* Form Header */
 
 .form-header {
         text-align: center;
@@ -32,17 +32,23 @@
 
   
   /* Section Title */
-  .section-title {
+  .section-title, .address-section-title, .other-section-title{
     font-size: 1rem;
     font-weight: bold;
-    margin-top: 20px;
     margin-bottom: 10px;
     border-bottom: 1px solid #b0b0b0;
     padding-bottom: 5px;
   }
+  .address-section-title{
+    margin-top: 40px;
+
+  }
+  .other-section-title{
+    margin-top: 55px;
+  }
   
   /* Form Grid */
-  .new-order-form-grid {
+  .form-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 15px;
@@ -52,10 +58,11 @@
   /* Input Fields */
   .form-input {
     padding: 10px;
-    font-size: 1rem;
+    font-size: 0.8rem;
     border: 1px solid #b8b5b5;
     border-radius: 6px;
     box-sizing: border-box;
+    margin-top: 10px;
   }
   
   .form-input:focus {
@@ -66,8 +73,10 @@
   
   /* Name Input with Custom Width */
   .form-group .form-input {
-    width: 50%; /* Adjust name input to half the width */
+    width: 30%; /* Adjust name input to half the width */
     margin: auto;
+    margin-top: 10px;
+    font-size: 0.8rem;
   }
   
   /* Buttons */
@@ -90,18 +99,280 @@
     padding: 10px 20px;
     border: none;
     border-radius: 6px;
-    font-size: 1rem;
+    font-size: 0.8rem;
     cursor: pointer;
+    margin-top: 30px;
   }
   
   .btn-primary:hover {
     background-color: #376978;
   }
-  
+
   /* Form Footer */
   .form-footer {
     display: flex;
     justify-content: flex-end;
     margin-top: 20px;
   }
+
+
+  /* Order Form Style */
+  
+  .order-info-section {
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+  }
+  
+  .back-to-buyer-btn {
+    font-size: 1rem;
+    background: none;
+    border: none;
+    color: #555;
+    cursor: pointer;
+    margin-bottom: 10px;
+  }
+  
+  .order-info-header {
+    text-align: center;
+    margin-bottom: 20px;
+    
+  }
+  
+  .order-info-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  .order-info-date {
+    font-size: 0.9rem;
+    color: #777;
+  }
+  
+  .order-info-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .order-section-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+  
+  .view-product-btn {
+    background-color: transparent;
+    color: rgb(45, 44, 44);
+    font-size: 0.8rem;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 15px;
+    cursor: pointer;
+    margin-right: 0;
+}
+.view-product-btn:hover{
+    text-decoration: underline;
+
+}
+.view-product-btn-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+}
+  
+  .order-items-container {
+    border-top: 1px solid #ccc;
+    margin-top: 20px;
+    padding-top: 20px;
+  }
+  
+  .order-item-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .order-item-image {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+  }
+  
+  .order-items-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .order-item-container {
+    display: grid;
+    grid-template-columns: 80px 1fr 120px 120px 40px;
+    align-items: center;
+    gap: 10px;
+  }
+  .order-item-details {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .order-item-name {
+    font-weight: bold;
+    margin: 0;
+  }
+  
+  .order-item-packaging {
+    font-size: 0.9em;
+    color: #666;
+  }
+  
+  .order-quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .order-quantity-input {
+    width: 40px;
+    text-align: center;
+  }
+  
+  .order-editable-price-input {
+    width: 100px;
+    text-align: right;
+  }
+  
+  .total-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end; /* Aligns everything to the right */
+    margin-top: 20px; /* Adjust as needed */
+  }
+  
+  .total-amount-wrapper {
+    display: flex;
+    justify-content: space-between;
+    width: 100%; /* Ensures full width to separate content */
+    padding: 10px 0;
+    border-top: 1px solid #ccc; /* Adds a line above */
+    margin-bottom: 10px; /* Adds spacing before the button */
+  }
+  
+  .total-label {
+    font-weight: bold;
+    font-size: 1rem;
+  }
+  
+  .total-value {
+    font-size: 1rem;
+  }
+  
+  
+  .create-order-btn {
+    display: inline-block;
+    background-color: #4D869C;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .create-order-btn:hover {
+    background-color: #3c6b7c;
+  }
+  
+
+  .suggestion-popup {
+  
+    background-color: #1f1f1f;
+    color: whitesmoke;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    width: 30%;
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    font-size: 0.8rem;
+    
+  }
+  
+  .suggestion-item {
+    padding: 8px;
+    cursor: pointer;
+  }
+  
+  .suggestion-item:hover {
+    background-color: #3d3c3c;
+    color: whitesmoke;
+  }
+  
+  .loading-item {
+    color: gray;
+    padding: 8px;
+    font-style: italic;
+  }
+  
+  .no-record-item {
+    color: red;
+    padding: 8px;
+    font-style: italic;
+  }
+
+  .order-quantity-control button {
+    background-color: white; /* White color for the button */
+    align-items: center;
+    border: 0.1px solid #b4b4b4;
+    border-radius: 50%; /* Circular shape */
+    height: 26px;
+    width: 60px !important;
+    cursor: pointer;
+    font-size: 16px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Slight shadow effect */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transition for hover */
+  }
+  
+  .order-quantity-control button:hover {
+    background-color: lightgray; /* Slightly darker background on hover */
+    box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.2); /* More pronounced shadow on hover */
+  }
+  
+  .order-quantity-input {
+    text-align: center;
+    width: 50px;
+    margin: 0 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .order-editable-price-input {
+    text-align: center;
+    width: 6rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-left: 10px;
+    padding: 5px;
+  }
+  
+  .remove-order-item-btn {
+    background-color: white; /* White color for the button */
+    height: 40px;
+    border-radius: 50%; /* Circular shape */
+    border: 0.1px solid #b4b4b4;
+    cursor: pointer;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Slight shadow effect */
+    font-weight: bold;
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease; /* Smooth transition */
+  }
+  
+  .remove-order-item-btn:hover {
+    background-color: red; /* Red background on hover */
+    color: white; /* White text on hover */
+    box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.2); /* More pronounced shadow on hover */
+  }
+  
   

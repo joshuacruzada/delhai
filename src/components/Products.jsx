@@ -1,71 +1,89 @@
-import React, { useState, useEffect } from 'react';
-import './Products.css';
-import { database } from '../FirebaseConfig';
-import { ref, onValue } from 'firebase/database';
+import React, { useState, useEffect, useCallback } from "react";
+import "./Products.css";
+import { database } from "../FirebaseConfig";
+import { ref, onValue } from "firebase/database";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]); // Products after filtering
-  const [expandedRows, setExpandedIndex] = useState(null); // Track which product is expanded
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedSubCategory, setSelectedSubCategory] = useState("All");
 
+  const subCategoryOptions = {
+    "Rapid Tests": ["COVID Tests", "Dengue Tests", "Urine Strips", "RPR Tests"],
+    "X-Ray Products": ["Envelope", "Film (Fuji)", "Film (Pixel)", "Solutions"],
+    "Laboratory Reagents": ["Crescent Blood Chemistry Reagents", "ERBA"],
+    "Medical Supplies": ["Syringes", "Gloves", "Prepared Media Agar"],
+  };
+
+  // Fetch products from Firebase
   useEffect(() => {
-    const productsRef = ref(database, 'stocks/');
+    const productsRef = ref(database, "stocks/");
     onValue(productsRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
         const items = Object.keys(data).map((key) => ({
-          id: key, // Add an ID for key purposes
-          name: data[key].name || 'No Name', // Display product name
-          description: data[key].description || 'No description available',
+          id: key,
+          name: data[key].name || "No Name",
+          description: data[key].description || "No description available",
           category: data[key].category,
-          imageUrl: data[key].imageUrl || '',
+          subCategory: data[key].subCategory || "No Subcategory",
+          imageUrl: data[key].imageUrl || "",
           pricePerBox: data[key].pricePerBox || 0,
           pricePerTest: data[key].pricePerTest || 0,
-          pricePerPiece: data[key].pricePerPiece || 'N/A', // Price per piece
           quantity: data[key].quantity || 0,
           criticalStock: data[key].criticalStock || 0,
-          expiryDate: data[key].expiryDate || 'N/A',
-          piecesPerBox: data[key].piecesPerBox || 'N/A', // Add pieces per box
-          packaging: data[key].packaging || 'N/A', // Add packaging type
+          expiryDate: data[key].expiryDate || "N/A",
         }));
         setProducts(items);
-        setFilteredProducts(items); // Initially, all products are displayed
+        setFilteredProducts(items); // Initialize filteredProducts
       }
     });
   }, []);
 
-  // Function to toggle product expansion
-  const toggleExpand = (index) => {
-    setExpandedIndex(expandedRows === index ? null : index);
-  };
+  // Function to filter products
+  const filterProducts = useCallback(
+    (query, category, subCategory) => {
+      const filtered = products.filter((product) => {
+        const productCategory = (product.category || "").trim().toLowerCase();
+        const productSubCategory = (product.subCategory || "").trim().toLowerCase();
 
-  // Function to handle search
+        const matchesSearch =
+          product.name.toLowerCase().includes(query.toLowerCase()) ||
+          product.description.toLowerCase().includes(query.toLowerCase());
+
+        const matchesCategory =
+          category === "All" || productCategory === category.trim().toLowerCase();
+        const matchesSubCategory =
+          subCategory === "All" || productSubCategory === subCategory.trim().toLowerCase();
+
+        return matchesSearch && matchesCategory && matchesSubCategory;
+      });
+
+      setFilteredProducts(filtered);
+    },
+    [products]
+  );
+  
+  
+  // Trigger filtering whenever dependencies change
+  useEffect(() => {
+    filterProducts(searchQuery, selectedCategory, selectedSubCategory);
+  }, [filterProducts, searchQuery, selectedCategory, selectedSubCategory]);
+
   const handleSearchChange = (e) => {
-    const query = e.target.value.toLowerCase();
-    setSearchQuery(query);
-    filterProducts(query, selectedCategory);
+    setSearchQuery(e.target.value);
   };
 
-  // Function to handle category filter
   const handleCategoryChange = (e) => {
     const category = e.target.value;
     setSelectedCategory(category);
-    filterProducts(searchQuery, category);
+    setSelectedSubCategory("All"); // Reset subcategory when category changes
   };
 
-  // Function to filter products based on search and category
-  const filterProducts = (query, category) => {
-    const filtered = products.filter((product) => {
-      const matchesSearch =
-        product.name.toLowerCase().includes(query) ||
-        product.description.toLowerCase().includes(query);
-      const matchesCategory =
-        !category || product.category.toLowerCase() === category.toLowerCase();
-      return matchesSearch && matchesCategory;
-    });
-    setFilteredProducts(filtered);
+  const handleSubCategoryChange = (e) => {
+    setSelectedSubCategory(e.target.value);
   };
 
   return (
@@ -85,16 +103,30 @@ const Products = () => {
             value={selectedCategory}
             onChange={handleCategoryChange}
           >
-            <option value="">Category</option>
-            <option value="Rapid Tests & Diagnostic Products">Rapid Tests & Diagnostic Products</option>
-            <option value="X-Ray & Imaging Products">X-Ray & Imaging Products</option>
-            <option value="Laboratory Reagents & Supplies">Laboratory Reagents & Supplies</option>
-            <option value="Medical Supplies">Medical Supplies</option>
+            <option value="All">All Categories</option>
+            {Object.keys(subCategoryOptions).map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
           </select>
+          {selectedCategory !== "All" && (
+            <select
+              className="subcategory-products"
+              value={selectedSubCategory}
+              onChange={handleSubCategoryChange}
+            >
+              <option value="All">All Subcategories</option>
+              {subCategoryOptions[selectedCategory]?.map((subCategory) => (
+                <option key={subCategory} value={subCategory}>
+                  {subCategory}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
       </div>
 
-      {/* Products Container */}
       <div className="products-container">
         <div className="products-table-container">
           <table className="products-table">
@@ -107,100 +139,43 @@ const Products = () => {
                 <th>Price Per Test</th>
                 <th>Stocks</th>
                 <th>Category</th>
+                <th>Subcategory</th>
                 <th>Expiry Date</th>
               </tr>
             </thead>
             <tbody>
-              {filteredProducts.length > 0 ? (
-                filteredProducts.map((product, index) => {
-                  const isLowStock =
-                    product.quantity < product.criticalStock; // Low stock logic
-                  const isNearlyExpired =
-                    product.expiryDate !== 'N/A' &&
-                    new Date(product.expiryDate).getTime() - new Date().getTime() <=
-                      7 * 24 * 60 * 60 * 1000; // Within 7 days
+                {filteredProducts.length > 0 ? (
+                  filteredProducts.map((product) => (
+                    <tr key={product.id}>
+                      <td className="products-image">
+                        {product.imageUrl ? (
+                          <img
+                            src={product.imageUrl}
+                            alt={product.name}
+                            className="product-image"
+                          />
+                        ) : (
+                          "No Image"
+                        )}
+                      </td>
+                      <td>{product.name}</td>
+                      <td>{product.description}</td>
+                      <td>{`₱${Number(product.pricePerBox || 0).toFixed(2)}`}</td>
+                      <td>{`₱${Number(product.pricePerTest || 0).toFixed(2)}`}</td>
+                      <td>{product.quantity}</td>
+                      <td>{product.category}</td>
+                      <td>{product.subCategory || "N/A"}</td>
+                      <td>{product.expiryDate}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="9">No products available.</td>
+                  </tr>
+                )}
+              </tbody>
 
-                  return (
-                    <React.Fragment key={product.id}>
-                      <tr
-                        className={`${isLowStock ? 'low-stock-highlight' : ''} ${
-                          isNearlyExpired ? 'nearly-expired-highlight' : ''
-                        }`}
-                      >
-                        <td className="products-image">
-                          {product.imageUrl ? (
-                            <img
-                              src={product.imageUrl}
-                              alt={product.name}
-                              className="product-image"
-                            />
-                          ) : (
-                            'No Image'
-                          )}
-                        </td>
-                        <td className="item-name">{product.name}</td>
-                        <td className="item-description">{product.description}</td>
-                        <td className="products-price">
-                          {product.pricePerBox
-                            ? `₱${Number(product.pricePerBox).toFixed(2)}`
-                            : '₱0.00'}
-                        </td>
-                        <td className="products-price">
-                          {product.pricePerTest
-                            ? `₱${Number(product.pricePerTest).toFixed(2)}`
-                            : '₱0.00'}
-                        </td>
-                        <td className="products-stocks">{product.quantity}</td>
-                        <td className="products-category">{product.category}</td>
-                        <td className="products-expiry">{product.expiryDate}</td>
-                        <td className="products-action">
-                          <button
-                            className="toggle-btn"
-                            onClick={() => toggleExpand(index)}
-                          >
-                            {expandedRows === index ? (
-                              <i className="bi bi-chevron-up"></i>
-                            ) : (
-                              <i className="bi bi-chevron-down"></i>
-                            )}
-                          </button>
-                        </td>
-                      </tr>
-
-                      {expandedRows === index && (
-                        <tr>
-                          <td colSpan="8" className="expanded-row">
-                            <div className="expanded-content">
-                              <p>
-                                <strong>Packaging:</strong> {product.packaging}
-                              </p>
-                              <p>
-                                <strong>Pieces Per Box:</strong> {product.piecesPerBox}
-                              </p>
-                              <p>
-                                <strong>Critical Stock:</strong> {product.criticalStock}
-                              </p>
-                              <p>
-                                <strong>Price Per Piece:</strong>{' '}
-                                {Number.isFinite(Number(product.pricePerPiece))
-                                  ? `₱${Number(product.pricePerPiece).toFixed(2)}`
-                                  : 'N/A'}
-                              </p>
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan="8">No products available.</td>
-                </tr>
-              )}
-            </tbody>
-
-          </table>
+           </table>
         </div>
       </div>
     </div>

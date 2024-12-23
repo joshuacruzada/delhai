@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { getDatabase, ref, get } from 'firebase/database';
+import { ref, get } from 'firebase/database';
 import { getAuth } from 'firebase/auth';
 import './CustomerList.css';
+import { database } from "../FirebaseConfig";
 import NewCustomer from './NewCustomer';
 import EditCustomer from './EditCustomer';
 import DeleteWarningModal from './DeleteWarningModal';
+import { cleanUpDuplicates } from "../services/customerCleanup";
 
 const CustomerList = () => {
   const [customers, setCustomers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [role, setRole] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editCustomer, setEditCustomer] = useState(null);
   const [deleteCustomerId, setDeleteCustomerId] = useState(null);
@@ -18,35 +19,27 @@ const CustomerList = () => {
     fetchCustomers();
   }, []);
 
-  const fetchCustomers = () => {
+  const fetchCustomers = async () => {
     const auth = getAuth();
     const user = auth.currentUser;
+    if (!user) return;
 
-    if (user) {
-      const db = getDatabase();
-      const userRoleRef = ref(db, `users/${user.uid}/role`);
+    try {
+      await cleanUpDuplicates(user.uid); // Remove duplicates if any
+      const customersRef = ref(database, `customers/${user.uid}`);
+      const snapshot = await get(customersRef);
 
-      get(userRoleRef).then((snapshot) => {
-        if (snapshot.exists()) {
-          const role = snapshot.val();
-          setRole(role);
-
-          const customerRef = ref(db, `customers/${role}`);
-          get(customerRef).then((customerSnapshot) => {
-            if (customerSnapshot.exists()) {
-              const customerList = Object.entries(customerSnapshot.val()).map(
-                ([key, value]) => ({
-                  id: key,
-                  ...value,
-                })
-              );
-              setCustomers(customerList);
-            } else {
-              setCustomers([]);
-            }
-          });
-        }
-      });
+      if (snapshot.exists()) {
+        const customerList = Object.entries(snapshot.val()).map(([key, value]) => ({
+          id: key,
+          ...value,
+        }));
+        setCustomers(customerList);
+      } else {
+        setCustomers([]);
+      }
+    } catch (error) {
+      console.error("Error fetching customers:", error);
     }
   };
 
@@ -67,12 +60,12 @@ const CustomerList = () => {
   };
 
   const handleCustomerChange = () => {
-    fetchCustomers();
+    fetchCustomers(); // Re-fetch customers after adding, editing, or deleting
   };
 
   const filteredCustomers = customers.filter(
     (customer) =>
-      customer.poNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.poNo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -110,7 +103,7 @@ const CustomerList = () => {
           <tbody>
             {filteredCustomers.map((customer) => (
               <tr key={customer.id}>
-                <td>{customer.poNumber}</td>
+                <td>{customer.poNo}</td>
                 <td>{customer.name}</td>
                 <td>{customer.completeAddress}</td>
                 <td>{customer.email}</td>
@@ -136,7 +129,6 @@ const CustomerList = () => {
             setIsAddModalOpen(false);
             handleCustomerChange();
           }}
-          role={role}
         />
       )}
       {editCustomer && (
@@ -151,7 +143,6 @@ const CustomerList = () => {
       {deleteCustomerId && (
         <DeleteWarningModal
           customerId={deleteCustomerId}
-          role={role}
           onClose={() => {
             setDeleteCustomerId(null);
             handleCustomerChange();

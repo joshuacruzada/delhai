@@ -3,14 +3,20 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 import ViewProductListModal from "./ViewProductListModal";
 import "./NewOrderForm.css";
 import { database } from "../FirebaseConfig";
-import { ref, onValue, update } from "firebase/database";
+import { ref, onValue, update, getDatabase, get  } from "firebase/database";
 import { completeOrderProcess } from "../services/orderUtils";
+import { cleanUpDuplicates } from "../services/customerCleanup";
+import { findCustomerByName, addNewCustomer } from "../services/orderUtils";
+import { getAuth } from 'firebase/auth';
 import { AuthContext } from "../AuthContext";
 
 const NewOrderForm = ({ onBackToOrders }) => {
   const [step, setStep] = useState(1); // Tracks form step (1: Buyer Info, 2: Order Info)
   const [products, setProducts] = useState([]);
   const [order, setOrder] = useState([]);
+  const [customers, setCustomers] = useState([]); // All customers
+  const [filteredCustomers, setFilteredCustomers] = useState([]); // Matched customers
+  const [isSearching, setIsSearching] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const { user } = useContext(AuthContext); // user contains user ID and role
@@ -28,30 +34,72 @@ const NewOrderForm = ({ onBackToOrders }) => {
     terms: "",
     salesman: "",
     email: "",
+    tin: '',    
   });
 
+  const placeholders = {
+    shippedTo: "Shipped To (optional)",
+    tin: "Tin #",
+    drNo: "DR.#",
+    poNo: "P.O #",
+    terms: "Terms",
+    salesman: "Salesman",
+    email: "Email",
+   };
+   
+   useEffect(() => {
+    const fetchCustomers = async () => {
+      const auth = getAuth();
+      const user = auth.currentUser;
+  
+      if (!user) {
+        console.error("User is not authenticated.");
+        return;
+      }
+  
+      const db = getDatabase();
+      const customersRef = ref(db, `customers/${user.uid}`);
+  
+      try {
+        const customerSnapshot = await get(customersRef);
+  
+        if (customerSnapshot.exists()) {
+          const customerList = Object.entries(customerSnapshot.val()).map(
+            ([key, value]) => ({
+              id: key,
+              ...value,
+            })
+          );
+          console.log("Customers retrieved:", customerList);
+          setCustomers(customerList);
+        } else {
+          console.log("No customers found for the current user.");
+          setCustomers([]);
+        }
+      } catch (error) {
+        console.error("Error fetching customers:", error);
+      }
+    };
+  
+    fetchCustomers();
+  }, []);
+  
   useEffect(() => {
-    const productsRef = ref(database, "stocks/");
-    onValue(productsRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const items = Object.keys(data)
-          .map((key) => ({
+      const productsRef = ref(database, "stocks/");
+      onValue(productsRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          const items = Object.keys(data).map((key) => ({
             id: key,
             name: data[key].name || "",
-            description: data[key].description || "No description available",
-            price: parseFloat(data[key].pricePerBox) || 0,
+            packaging: data[key].packaging || "N/A",
+            price: parseFloat(data[key].pricePerBox) || 0, // Correctly map pricePerBox to price
             imageUrl: data[key].imageUrl || "",
             quantity: data[key].quantity || 0,
-            criticalStock: data[key].criticalStock || 0,
-            userId: data[key].userId || null, // Ensure each product is tied to a user
-          }))
-          // Filter products based on the user's ID (if not an admin)
-          .filter((product) => user.role === "admin" || product.userId === user.id);
-
-        setProducts(items);
-      }
-    });
+          }));
+          setProducts(items);
+        }
+      });
   }, [user]);
 
   useEffect(() => {
@@ -59,10 +107,77 @@ const NewOrderForm = ({ onBackToOrders }) => {
     setTotalAmount(total);
   }, [order]);
 
-  const handleBuyerInfoChange = (e) => {
-    const { name, value } = e.target;
-    setBuyerInfo((prevInfo) => ({ ...prevInfo, [name]: value }));
+  
+  const handleCreateOrder = async () => {
+    if (order.length === 0) {
+      alert("No items in the order");
+      return;
+    }
+  
+    try {
+      const userId = user?.uid; // Get the user ID from the authenticated user
+      if (!userId) {
+        throw new Error("User ID is missing. Cannot save the order.");
+      }
+  
+      // Clean up duplicate customers in the database
+      await cleanUpDuplicates(userId);
+  
+      // Check if customer already exists in the database
+      const existingCustomer = await findCustomerByName(buyerInfo.name, userId);
+  
+      if (!existingCustomer) {
+        console.log("Customer not found. Adding as a new customer.");
+        await addNewCustomer(buyerInfo);
+      } else {
+        console.log("Customer already exists:", existingCustomer.name);
+      }
+  
+      // Complete the order process
+      await completeOrderProcess(buyerInfo, order, totalAmount, products, setProducts, userId);
+  
+      alert("Order created successfully!");
+      onBackToOrders(); // Call the parent callback to refresh and close form
+    } catch (error) {
+      console.error("Error creating order:", error);
+      alert("Failed to create order. Please try again.");
+    }
   };
+  
+  
+  
+const [noRecordFound, setNoRecordFound] = useState(false); // New state for "No record" logic
+
+const handleBuyerInfoChange = (e) => {
+  const { name, value } = e.target;
+
+  setBuyerInfo((prevInfo) => ({
+    ...prevInfo,
+    [name]: value,
+  }));
+
+  if (name === "name" && value.trim() !== "") {
+    setIsSearching(true);
+    setTimeout(() => {
+      const matches = customers.filter((customer) =>
+        customer.name.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredCustomers(matches);
+      setIsSearching(false);
+
+      // Set noRecordFound based on matches
+      setNoRecordFound(matches.length === 0);
+    }, 500);
+  } else if (name === "name") {
+    setFilteredCustomers([]);
+    setIsSearching(false);
+    setNoRecordFound(false); // Clear "No record" message when input is empty
+  }
+};
+  
+
+  
+  
 
   const validateBuyerInfo = () => {
     const requiredFields = [
@@ -72,15 +187,16 @@ const NewOrderForm = ({ onBackToOrders }) => {
       "street",
       "barangay",
       "zipCode",
-      "shippedTo",
+      "tin",
       "drNo",
       "poNo",
       "terms",
       "salesman",
       "email",
     ];
-    return requiredFields.every((field) => buyerInfo[field].trim() !== "");
+    return requiredFields.every((field) => buyerInfo[field]?.trim() !== "");
   };
+  
 
   const handleNextStep = () => {
     if (validateBuyerInfo()) {
@@ -105,30 +221,41 @@ const NewOrderForm = ({ onBackToOrders }) => {
   const updatePrice = (productId, newPrice) => {
     setOrder((prevOrder) =>
       prevOrder.map((item) =>
-        item.id === productId ? { ...item, editablePrice: newPrice } : item
+        item.id === productId
+          ? { ...item, editablePrice: newPrice || 0 } // Default to 0 if newPrice is invalid
+          : item
       )
     );
   };
 
   const addProductToOrder = (product) => {
     const existingProduct = order.find((item) => item.id === product.id);
-    const productRef = ref(database, `stocks/${product.id}`);
-
+  
     if (existingProduct) {
       setOrder(
         order.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
         )
       );
-      update(productRef, { quantity: product.quantity - 1 });
     } else {
       setOrder([
         ...order,
-        { ...product, quantity: 1, packaging: "pcs", editablePrice: product.price },
+        {
+          ...product,
+          quantity: 1,
+          packaging: product.packaging || "N/A",
+          editablePrice: parseFloat(product.pricePerBox) || 0, // Use pricePerBox here
+          imageUrl: product.imageUrl || "placeholder.png",
+        },
       ]);
-      update(productRef, { quantity: product.quantity - 1 });
     }
   };
+  
+  
+  
+  
 
   const removeProductFromOrder = (productId) => {
     const productToRemove = order.find((item) => item.id === productId);
@@ -138,22 +265,29 @@ const NewOrderForm = ({ onBackToOrders }) => {
     }
     setOrder(order.filter((item) => item.id !== productId));
   };
-
-  const handleCreateInvoice = async () => {
-    if (order.length === 0) {
-      alert("No items in the order");
-      return;
-    }
-
-    try {
-      await completeOrderProcess(buyerInfo, order, totalAmount, products, setProducts);
-      alert("Order process completed successfully!");
-      onBackToOrders();
-    } catch (error) {
-      console.error("Error creating order:", error);
-      alert("Error creating order. Please try again.");
-    }
+  const handleCustomerSelect = (customer) => {
+    setBuyerInfo({
+      name: customer.name,
+      province: customer.province || "",
+      city: customer.city || "",
+      street: customer.street || "",
+      barangay: customer.barangay || "",
+      zipCode: customer.zipCode || "",
+      tin: customer.tin || "",
+      drNo: customer.drNo || "",
+      poNo: customer.poNo || "",
+      terms: customer.terms || "", 
+      shippedTo: customer.shippedTo || "",
+      salesman: customer.salesman || "",
+      email: customer.email || "",
+    });
+    
+    setFilteredCustomers([]);
+    setIsSearching(false);
+    
   };
+
+ 
 
   return (
     <div>
@@ -177,10 +311,34 @@ const NewOrderForm = ({ onBackToOrders }) => {
                 placeholder="Name"
                 value={buyerInfo.name}
                 onChange={handleBuyerInfoChange}
+                autoComplete="off"
                 className="form-input"
               />
+
+            {/* Dropdown with loading and no-record feedback */}
+            {buyerInfo.name.trim() !== "" && (
+                <div className="suggestion-popup">
+                  {isSearching ? (
+                    <div className="loading-item">Searching...</div>
+                  ) : filteredCustomers.length > 0 ? (
+                    filteredCustomers.map((customer) => (
+                      <div
+                        key={customer.id}
+                        className="suggestion-item"
+                        onClick={() => handleCustomerSelect(customer)}
+                      >
+                        {customer.name}
+                      </div>
+                    ))
+                  ) : (
+                    noRecordFound && <div className="no-record-item">No customer record</div>
+                  )}
+                </div>
+              )}
+
+
             </div>
-            <h3 className="section-title">Address</h3>
+            <h3 className="address-section-title">Address</h3>
             <div className="form-grid">
               {["province", "city", "street", "barangay", "zipCode"].map((field) => (
                 <input
@@ -194,14 +352,14 @@ const NewOrderForm = ({ onBackToOrders }) => {
                 />
               ))}
             </div>
-            <h3 className="section-title">Other Information</h3>
+            <h3 className="other-section-title">Other Information</h3>
             <div className="form-grid">
-              {["shippedTo", "drNo", "poNo", "terms", "salesman", "email"].map((field) => (
+              {["shippedTo","tin", "drNo", "poNo", "terms", "salesman", "email"].map((field) => (
                 <input
                   key={field}
                   type={field === "email" ? "email" : "text"}
                   name={field}
-                  placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                  placeholder={placeholders[field]}
                   value={buyerInfo[field]}
                   onChange={handleBuyerInfoChange}
                   className="form-input"
@@ -217,41 +375,44 @@ const NewOrderForm = ({ onBackToOrders }) => {
         )}
 
         {step === 2 && (
-          <div className="order-info-page">
-            <button className="back-btn" onClick={handlePreviousStep}>
+          <div className="order-info-section">
+            <button className="back-to-buyer-btn" onClick={handlePreviousStep}>
               ← Previous
             </button>
-            <div className="form-header">
-              <h2 className="form-title">Order Information</h2>
-              <p className="form-date">{new Date().toLocaleDateString()}</p>
+            <div className="order-info-header">
+              <h2 className="order-info-title">Order Information</h2>
             </div>
-            <button className="btn-secondary" onClick={() => setIsProductModalOpen(true)}>
-              View Product List
-            </button>
-            <div className="order-list">
+            <div className="view-product-btn-container">
+              <button className="view-product-btn" onClick={() => setIsProductModalOpen(true)}>
+                  View Product List
+              </button>
+            </div>
+              <div className="order-items-container">
               {order.map((item) => (
-                <div key={item.id} className="order-item">
-                  <p className="order-item-name">{item.name}</p>
-                  <div className="quantity-control">
+                <div key={item.id} className="order-item-container">
+                  <img src={item.imageUrl || "placeholder.png"} alt={item.name} className="order-item-image" />
+                  <div className="order-item-details">
+                    <p className="order-item-name">{item.name}</p>
+                    <p className="order-item-packaging">{item.packaging}</p>
+                  </div>
+                  <div className="order-quantity-control">
                     <button onClick={() => updateQuantity(item.id, -1)}>-</button>
                     <input
                       type="text"
                       value={item.quantity}
                       readOnly
-                      className="quantity-input"
+                      className="order-quantity-input"
                     />
                     <button onClick={() => updateQuantity(item.id, 1)}>+</button>
                   </div>
                   <input
                     type="text"
-                    value={item.editablePrice.toFixed(2)}
-                    onChange={(e) =>
-                      updatePrice(item.id, parseFloat(e.target.value) || 0)
-                    }
-                    className="editable-price-input"
+                    value={(item.editablePrice || 0).toFixed(2)} // Display the price
+                    onChange={(e) => updatePrice(item.id, parseFloat(e.target.value) || 0)}
+                    className="order-editable-price-input"
                   />
                   <button
-                    className="remove-item-button"
+                    className="remove-order-item-btn"
                     onClick={() => removeProductFromOrder(item.id)}
                   >
                     <RiDeleteBin6Line />
@@ -259,10 +420,13 @@ const NewOrderForm = ({ onBackToOrders }) => {
                 </div>
               ))}
             </div>
+
             <div className="total-section">
-              <strong>Total Amount:</strong>
-              <p>₱{totalAmount.toFixed(2)}</p>
-              <button className="btn-primary" onClick={handleCreateInvoice}>
+              <div className="total-amount-wrapper">
+                <strong className="total-label">Total Amount:</strong>
+                <p className="total-value">₱{(totalAmount || 0).toFixed(2)}</p>
+              </div>
+              <button className="create-order-btn" onClick={handleCreateOrder }>
                 Create Order
               </button>
             </div>

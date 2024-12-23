@@ -1,19 +1,141 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { ref, onValue } from "firebase/database";
+import { database } from "../FirebaseConfig";
 import "./ViewProductListModal.css";
 
-const ViewProductListModal = ({ products, onAddProduct, onClose }) => {
+const ViewProductListModal = ({ onAddProduct, onClose }) => {
+  const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("ALL");
+
+  const categories = [
+    "ALL",
+    "Rapid Tests",
+    "X-Ray Products",
+    "Laboratory Reagents",
+    "Medical Supplies",
+  ];
+
+  // Fetch products from Firebase
+  useEffect(() => {
+    const productsRef = ref(database, "stocks/");
+    const unsubscribe = onValue(productsRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const productList = Object.keys(data).map((key) => ({
+          id: key,
+          ...data[key],
+        }));
+        setProducts(productList);
+        setFilteredProducts(productList); // Initialize filtered products
+      }
+    });
+
+    return () => unsubscribe(); // Clean up the listener
+  }, []);
+
+  // Filter products based on search term and selected category
+  useEffect(() => {
+    const filterProducts = () => {
+      let filtered = [...products];
+
+      // Filter by category if it's not "ALL"
+      if (selectedCategory !== "ALL") {
+        filtered = filtered.filter(
+          (product) =>
+            product.category &&
+            product.category.trim().toLowerCase() ===
+              selectedCategory.trim().toLowerCase()
+        );
+      }
+
+      // Further filter by search term
+      if (searchTerm) {
+        filtered = filtered.filter((product) =>
+          product.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+
+      setFilteredProducts(filtered);
+    };
+
+    filterProducts();
+  }, [products, searchTerm, selectedCategory]);
+
+  // Handle search input change
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  // Handle category button click
+  const handleCategoryChange = (category) => {
+    setSelectedCategory(category);
+  };
+
   return (
-    <div className="product-list-modal">
-      <div className="modal-content">
-        <h3>Product List</h3>
-        <button onClick={onClose}>Close</button>
-        <div className="product-list">
-          {products.map((product) => (
-            <div key={product.id} className="product-item">
-              <p>{product.name}</p>
-              <button onClick={() => onAddProduct(product)}>Add</button>
-            </div>
+    <div className="modal-overlay">
+      <div className="product-list-modal">
+        <div className="modal-header">
+          <h3 className="modal-title">Product List</h3>
+          <input
+            type="text"
+            placeholder="Search product..."
+            value={searchTerm}
+            onChange={handleSearch}
+            className="search-bar"
+          />
+          <button className="close-btn" onClick={onClose}>
+            Close
+          </button>
+        </div>
+        <div className="category-list">
+          {categories.map((category) => (
+            <button
+              key={category}
+              className={`category-btn ${
+                selectedCategory === category ? "active" : ""
+              }`}
+              onClick={() => handleCategoryChange(category)}
+            >
+              {category}
+            </button>
           ))}
+        </div>
+        <div className="product-list">
+          {filteredProducts.length > 0 ? (
+            filteredProducts.map((product) => (
+              <div
+                key={product.id}
+                className={`product-card ${
+                  product.quantity < product.criticalStock ? "low-stock-order" : ""
+                }`}
+              >
+                <img
+                  src={product.imageUrl}
+                  alt={product.name}
+                  className="product-image"
+                />
+                <div className="product-info">
+                  <span className="product-name">{product.name}</span>
+                  <p className="product-description">{product.description}</p>
+                  <p className="product-price">₱{product.pricePerBox}</p>
+                  <p className="product-packaging">
+                    Packaging: {product.packaging}
+                  </p>
+                  <p className="product-quantity">Stocks: {product.quantity}</p>
+                </div>
+                <button
+                  className="btn btn-success addto-order-btn"
+                  onClick={() => onAddProduct(product)} // Add to order
+                >
+                  Add to Order
+                </button>
+              </div>
+            ))
+          ) : (
+            <p className="no-products-message">No products found.</p>
+          )}
         </div>
       </div>
     </div>

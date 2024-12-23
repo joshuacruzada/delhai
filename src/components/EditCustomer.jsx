@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { getDatabase, ref, update } from 'firebase/database';
 import './EditCustomer.css';
+import { getAuth } from 'firebase/auth';
 
 const EditCustomer = ({ customer, onClose }) => {
   const [formData, setFormData] = useState({ ...customer });
@@ -12,7 +13,15 @@ const EditCustomer = ({ customer, onClose }) => {
 
   const handleSubmit = () => {
     const db = getDatabase();
-    const customerRef = ref(db, `customers/${formData.role}/${formData.id}`);
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (!user) {
+      alert("You must be logged in to update a customer.");
+      return;
+    }
+
+    const customerRef = ref(db, `customers/${user.uid}/${formData.id}`);
 
     update(customerRef, {
       ...formData,
@@ -78,6 +87,14 @@ const EditCustomer = ({ customer, onClose }) => {
             value={formData.zipCode}
             onChange={handleChange}
             placeholder="Zip Code"
+            className="form-control"
+          />
+          <input
+            type="text"
+            name="tin"
+            value={formData.tin}
+            onChange={handleChange}
+            placeholder="TIN #"
             className="form-control"
           />
           <input

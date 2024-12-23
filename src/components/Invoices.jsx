@@ -1,73 +1,135 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext, useRef, useCallback } from 'react';
+import { ref, get } from 'firebase/database';
 import { database } from '../FirebaseConfig';
-import { ref, onValue } from 'firebase/database';
+import { AuthContext } from '../AuthContext';
+import InvoiceDetails from './InvoiceDetails';
 import './Invoices.css';
 
-// Function to format the invoice number with leading zeroes
-const formatInvoiceNumber = (number) => {
-  return String(number).padStart(6, '0');
-};
+// Utility function to format invoice numbers
+const formatInvoiceNumber = (number) => String(number).padStart(6, '0');
 
 const Invoices = () => {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [buyerFilter, setBuyerFilter] = useState('');
   const [dateFilter, setDateFilter] = useState('');
+  const [selectedInvoice, setSelectedInvoice] = useState(null); // Selected invoice details
+  const [showModal, setShowModal] = useState(false);
+  const modalRef = useRef(null);
+  const { user } = useContext(AuthContext);
 
+  // Fetch Invoices, Customers, and Orders
   useEffect(() => {
-    const fetchInvoices = () => {
-      const ordersRef = ref(database, 'orders/');
-      onValue(
-        ordersRef,
-        (snapshot) => {
-          if (snapshot.exists()) {
-            const data = snapshot.val();
-            const allInvoices = Object.keys(data).map((key) => ({
-              id: key,
-              ...data[key],
-            }));
+    const fetchInvoicesAndOrders = async () => {
+      if (!user) return;
 
-            // Generate and assign formatted invoice numbers
-            allInvoices.forEach((invoice, index) => {
-              if (!invoice.buyerInfo?.invoiceNumber) {
-                // Assign a sequential invoice number if it doesn’t already have one
-                const newInvoiceNumber = formatInvoiceNumber(index + 1);
-                invoice.buyerInfo = {
-                  ...invoice.buyerInfo,
-                  invoiceNumber: newInvoiceNumber,
-                };
-              }
-            });
+      const invoicesRef = ref(database, `invoices/${user.uid}`);
+      const customersRef = ref(database, `customers/${user.uid}`);
+      const ordersRef = ref(database, `orders/${user.uid}`);
 
-            setInvoices(allInvoices);
-          } else {
-            setInvoices([]);
-          }
-          setLoading(false);
-        },
-        (error) => {
-          console.error("Error fetching invoices:", error);
-          setLoading(false);
-        }
-      );
+      try {
+        setLoading(true);
+        setError(null);
+
+        const [invoicesSnapshot, customersSnapshot, ordersSnapshot] = await Promise.all([
+          get(invoicesRef),
+          get(customersRef),
+          get(ordersRef),
+        ]);
+
+        const invoicesData = invoicesSnapshot.exists()
+          ? Object.entries(invoicesSnapshot.val()).map(([key, value]) => ({ id: key, ...value }))
+          : [];
+        const customersData = customersSnapshot.exists() ? customersSnapshot.val() : {};
+        const ordersData = ordersSnapshot.exists() ? ordersSnapshot.val() : {};
+
+        const mergedInvoices = invoicesData.map((invoice, index) => {
+          const customer = customersData[invoice.customerId] || {};
+          const order = ordersData[invoice.orderId] || {};
+
+          return {
+            ...invoice,
+            invoiceNumber: formatInvoiceNumber(index + 1),
+            customerName: customer.name || 'N/A',
+            customerAddress: customer.completeAddress || 'N/A',
+            tin: customer.tin || 'N/A',
+            shippedTo: customer.shippedTo || 'N/A',
+            drNo: customer.drNo || 'N/A',
+            poNo: customer.poNo || 'N/A',
+            terms: customer.terms || 'N/A',
+            salesman: customer.salesman || 'N/A',
+            totalAmount: invoice.totalAmount || 0,
+            paymentStatus: order.paymentStatus || 'Pending',
+            products: invoice.orderDetails?.map((product) => ({
+              id: product.id || 'N/A',
+              name: product.name || 'N/A',
+              quantity: product.quantity || 0,
+              price: product.price || 0,
+              imageUrl: product.imageUrl || '',
+              packaging: product.packaging || ''
+            })) || [],
+          };
+        });
+
+        setInvoices(mergedInvoices);
+      } catch (error) {
+        console.error('Error fetching invoices, customers, or orders:', error);
+        setError('Failed to load invoices. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
     };
 
-    fetchInvoices();
+    fetchInvoicesAndOrders();
+  }, [user]);
+
+  // Modal Close on Outside Click
+  const handleOutsideClick = useCallback((event) => {
+    if (modalRef.current && !modalRef.current.contains(event.target)) {
+      closeInvoiceModal();
+    }
   }, []);
 
-  // Filter invoices based on search, buyer, and date filters
+  useEffect(() => {
+    if (showModal) {
+      document.addEventListener('mousedown', handleOutsideClick);
+    } else {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, [showModal, handleOutsideClick]);
+
+  const openInvoiceModal = (invoice) => {
+    setSelectedInvoice(invoice);
+    setShowModal(true);
+  };
+
+  const closeInvoiceModal = () => {
+    setSelectedInvoice(null);
+    setShowModal(false);
+  };
+
+  // Filtered Invoices
   const filteredInvoices = invoices.filter((invoice) => {
-    const matchesSearch = invoice.buyerInfo?.invoiceNumber?.toLowerCase().includes(searchQuery.toLowerCase()) ?? true;
-    const matchesBuyer = buyerFilter ? (invoice.buyerInfo?.soldTo?.toLowerCase().includes(buyerFilter.toLowerCase()) ?? false) : true;
-    const matchesDate = dateFilter ? invoice.date?.startsWith(dateFilter) : true;
+    const matchesSearch = invoice.invoiceNumber
+      ?.toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesBuyer = buyerFilter
+      ? invoice.customerName?.toLowerCase().includes(buyerFilter.toLowerCase())
+      : true;
+    const matchesDate = dateFilter ? invoice.issuedAt?.startsWith(dateFilter) : true;
+
     return matchesSearch && matchesBuyer && matchesDate;
   });
 
   return (
     <div className="invoices-page">
       <h1 className="invoices-header">Invoices</h1>
-      
       <div className="invoices-controls">
         <input
           type="text"
@@ -76,7 +138,6 @@ const Invoices = () => {
           onChange={(e) => setSearchQuery(e.target.value)}
           className="invoices-search"
         />
-        
         <input
           type="text"
           placeholder="Filter by Buyer"
@@ -84,7 +145,6 @@ const Invoices = () => {
           onChange={(e) => setBuyerFilter(e.target.value)}
           className="invoices-search"
         />
-
         <input
           type="date"
           placeholder="Filter by Date"
@@ -95,13 +155,16 @@ const Invoices = () => {
       </div>
 
       {loading ? (
-        <p>Loading invoices...</p>
+        <div className="spinner">Loading...</div>
+      ) : error ? (
+        <div className="error-message">{error}</div>
       ) : (
         <table className="invoices-table">
           <thead>
             <tr>
               <th>Invoice Number</th>
-              <th>Sold To</th>
+              <th>Name</th>
+              <th>PO#</th>
               <th>Total Amount</th>
               <th>Payment Status</th>
             </tr>
@@ -109,9 +172,10 @@ const Invoices = () => {
           <tbody>
             {filteredInvoices.length > 0 ? (
               filteredInvoices.map((invoice) => (
-                <tr key={invoice.id}>
-                  <td>{invoice.buyerInfo?.invoiceNumber || 'N/A'}</td>
-                  <td>{invoice.buyerInfo?.soldTo || 'N/A'}</td>
+                <tr key={invoice.id} onClick={() => openInvoiceModal(invoice)} style={{ cursor: 'pointer' }}>
+                  <td>{invoice.invoiceNumber || 'N/A'}</td>
+                  <td>{invoice.customerName || 'N/A'}</td>
+                  <td>{invoice.poNo || 'N/A'}</td>
                   <td>₱{(invoice.totalAmount || 0).toFixed(2)}</td>
                   <td className={`status ${invoice.paymentStatus?.toLowerCase() || 'pending'}`}>
                     {invoice.paymentStatus || 'Pending'}
@@ -120,11 +184,22 @@ const Invoices = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="4" className="no-results">No invoices available.</td>
+                <td colSpan="5" className="no-results">
+                  No invoices available.
+                </td>
               </tr>
             )}
           </tbody>
         </table>
+      )}
+
+      {/* Modal for Invoice Details */}
+      {showModal && selectedInvoice && (
+        <div className="modal-overlay">
+          <div className="modal-content" ref={modalRef}>
+            <InvoiceDetails invoice={selectedInvoice} onClose={closeInvoiceModal} />
+          </div>
+        </div>
       )}
     </div>
   );

@@ -97,14 +97,14 @@
 .inventory-table th {
   background-color: #fff;
   color: #373A40;
-  font-size: 14px;
+  font-size: 0.9rem;
   font-weight: 600;
   text-transform: uppercase;
   /* To make headers stand out */
 }
 
 .inventory-table td {
-  font-size: 16px;
+  font-size: 0.9rem;
   color: #5a5d63;
 }
 

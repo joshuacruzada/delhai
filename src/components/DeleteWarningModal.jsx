@@ -1,13 +1,22 @@
 import React, { useState } from 'react';
 import { getDatabase, ref, remove } from 'firebase/database';
+import { getAuth } from 'firebase/auth';
 import './DeleteWarningModal.css';
 
-const DeleteWarningModal = ({ customerId, role, onClose }) => {
+const DeleteWarningModal = ({ customerId, onClose }) => {
   const [isDeleted, setIsDeleted] = useState(false);
 
   const handleDelete = () => {
     const db = getDatabase();
-    const customerRef = ref(db, `customers/${role}/${customerId}`);
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (!user) {
+      alert('You must be logged in to delete a customer.');
+      return;
+    }
+
+    const customerRef = ref(db, `customers/${user.uid}/${customerId}`);
 
     remove(customerRef)
       .then(() => {
