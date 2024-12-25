@@ -176,7 +176,7 @@ const EditProduct = () => {
           <div className="image-section">
             <div className="image-preview">
               {product.imageUrl ? (
-                <img src={product.imageUrl} alt="Product" className="product-image" />
+                <img src={product.imageUrl} alt="Product" className="editproduct-image" />
               ) : (
                 <p className="photo-placeholder">No image available</p>
               )}

@@ -183,9 +183,33 @@
 }
   
   .order-items-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
     border-top: 1px solid #ccc;
     margin-top: 20px;
     padding-top: 20px;
+    overflow-y: auto;
+    padding-right: 10px;
+    max-height: 260px;
+  }
+  /* Scrollbar Styles for Order Items */
+  .order-items-container::-webkit-scrollbar {
+    width: 8px; /* Width of the scrollbar */
+  }
+
+  .order-items-container::-webkit-scrollbar-track {
+    background: #f9f9f9; 
+    border-radius: 4px;
+  }
+
+  .order-items-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1; 
+    border-radius: 4px;
+  }
+
+  .order-items-container::-webkit-scrollbar-thumb:hover {
+    background: #9b9b9b; 
   }
   
   .order-item-row {
@@ -200,11 +224,6 @@
     object-fit: cover;
   }
   
-  .order-items-container {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
   
   .order-item-container {
     display: grid;

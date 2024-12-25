@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { ref, onValue } from "firebase/database";
 import { database } from "../FirebaseConfig";
 import "./ViewProductListModal.css";
@@ -8,6 +8,7 @@ const ViewProductListModal = ({ onAddProduct, onClose }) => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("ALL");
+  const modalRef = useRef(null);
 
   const categories = [
     "ALL",
@@ -73,9 +74,20 @@ const ViewProductListModal = ({ onAddProduct, onClose }) => {
     setSelectedCategory(category);
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+        if (modalRef.current && !modalRef.current.contains(event.target)) {
+            onClose(); // Close modal on outside click
+        }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+}, [onClose]);
+
   return (
     <div className="modal-overlay">
-      <div className="product-list-modal">
+      <div className="product-list-modal"  ref={modalRef}>
         <div className="modal-header">
           <h3 className="modal-title">Product List</h3>
           <input
@@ -85,9 +97,6 @@ const ViewProductListModal = ({ onAddProduct, onClose }) => {
             onChange={handleSearch}
             className="search-bar"
           />
-          <button className="close-btn" onClick={onClose}>
-            Close
-          </button>
         </div>
         <div className="category-list">
           {categories.map((category) => (
@@ -114,7 +123,7 @@ const ViewProductListModal = ({ onAddProduct, onClose }) => {
                 <img
                   src={product.imageUrl}
                   alt={product.name}
-                  className="product-image"
+                  className="productlistmodal-image"
                 />
                 <div className="product-info">
                   <span className="product-name">{product.name}</span>
