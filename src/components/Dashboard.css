@@ -135,15 +135,6 @@
   min-height: 150px;
 }
 
-/* Analytics Container */
-.analytics-container {
-  padding: 15px;
-  border-radius: 10px;
-  background-color: #fff;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 100%;
-}
 
 /* Responsive Design */
 @media (max-width: 768px) {

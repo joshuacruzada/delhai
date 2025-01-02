@@ -145,15 +145,16 @@
 .btn-confirm:hover{
   background-color: #d82f40;
 }
-.btn-no{
+.btn-order-cancel{
   background-color: #4D869C;
   color: whitesmoke;
   border-radius: 10px;
   border: none;
   padding-left: 3vh;
   padding-right: 3vh;
+  margin-left: 10px;
 }
-.btn-no:hover{
+.btn-order-cancel:hover{
   background-color: #65aeca;
 }
 

@@ -16,6 +16,7 @@ const NewCustomer = ({ onClose }) => {
     poNo: '',
     email: '',
     salesman: '',
+    terms: '', 
   });
   const [isAdded, setIsAdded] = useState(false);
 

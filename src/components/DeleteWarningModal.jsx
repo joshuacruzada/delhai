@@ -59,10 +59,10 @@ const DeleteWarningModal = ({ customerId, onClose }) => {
         <div className="delete-warning-modal-content">
           <h3>Are you sure you want to delete this customer?</h3>
           <p>This action cannot be undone.</p>
-          <button onClick={handleDelete} className="btn btn-danger">
+          <button onClick={handleDelete} className="btn-confirm">
             Delete
           </button>
-          <button onClick={onClose} className="btn btn-secondary">
+          <button onClick={onClose} className="btn-order-cancel">
             Cancel
           </button>
         </div>

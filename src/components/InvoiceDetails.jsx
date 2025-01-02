@@ -36,7 +36,7 @@ const InvoiceDetails = ({ invoice, onClose }) => {
               <p><strong>NAME:</strong> {invoice.customerName || 'N/A'}</p>
               <p><strong>ADDRESS:</strong> {invoice.customerAddress || 'N/A'}</p>
               <p><strong>TIN NO:</strong> {invoice.tin || 'N/A'}</p>
-              <p><strong>SHIPPED TO:</strong> {invoice.shippedTo || 'N/A'}</p>
+              <p><strong>SHIPPED TO:</strong> {invoice.shippedTo || ''}</p>
             </div>
 
             {/* Right Side */}
@@ -44,14 +44,15 @@ const InvoiceDetails = ({ invoice, onClose }) => {
               <p><strong>DR. NO.:</strong> {invoice.drNo || 'N/A'}</p>
               <p>
                 <strong>DATE:</strong> 
-                {invoice.createdAt 
-                  ? new Date(invoice.createdAt).toLocaleDateString('en-GB', {
+                {invoice.issuedAt 
+                  ? new Date(invoice.issuedAt).toLocaleDateString('en-GB', {
                       day: '2-digit',
                       month: 'short',
                       year: 'numeric',
                     }).replace(/ /g, '-') 
                   : 'N/A'}
               </p>
+
               <p><strong>TERMS:</strong> {invoice.terms || 'N/A'}</p>
               <p><strong>SALESMAN:</strong> {invoice.salesman || 'N/A'}</p>
               <p><strong>PO NO.:</strong> {invoice.poNo || 'N/A'}</p>

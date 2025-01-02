@@ -113,7 +113,7 @@ const Orders = () => {
           customerName: customer.name || 'N/A',
           customerAddress: customer.completeAddress || 'N/A',
           tin: customer.tin || 'N/A',
-          shippedTo: customer.shippedTo || 'N/A',
+          shippedTo: customer.shippedTo || '',
           drNo: customer.drNo || 'N/A',
           poNo: customer.poNo || 'N/A',
           terms: customer.terms || 'N/A',
@@ -211,6 +211,7 @@ const Orders = () => {
   const openDeleteModal = (orderId) => {
     setSelectedOrderId(orderId);
     setShowDeleteModal(true);
+    setActiveDropdown(false)
   };
 
   // ** Confirm Deletion **
@@ -369,7 +370,7 @@ const Orders = () => {
               <button className="btn-confirm" onClick={confirmDelete}>
                 Yes
               </button>
-              <button className="btn-cancel" onClick={closeDeleteModal}>
+              <button className="btn-order-cancel" onClick={closeDeleteModal}>
                 No
               </button>
             </div>

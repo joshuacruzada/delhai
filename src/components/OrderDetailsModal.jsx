@@ -22,7 +22,7 @@ const OrderDetailsModal = ({ order, onClose }) => {
             <p><strong>NAME:</strong> {order.customerName || 'N/A'}</p>
             <p><strong>ADDRESS:</strong> {order.customerAddress || 'N/A'}</p>
             <p><strong>TIN NO:</strong> {order.tin || 'N/A'}</p>
-            <p><strong>SHIPPED TO:</strong> {order.shippedTo || 'N/A'}</p>
+            <p><strong>SHIPPED TO:</strong> {order.shippedTo || ''}</p>
             <p><strong>DR. NO.:</strong> {order.drNo || 'N/A'}</p>
           </div>
           <div className="info-right">

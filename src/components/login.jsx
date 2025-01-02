@@ -29,7 +29,7 @@ const LoginForm = ({ onLogin }) => {
     e.preventDefault();
     setErrors({ identifier: '', password: '', general: '' });
     setSuccessMessage('');
-
+  
     if (!formData.identifier) {
       setErrors((prev) => ({ ...prev, identifier: 'Please enter your username or email.' }));
       return;
@@ -38,74 +38,97 @@ const LoginForm = ({ onLogin }) => {
       setErrors((prev) => ({ ...prev, password: 'Please enter your password.' }));
       return;
     }
-
+  
     try {
       let emailToUse = formData.identifier;
-
+  
+      // Step 1: Check if identifier is an email
       if (!/\S+@\S+\.\S+/.test(formData.identifier)) {
-        const usernameRef = ref(database, 'usernames/' + formData.identifier);
+        console.log('🔍 Looking up username in /usernames');
+        const usernameRef = ref(database, `usernames/${formData.identifier}`);
         const usernameSnapshot = await get(usernameRef);
-
+      
         if (usernameSnapshot.exists()) {
-          const uid = usernameSnapshot.val().uid;
-          const userRef = ref(database, 'users/' + uid);
-          const userSnapshot = await get(userRef);
-          if (userSnapshot.exists()) {
-            emailToUse = userSnapshot.val().email;
+          let uid = usernameSnapshot.val();
+          console.log('✅ UID found for username:', uid);
+      
+          // Handle case where the usernameSnapshot returns an object
+          if (typeof uid === 'object' && uid.uid) {
+            uid = uid.uid; // Extract uid from the object
+          }
+      
+          if (typeof uid === 'string') {
+            // Fetch email from user node
+            const userRef = ref(database, `users/${uid}`);
+            const userSnapshot = await get(userRef);
+      
+            if (userSnapshot.exists()) {
+              emailToUse = userSnapshot.val().email;
+              console.log('✅ Email found for UID:', emailToUse);
+            } else {
+              setErrors((prev) => ({ ...prev, identifier: '❌ User data not found for this username.' }));
+              return;
+            }
           } else {
-            setErrors((prev) => ({ ...prev, identifier: 'User data not found' }));
+            setErrors((prev) => ({ ...prev, identifier: '❌ Invalid UID format.' }));
             return;
           }
         } else {
-          setErrors((prev) => ({ ...prev, identifier: 'Username not found' }));
+          setErrors((prev) => ({ ...prev, identifier: '❌ Username not found in the database.' }));
           return;
         }
       }
-
+      
+  
+      // Step 2: Authenticate User
       const userCredential = await signInWithEmailAndPassword(auth, emailToUse, formData.password);
       const user = userCredential.user;
-
-      const userRef = ref(database, 'users/' + user.uid);
+  
+      console.log('✅ Authenticated User:', user.uid);
+  
+      // Step 3: Fetch User Details
+      const userRef = ref(database, `users/${user.uid}`);
       const snapshot = await get(userRef);
-
+  
       if (snapshot.exists()) {
         const userData = snapshot.val();
         localStorage.setItem('authToken', user.accessToken);
         localStorage.setItem('userRole', userData.role);
         localStorage.setItem('userId', user.uid);
         localStorage.setItem('userName', userData.name);
-
+  
+        // Log the login action
         const auditLogEntry = {
           userId: user.uid,
           userName: userData.name,
           action: "User Logged In",
           timestamp: new Date().toISOString(),
         };
-
         const auditRef = ref(database, 'auditTrail/');
         await push(auditRef, auditLogEntry);
-
-        setSuccessMessage(`Logged in successfully as ${userData.role}`);
+  
+        setSuccessMessage(`✅ Logged in successfully as ${userData.role}`);
         setTimeout(() => {
           onLogin(userData.role);
           navigate('/');
         }, 2000);
       } else {
-        setErrors((prev) => ({ ...prev, general: 'User data not found' }));
+        setErrors((prev) => ({ ...prev, general: '❌ User data not found.' }));
       }
     } catch (error) {
+      console.error('❌ Login Error:', error.code, error.message);
       if (error.code === 'auth/wrong-password') {
-        setErrors((prev) => ({ ...prev, password: 'Invalid password. Please try again.' }));
+        setErrors((prev) => ({ ...prev, password: '❌ Invalid password. Please try again.' }));
       } else if (error.code === 'auth/user-not-found') {
-        setErrors((prev) => ({ ...prev, identifier: 'No user found with this email or username.' }));
+        setErrors((prev) => ({ ...prev, identifier: '❌ No user found with this email or username.' }));
       } else if (error.code === 'auth/invalid-email') {
-        setErrors((prev) => ({ ...prev, identifier: 'Invalid email format.' }));
+        setErrors((prev) => ({ ...prev, identifier: '❌ Invalid email format.' }));
       } else {
-        setErrors((prev) => ({ ...prev, general: 'Error logging in. Please try again later.' }));
+        setErrors((prev) => ({ ...prev, general: '❌ Error logging in. Please try again later.' }));
       }
     }
   };
-
+  
   return (
     <div className="login-page-wrapper d-flex justify-content-center align-items-center">
       <div className="card p-5 shadow-lg login-card text-center">

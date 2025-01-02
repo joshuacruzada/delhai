@@ -4,7 +4,8 @@ import { database } from '../FirebaseConfig';
 import { ref, onValue } from 'firebase/database';
 import './Dashboard.css';
 import ActivityLog from './ActivityLog';
-import Analytics from './Analytics';
+import SalesChart from './SalesChart';
+import TargetAndSummary from './TargetAndSummary';
 
 const safeString = (value) => (typeof value === "string" ? value.trim() : "");
 
@@ -168,10 +169,13 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Right Section for Analytics */}
+        {/* Right Section for SalesChart and TargetSales */}
         <div className="right-section">
-          <div className="analytics-container">
-            <Analytics showExportButtons={false} />
+          <div className="sales-chart-container">
+            <SalesChart />
+          </div>
+          <div className="target-summary-container">
+            <TargetAndSummary />
           </div>
         </div>
       </div>

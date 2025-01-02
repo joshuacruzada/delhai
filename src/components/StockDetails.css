@@ -111,7 +111,8 @@
 }
 
 .view-history-btn {
-  background-color: #4D869C; /* Keep original button color */
+  background-color: #4D869C;
+  width: 15%; /* Keep original button color */
   border: none;
   color: white;
   padding: 10px 20px;

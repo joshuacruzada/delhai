@@ -49,7 +49,7 @@ export const addNewCustomer = async (buyerInfo) => {
     province: buyerInfo.province,
     zipCode: buyerInfo.zipCode,
     email: buyerInfo.email,
-    tin: buyerInfo.tin || "", // Ensure default empty string if not provided
+    tin: buyerInfo.tin || "",
     drNo: buyerInfo.drNo || "",
     poNo: buyerInfo.poNo || "",
     terms: buyerInfo.terms || "", 
@@ -134,7 +134,7 @@ export const createInvoice = async (orderId, customerId, totalAmount, orderData)
     const newInvoiceRef = push(invoicesRef);
     const invoiceData = {
       orderId,
-      customerId, // Only save the customerId, not the full buyerInfo
+      customerId, 
       invoiceNumber: newInvoiceNumber,
       totalAmount,
       paymentStatus: orderDataFromDB.paymentStatus || "Pending", // Link to the order's status

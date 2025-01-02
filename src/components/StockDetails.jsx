@@ -79,7 +79,7 @@ const StockDetails = () => {
           className="view-history-btn"
           onClick={() => navigate('/stock-history')}
         >
-          View Stock History (In and Out)
+          View Stock History
         </Button>
       </div>
 

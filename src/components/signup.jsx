@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { get,ref, set } from "firebase/database";
+import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
+import { get, ref, set } from "firebase/database";
 import { auth, database } from '../FirebaseConfig';
 import './signup.css';
 
@@ -11,11 +11,12 @@ const SignUpForm = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'employee',
+    role: 'employee', // Role remains intact
   });
 
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const changeHandler = (e) => {
     const { name, value } = e.target;
@@ -26,44 +27,54 @@ const SignUpForm = () => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
-  
+    setIsLoading(true);
+
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match!');
+      setError('❌ Passwords do not match!');
+      setIsLoading(false);
       return;
     }
-  
+
     try {
-      // Check if the username already exists in the "usernames" node
+      // ✅ Check if the username already exists in the database
       const usernameRef = ref(database, `usernames/${formData.username}`);
       const usernameSnapshot = await get(usernameRef);
-  
+
       if (usernameSnapshot.exists()) {
-        setError('Username already exists. Please choose another.');
+        setError('❌ Username already exists. Please choose another.');
+        setIsLoading(false);
         return;
       }
-  
-      // Step 1: Register the user with Firebase Authentication
+
+      // ✅ Register the user with Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         formData.email,
         formData.password
       );
       const user = userCredential.user;
-  
-      // Step 2: Store additional user data in the Realtime Database
+
+      // ✅ Send an email verification link
+      await sendEmailVerification(user);
+
+      // ✅ Store additional user data in the Realtime Database
       await set(ref(database, `users/${user.uid}`), {
         username: formData.username,
         name: formData.name,
         email: formData.email,
-        role: formData.role,
+        role: formData.role, // Role is preserved
+        isEmailVerified: false, // Initial flag for email verification
       });
-  
-      // Step 3: Save the username as a separate reference for validation
+
+      // ✅ Save username reference
       await set(ref(database, `usernames/${formData.username}`), {
         uid: user.uid,
       });
-  
-      setSuccess('Account created successfully! You can now log in.');
+
+      setSuccess(
+        '✅ Account created successfully! A verification email has been sent to your email address. Please verify your email before logging in.'
+      );
+
       setFormData({
         username: '',
         name: '',
@@ -73,14 +84,16 @@ const SignUpForm = () => {
         role: 'employee',
       });
     } catch (err) {
+      console.error('❌ Error during signup:', err.message);
       if (err.code === 'auth/email-already-in-use') {
-        setError('The email address is already in use.');
+        setError('❌ The email address is already in use.');
       } else {
-        setError('Error signing up: ' + err.message);
+        setError('❌ Error signing up: ' + err.message);
       }
+    } finally {
+      setIsLoading(false);
     }
   };
-  
 
   return (
     <div className="signup-page-wrapper d-flex justify-content-center align-items-center">
@@ -186,7 +199,9 @@ const SignUpForm = () => {
           {error && <div className="signup-alert error">{error}</div>}
           {success && <div className="signup-alert success">{success}</div>}
 
-          <button type="submit" className="signup-btn">Sign Up</button>
+          <button type="submit" className="signup-btn" disabled={isLoading}>
+            {isLoading ? 'Processing...' : 'Sign Up'}
+          </button>
 
           <div className="signup-footer text-center mt-3">
             <p>Already have an account? <a href="/login-page" className="signup-link">Login</a></p>

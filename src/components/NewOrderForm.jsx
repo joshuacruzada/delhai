@@ -131,6 +131,16 @@ const NewOrderForm = ({ onBackToOrders }) => {
         await addNewCustomer(buyerInfo);
       } else {
         console.log("Customer already exists:", existingCustomer.name);
+        
+        // Update existing customer with new terms
+        const db = getDatabase();
+        const customerRef = ref(db, `customers/${userId}/${existingCustomer.id}`);
+        
+        await update(customerRef, {
+          terms: buyerInfo.terms || "", // Update terms if available
+        });
+        
+        console.log("Customer terms updated successfully:", buyerInfo.terms);
       }
   
       // Complete the order process

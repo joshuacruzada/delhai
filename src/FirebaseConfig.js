@@ -1,10 +1,10 @@
 // Import Firebase SDK
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { getDatabase } from "firebase/database";
 import { getStorage } from "firebase/storage";
 
-// Your Firebase configuration
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAm6_V2n5ArhWDNMqWThKY9IS2NLi_O4X4",
   authDomain: "delhai-database.firebaseapp.com",
@@ -18,14 +18,17 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-
-// Initialize Firebase Authentication
 const auth = getAuth(app);
-
-// Initialize Firebase Realtime Database
 const database = getDatabase(app);
-
-// Initialize Firebase Storage
 const storage = getStorage(app);
+
+// ✅ Enable persistence to avoid session issues
+setPersistence(auth, browserLocalPersistence)
+  .then(() => {
+    console.log('✅ Auth persistence set to local.');
+  })
+  .catch((error) => {
+    console.error('❌ Error setting persistence:', error.message);
+  });
 
 export { auth, database, storage };
