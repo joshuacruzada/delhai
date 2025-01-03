@@ -17,6 +17,7 @@ const NewCustomer = ({ onClose }) => {
     email: '',
     salesman: '',
     terms: '', 
+    phone: '',
   });
   const [isAdded, setIsAdded] = useState(false);
 
@@ -168,6 +169,14 @@ const NewCustomer = ({ onClose }) => {
               name="zipCode"
               placeholder="Zip Code"
               value={formData.zipCode}
+              onChange={handleChange}
+            />
+            <input
+              type="text"
+              className="form-control"
+              name="phone"
+              placeholder="Phone (e.g. +63XXXXXXXXXX)"
+              value={formData.phone}
               onChange={handleChange}
             />
             <input

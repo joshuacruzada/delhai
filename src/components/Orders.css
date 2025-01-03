@@ -158,15 +158,6 @@
   background-color: #65aeca;
 }
 
-.modal-content {
-  background: white;
-  padding: 20px;
-  width: 24%;
-  border-radius: 8px;
-  text-align: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
-}
-
 
 /* Filter Tabs Container */
 .filter-tabs {
@@ -287,8 +278,28 @@
   color: #a71d2a;
 }
 
+/* Button Container */
+.customer-order-link-container {
+  display: flex;
+  justify-content: flex-end; /* Aligns button to the right */
 
+}
 
+/* Button Styling */
+.customer-order-link-container .btn {
+  margin-right: 5px; /* Adds a slight right margin */
+  padding: 8px 12px; /* Adjust padding for better spacing */
+  font-size: 14px; /* Optional: Adjust font size */
+}
+
+.customer-order-link-btn{
+    background-color: #4D869C !important;
+    margin-top: 10px !important;
+}
+
+.customer-order-link-btn:hover{
+ background-color: #5098b4 !important;
+}
 /* Responsive Design */
 @media (max-width: 768px) {
   .actions-container {

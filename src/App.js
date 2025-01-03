@@ -10,13 +10,14 @@ import SidebarEmployee from './components/SidebarEmployee';
 import Dashboard from './components/Dashboard';
 import Orders from './components/Orders';
 import CustomerList from './components/CustomerList';
+import CustomerOrderForm from './components/CustomerOrderForm';
 import Invoices from './components/Invoices';
 import Products from './components/Products';
 import Inventory from './components/Inventory';
 import Analytics from './components/Analytics';
 import StockDetails from './components/StockDetails';
 import StockHistory from './components/StockHIstory'
-import LowStocksTable from './components/LowStocksTable'; // Import LowStocksTable component
+import LowStocksTable from './components/LowStocksTable';
 import OutStockTable from './components/OutStockTable';
 import AddNewProduct from './components/AddNewProduct';
 import EditProduct from './components/EditProduct';
@@ -137,6 +138,8 @@ function App() {
             <Route path="/login-page" element={<LoginForm onLogin={handleLogin} />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/signup-page" element={<SignUpForm />} />
+            <Route path="/user/:userId/customer-order" element={<CustomerOrderForm />} />
+
             <Route path="/" element={<ProtectedRoute element={Dashboard} allowedRoles={['admin', 'employee']} />} />
             <Route path="/invoices" element={<ProtectedRoute element={Invoices} allowedRoles={['admin', 'employee']} />} />
             <Route path="/products" element={<ProtectedRoute element={Products} allowedRoles={['admin', 'employee']} />} />

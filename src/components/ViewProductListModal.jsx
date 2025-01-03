@@ -87,30 +87,42 @@ const ViewProductListModal = ({ onAddProduct, onClose }) => {
 
   return (
     <div className="modal-overlay">
-      <div className="product-list-modal"  ref={modalRef}>
-        <div className="modal-header">
-          <h3 className="modal-title">Product List</h3>
-          <input
-            type="text"
-            placeholder="Search product..."
-            value={searchTerm}
-            onChange={handleSearch}
-            className="search-bar"
-          />
-        </div>
-        <div className="category-list">
-          {categories.map((category) => (
-            <button
-              key={category}
-              className={`category-btn ${
-                selectedCategory === category ? "active" : ""
-              }`}
-              onClick={() => handleCategoryChange(category)}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
+  <div className="product-list-modal" ref={modalRef}>
+    {/* Modal Header */}
+    <div className="modal-header d-flex justify-content-between align-items-center">
+      <h3 className="modal-title">Product List</h3>
+      <button className="close-modal-btn" onClick={onClose}>
+        &times;
+      </button>
+    </div>
+
+    {/* Search Bar */}
+    <div className="search-container">
+      <input
+        type="text"
+        placeholder="Search product..."
+        value={searchTerm}
+        onChange={handleSearch}
+        className="search-bar"
+      />
+    </div>
+
+    {/* Category List */}
+    <div className="category-list">
+      {categories.map((category) => (
+        <button
+          key={category}
+          className={`category-btn ${
+            selectedCategory === category ? "active" : ""
+          }`}
+          onClick={() => handleCategoryChange(category)}
+        >
+          {category}
+        </button>
+      ))}
+    </div>
+
+    {/* Product List */}
         <div className="product-list">
           {filteredProducts.length > 0 ? (
             filteredProducts.map((product) => (
@@ -136,7 +148,7 @@ const ViewProductListModal = ({ onAddProduct, onClose }) => {
                 </div>
                 <button
                   className="btn btn-success addto-order-btn"
-                  onClick={() => onAddProduct(product)} // Add to order
+                  onClick={() => onAddProduct(product)}
                 >
                   Add to Order
                 </button>
@@ -148,6 +160,7 @@ const ViewProductListModal = ({ onAddProduct, onClose }) => {
         </div>
       </div>
     </div>
+
   );
 };
 

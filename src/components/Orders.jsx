@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useContext, useCallback, useRef } from "react";
 import "./Orders.css";
 import NewOrderForm from "./NewOrderForm";
-import { FaCheck, FaTimes, FaTrashAlt, FaBan, FaEllipsisV } from "react-icons/fa";
+import { FaCheck, FaTimes, FaTrashAlt, FaBan, FaEllipsisV, FaLink } from "react-icons/fa";
 import { database } from "../FirebaseConfig";
 import { ref, get, update, remove } from "firebase/database";
 import { AuthContext } from "../AuthContext";
 import OrderDetailsModal from './OrderDetailsModal';
+import CustomerOrderLinkModal from "./CustomerOrderLinkModal";
+import RequestOrder from "./RequestOrder";
 
 
 const Orders = () => {
@@ -13,17 +15,20 @@ const Orders = () => {
   const [orderHistory, setOrderHistory] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("All");
+  const [activeTab, setActiveTab] = useState("All");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [activeDropdown, setActiveDropdown] = useState(null); 
   const [showOrderDetailsModal, setShowOrderDetailsModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [showCustomerOrderLinkModal, setShowCustomerOrderLinkModal] = useState(false);
 
   const { user } = useContext(AuthContext);
   
   const dropdownRef = useRef(null); 
   const modalRef = useRef(null);
+  const openCustomerOrderLinkModal = () => setShowCustomerOrderLinkModal(true);
+  const closeCustomerOrderLinkModal = () => setShowCustomerOrderLinkModal(false);
 
 
   const openNewOrderForm = () => setShowNewOrderForm(true);
@@ -52,9 +57,11 @@ const Orders = () => {
   const filterOrders = useCallback(() => {
     const filtered = orderHistory.filter((order) => {
       const matchesStatus =
-        filterStatus === "All" ||
-        (filterStatus === "Pending" && order.paymentStatus === "Pending") ||
-        order.paymentStatus === filterStatus;
+        activeTab === "All" ||
+        (activeTab === "Pending" && order.paymentStatus === "Pending") ||
+        (activeTab === "Paid" && order.paymentStatus === "Paid") ||
+        (activeTab === "Unpaid" && order.paymentStatus === "Unpaid") ||
+        (activeTab === "Cancelled" && order.paymentStatus === "Cancelled");
   
       const matchesSearch =
         order.customerName?.toLowerCase().includes(searchTerm) ||
@@ -62,9 +69,11 @@ const Orders = () => {
   
       return matchesStatus && matchesSearch;
     });
+  
     console.log("Filtered Orders:", filtered); // Debug filtered results
     setFilteredOrders(filtered);
-  }, [orderHistory, searchTerm, filterStatus]);
+  }, [orderHistory, searchTerm, activeTab]);
+  
   
 
 
@@ -236,7 +245,7 @@ const Orders = () => {
 
   // ** Handle Filter Status Change **
   const handleFilterChange = (status) => {
-    setFilterStatus(status);
+    setActiveTab(status);
   };
 
   // ** Toggle Dropdown Menu **
@@ -246,6 +255,7 @@ const Orders = () => {
     }
     setActiveDropdown((prev) => (prev === orderId ? null : orderId));
   };
+  
   
 
   return (
@@ -267,22 +277,37 @@ const Orders = () => {
               </button>
             </div>
           </div>
+            
+          <div className="customer-order-link-container">
+            <button className="btn btn-primary customer-order-link-btn" onClick={openCustomerOrderLinkModal}>
+              <FaLink /> Customer Order Link
+            </button>
+          </div>
 
           {/* Filter Tabs */}
           <div className="filter-tabs">
-            {["All", "Pending", "Paid", "Unpaid", "Cancelled"].map((status) => (
-              <button
-                key={status}
-                className={`filter-tab ${filterStatus === status ? "active" : ""}`}
-                onClick={() => handleFilterChange(status)}
-              >
-                {status}
-              </button>
-            ))}
+            {["All", "Pending", "Paid", "Unpaid", "Cancelled", "Request Orders"].map(
+              (status) => (
+                <button
+                  key={status}
+                  className={`filter-tab ${
+                    activeTab === status ? "active" : ""
+                  }`}
+                  onClick={() => handleFilterChange(status)}
+                >
+                  {status}
+                </button>
+              )
+            )}
           </div>
 
+
+          
+
           <div className="order-history-container">
-            {filteredOrders.length > 0 ? (
+          {activeTab === "Request Orders" ? (
+          <RequestOrder userId={user?.uid} /> ):
+            filteredOrders.length > 0 ? (
               <table className="order-table">
                 <thead>
                   <tr>
@@ -390,6 +415,12 @@ const Orders = () => {
             </div>
           </div>
         )}
+
+    <CustomerOrderLinkModal 
+      show={showCustomerOrderLinkModal} 
+      onClose={closeCustomerOrderLinkModal} 
+    />
+
 
     </div>
   );
