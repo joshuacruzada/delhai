@@ -1,18 +1,24 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { ref, onValue, update, remove } from "firebase/database";
 import { database } from "../FirebaseConfig";
 import "./RequestOrder.css";
+import { useNavigate } from 'react-router-dom';
+import { sendOrderConfirmationEmail } from "../services/requestOrderEmail";
+import { IconTrash } from "@tabler/icons-react";
 
 const RequestOrder = () => {
   const [orders, setOrders] = useState([]);
+  const [filteredOrders, setFilteredOrders] = useState([]);
+  const [activeFilter, setActiveFilter] = useState('all');
   const [timerData, setTimerData] = useState({});
+  const navigate = useNavigate();
 
-  // Fetch Orders and Customer Details
+  /** 🛠️ FETCH ORDERS */
   useEffect(() => {
     const ordersRef = ref(database, "requestOrders");
     const customersRef = ref(database, "customers");
 
-    onValue(ordersRef, (snapshot) => {
+    const unsubscribeOrders = onValue(ordersRef, (snapshot) => {
       const ordersData = snapshot.val();
       if (!ordersData) {
         console.warn("No data found in requestOrders node!");
@@ -31,7 +37,6 @@ const RequestOrder = () => {
         }))
       );
 
-      // Fetch Customer Details
       onValue(customersRef, (customerSnapshot) => {
         const customersData = customerSnapshot.val() || {};
 
@@ -42,50 +47,51 @@ const RequestOrder = () => {
           return {
             ...order,
             customerName: customerDetails.name || "N/A",
-            customerPhone: customerDetails.phone || "N/A",
+            customerEmail: customerDetails.email || "N/A",
             customerAddress: customerDetails.completeAddress || "N/A",
           };
         });
 
-        // Filter Pending/Unconfirmed Orders
-        const filteredOrders = enrichedOrders.filter(
-          (order) => order.status === "pending" || order.status === "unconfirmed"
-        );
+        setOrders(enrichedOrders);
 
-        setOrders(filteredOrders);
-
-        // Initialize timers for each order
         const initialTimers = {};
-        filteredOrders.forEach((order) => {
+        enrichedOrders.forEach((order) => {
           initialTimers[order.orderId] = calculateTimeLeft(order.expiry);
         });
         setTimerData(initialTimers);
       });
     });
+
+    return () => unsubscribeOrders();
   }, []);
 
-  // Format CreatedAt Date (Display Date as Stored in Database)
+  /** 🛠️ FILTER ORDERS */
+  const filterOrders = useCallback(() => {
+    const filtered = orders.filter((order) => {
+      if (activeFilter === 'all') return true;
+      return order.status.toLowerCase() === activeFilter;
+    });
+    setFilteredOrders(filtered);
+  }, [orders, activeFilter]);
+
+  useEffect(() => {
+    filterOrders();
+  }, [orders, activeFilter, filterOrders]);
+
+  /** 🛠️ FORMAT DATE */
   const formatDateTime = (dateString) => {
     if (!dateString) return "N/A";
-    const datePart = dateString.split("T")[0];
-    const date = new Date(datePart);
-
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
   };
 
-  // Countdown Timer for Expiry
+  /** 🛠️ COUNTDOWN TIMER */
   const calculateTimeLeft = (expiry) => {
     if (!expiry) return "N/A";
     const now = Date.now();
     const timeLeft = expiry - now;
 
-    if (timeLeft <= 0) {
-      return "Expired";
-    }
+    if (timeLeft <= 0) return "Expired";
 
     const hours = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
     const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
@@ -96,7 +102,7 @@ const RequestOrder = () => {
       .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
   };
 
-  // Real-time Timer for Each Order
+  /** 🛠️ REAL-TIME TIMER */
   useEffect(() => {
     const timer = setInterval(() => {
       setTimerData((prevTimers) => {
@@ -106,12 +112,12 @@ const RequestOrder = () => {
         });
         return updatedTimers;
       });
-    }, 1000); // Update every second
+    }, 1000);
 
     return () => clearInterval(timer);
   }, [orders]);
 
-  // Automatic Status Update for Expired Orders
+  /** 🛠️ AUTO-UPDATE STATUS */
   useEffect(() => {
     const timer = setInterval(() => {
       orders.forEach((order) => {
@@ -127,90 +133,81 @@ const RequestOrder = () => {
     return () => clearInterval(timer);
   }, [orders]);
 
-  // Send SMS Action
-  const handleSendSMS = (customerPhone, orderId) => {
-    if (!customerPhone) {
-      alert("Customer phone number not available.");
-      return;
-    }
-    console.log(`SMS sent to ${customerPhone} for order ${orderId}`);
-    alert(`SMS sent to ${customerPhone} for order confirmation.`);
-  };
 
-  // Cancel Order
-  const handleCancel = (orderId, userId) => {
-    update(ref(database, `requestOrders/${userId}/${orderId}`), { status: "cancelled" });
-    alert("Order cancelled!");
+  // 🛠️ SEND EMAIL
+  const handleSendEmail = async (customerEmail, userId, customerName, totalAmount) => {
+    await sendOrderConfirmationEmail(customerEmail, userId, customerName, totalAmount);
   };
+  
+  
 
-  // Delete Order
+  /** 🛠️ DELETE ORDER */
   const handleDelete = (orderId, userId) => {
-    remove(ref(database, `requestOrders/${userId}/${orderId}`));
-    alert("Order deleted!");
+    if (userId && orderId) {
+      remove(ref(database, `requestOrders/${userId}/${orderId}`))
+        .then(() => alert("Order deleted!"))
+        .catch((error) => console.error("Error deleting order:", error));
+    } else {
+      console.error("Invalid userId or orderId");
+    }
   };
+  
 
   return (
     <div className="request-orders">
+      <div>
+        <button onClick={() => navigate('/orders')} className="back-button">
+          ← Back to Order List
+        </button>
+      </div>
       <h3>Request Orders</h3>
-      {orders.length > 0 ? (
+
+      {/* Filtering Tabs */}
+      <div className="filter-tabs">
+        {["all", "pending", "confirmed", "unconfirmed"].map((status) => (
+          <button
+            key={status}
+            className={`filter-tab ${activeFilter === status ? "active" : ""}`}
+            onClick={() => setActiveFilter(status)}
+          >
+            {status.charAt(0).toUpperCase() + status.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      {/* Orders Table */}
+      {filteredOrders.length > 0 ? (
         <table className="request-orders-table">
           <thead>
             <tr>
               <th>Date</th>
               <th>Expiry</th>
               <th>Name</th>
-              <th>Phone</th>
+              <th>Email</th>
               <th>Total Amount</th>
               <th>Status</th>
-              <th>Actions</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
-            {orders.map(
-              ({
-                orderId,
-                customerName,
-                customerPhone,
-                createdAt,
-                expiry,
-                totalAmount,
-                status,
-                userId,
-              }) => (
-                <tr key={orderId}>
-                  <td>{formatDateTime(createdAt)}</td>
-                  <td>{timerData[orderId] || "N/A"}</td>
-                  <td>{customerName || "N/A"}</td>
-                  <td>{customerPhone || "N/A"}</td>
-                  <td>₱{totalAmount?.toFixed(2) || "0.00"}</td>
-                  <td>{status}</td>
-                  <td>
-                    <button
-                      className="btn-sms"
-                      onClick={() => handleSendSMS(customerPhone, orderId)}
-                    >
-                      Send SMS
-                    </button>
-                    <button
-                      className="btn-cancel"
-                      onClick={() => handleCancel(orderId, userId)}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      className="btn-delete"
-                      onClick={() => handleDelete(orderId, userId)}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              )
-            )}
+            {filteredOrders.map(({ orderId, customerName, customerEmail, createdAt, expiry, totalAmount, status, userId }) => (
+              <tr key={orderId}>
+                <td>{formatDateTime(createdAt)}</td>
+                <td>{timerData[orderId] || "N/A"}</td>
+                <td>{customerName || "N/A"}</td>
+                <td>{customerEmail || "N/A"}</td>
+                <td>₱{totalAmount?.toFixed(2) || "0.00"}</td>
+                <td>{status}</td>
+                <td className="actions-container">
+                  <button className="request-tab-emailbtn" onClick={() => handleSendEmail(customerEmail, orderId, customerName, totalAmount)}>Send Email</button>
+                  <button className="request-tab-deletebtn" onClick={() => handleDelete(orderId, userId)}><IconTrash stroke={2} /></button>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       ) : (
-        <p>No pending or unconfirmed request orders found.</p>
+        <p>No orders match the selected filter.</p>
       )}
     </div>
   );

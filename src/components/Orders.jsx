@@ -7,8 +7,8 @@ import { ref, get, update, remove } from "firebase/database";
 import { AuthContext } from "../AuthContext";
 import OrderDetailsModal from './OrderDetailsModal';
 import CustomerOrderLinkModal from "./CustomerOrderLinkModal";
-import RequestOrder from "./RequestOrder";
-
+import { IconShoppingCartQuestion } from '@tabler/icons-react';
+import { useNavigate } from 'react-router-dom';
 
 const Orders = () => {
   const [showNewOrderForm, setShowNewOrderForm] = useState(false);
@@ -50,6 +50,12 @@ const Orders = () => {
   const closeOrderDetailsModal = () => {
     setSelectedOrder(null);
     setShowOrderDetailsModal(false);
+  };
+  
+  const navigate = useNavigate();
+
+  const goToRequestOrders = () => {
+    navigate('/request-orders');
   };
   
 
@@ -97,6 +103,7 @@ const Orders = () => {
       const ordersData = ordersSnapshot.exists() ? ordersSnapshot.val() : {};
       const customersData = customersSnapshot.exists() ? customersSnapshot.val() : {};
       const stocksData = stocksSnapshot.exists() ? stocksSnapshot.val() : {};
+     
   
       // Map through orders and enrich data
       const allOrders = Object.keys(ordersData).map((key) => {
@@ -243,11 +250,6 @@ const Orders = () => {
     setSearchTerm(e.target.value.toLowerCase());
   };
 
-  // ** Handle Filter Status Change **
-  const handleFilterChange = (status) => {
-    setActiveTab(status);
-  };
-
   // ** Toggle Dropdown Menu **
   const toggleDropdown = (orderId, event) => {
     if (event) {
@@ -278,36 +280,41 @@ const Orders = () => {
             </div>
           </div>
             
-          <div className="customer-order-link-container">
-            <button className="btn btn-primary customer-order-link-btn" onClick={openCustomerOrderLinkModal}>
-              <FaLink /> Customer Order Link
-            </button>
-          </div>
 
-          {/* Filter Tabs */}
+          <div className="order-linktab-container">
+            <div className="request-orders-tab" onClick={goToRequestOrders}>
+              <IconShoppingCartQuestion stroke={2} color="gray" size={48} />
+              <h6>Request Orders</h6>
+            </div>
+
+            <div className="customer-order-link-container">
+              <button
+                className="btn btn-primary customer-order-link-btn"
+                onClick={openCustomerOrderLinkModal}
+              >
+                <FaLink /> Customer Order Link
+              </button>
+            </div>
+          </div>
+          
+           {/* Filter Tabs */}
           <div className="filter-tabs">
-            {["All", "Pending", "Paid", "Unpaid", "Cancelled", "Request Orders"].map(
-              (status) => (
-                <button
-                  key={status}
-                  className={`filter-tab ${
-                    activeTab === status ? "active" : ""
-                  }`}
-                  onClick={() => handleFilterChange(status)}
-                >
-                  {status}
-                </button>
-              )
-            )}
+            {["All", "Pending", "Paid", "Unpaid", "Cancelled"].map((status) => (
+              <button
+                key={status}
+                className={`filter-tab ${activeTab === status ? "active" : ""}`}
+                onClick={() => setActiveTab(status)}
+              >
+                {status}
+              </button>
+            ))}
           </div>
 
 
           
 
           <div className="order-history-container">
-          {activeTab === "Request Orders" ? (
-          <RequestOrder userId={user?.uid} /> ):
-            filteredOrders.length > 0 ? (
+            {filteredOrders.length > 0 ? (
               <table className="order-table">
                 <thead>
                   <tr>

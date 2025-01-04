@@ -196,37 +196,41 @@ useEffect(() => {
   const handlePreviousStep = () => setStep(1);
 
 
-  console.log('User ID from URL:', userId);
-
   const handleRequestOrder = async () => {
     try {
       if (!userId) {
         throw new Error("Invalid access. User ID is missing in the link.");
       }
   
-      // Create the order with a status "pending"
+      // Map order to the simplified structure
+      const simplifiedOrder = order.map((item) => ({
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        packaging: item.packaging || "N/A",
+        imageUrl: item.imageUrl || "placeholder.png",
+      }));
+  
+      // Push order to Firebase
       const orderRef = ref(database, `requestOrders/${userId}`);
       await push(orderRef, {
         userId,
-        order,
+        order: simplifiedOrder, // Use simplified order array
         totalAmount,
         status: "pending", // Initial status is 'pending'
         createdAt: new Date().toISOString(),
-        expiry: new Date().getTime() + 24 * 60 * 60 * 1000, 
+        expiry: new Date().getTime() + 24 * 60 * 60 * 1000, // 24 hours expiration
         phone: buyerInfo.phone || "", 
+        email: buyerInfo.email || "",
       });
   
       alert("Order successfully submitted. Please confirm your order.");
-  
     } catch (error) {
       console.error("Error submitting order:", error.message);
       alert(`Failed to submit order: ${error.message}`);
     }
   };
   
-  
-  
-
 
   return (
     <div className="container customer-order-form">

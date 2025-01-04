@@ -177,7 +177,6 @@
   background: none;
   border: none;
   cursor: pointer;
-  transition: color 0.3s ease, border-bottom 0.3s ease;
   position: relative;
   padding-bottom: 2px; /* Allow for precise border alignment */
 }
@@ -278,28 +277,7 @@
   color: #a71d2a;
 }
 
-/* Button Container */
-.customer-order-link-container {
-  display: flex;
-  justify-content: flex-end; /* Aligns button to the right */
 
-}
-
-/* Button Styling */
-.customer-order-link-container .btn {
-  margin-right: 5px; /* Adds a slight right margin */
-  padding: 8px 12px; /* Adjust padding for better spacing */
-  font-size: 14px; /* Optional: Adjust font size */
-}
-
-.customer-order-link-btn{
-    background-color: #4D869C !important;
-    margin-top: 10px !important;
-}
-
-.customer-order-link-btn:hover{
- background-color: #5098b4 !important;
-}
 /* Responsive Design */
 @media (max-width: 768px) {
   .actions-container {
@@ -399,7 +377,67 @@
 .action-button:focus {
   outline: none;
 }
+/* Container for Request Orders and Customer Order Link */
+.order-linktab-container {
+  display: flex;
+  align-items: center; /* Align items vertically */
+  justify-content: space-between; /* Distribute items across the container */
+  gap: 16px; /* Add spacing between buttons */
+  margin-bottom: 20px; /* Add space below the container */
+}
 
+/* Request Orders Tab */
+.request-orders-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, box-shadow 0.3s ease;
+  max-width: 200px;
+  text-align: center;
+}
+
+.request-orders-tab h6 {
+  color: #636669;
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.request-orders-tab:hover {
+  background: #e2e6ea;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Customer Order Link Container */
+.customer-order-link-container {
+  display: flex;
+  align-items: center;
+}
+
+.customer-order-link-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  background-color: #4D869C;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.customer-order-link-btn:hover {
+  background-color: #0056b3;
+}
 
 /* Responsive Styling */
 @media (max-width: 768px) {

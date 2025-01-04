@@ -157,9 +157,9 @@ export const createInvoice = async (orderId, customerId, totalAmount, orderData)
 
 // Send email notification using EmailJS
 export const sendEmailNotification = (buyerInfo, orderData, totalAmount) => {
-  const emailParams = {
-    to_name: buyerInfo.name,
-    to_email: buyerInfo.email,
+  const emailParams = { 
+    to_name: buyerInfo.name, 
+    to_email: buyerInfo.email,      
     order_summary: orderData.products
       .map((item) => `${item.name} x ${item.quantity} - ₱${item.price.toFixed(2)}`)
       .join("\n"),
