@@ -1,110 +1,132 @@
-/* Scoped styles for TargetAndSummary Component */
 .target-summary {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #fff;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    max-width: 600px;
-    margin: auto;
-  }
-  
-  /* Target Sales Section */
-  .target-sales {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .circle {
-    width: 200px;
-    height: 200px;
-    border-radius: 50%;
-    background-color: #2196F3;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-  }
-  
-  .circle__title {
-    font-size: 16px;
-    font-weight: bold;
-    margin: 0;
-  }
-  
-  .circle__value {
-    font-size: 24px;
-    font-weight: bold;
-    margin: 5px 0 0;
-    color: #fff;
-  }
-  
-  /* Sales Summary Section */
-  .sales-summary {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-  
-  .summary-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .percentage-circle {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background-color: #2196F3;
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 14px;
-    font-weight: bold;
-  }
-  
-  .summary-details {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .summary-details__name {
-    font-size: 14px;
-    font-weight: bold;
-    margin: 0;
-  }
-  
-  .summary-details__text {
-    font-size: 12px;
-    color: #ffffff;
-    margin: 0;
-  }
-  
-  /* Responsive Design */
-  @media (max-width: 768px) {
-    .target-summary {
-      flex-direction: column;
-      gap: 20px;
-    }
-  
-    .circle {
-      width: 150px;
-      height: 150px;
-    }
-  
-    .percentage-circle {
-      width: 40px;
-      height: 40px;
-    }
-  }
-  
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 900px;
+  margin: auto;
+  margin-top: 15px;
+  text-align: center;
+}
+
+.target-sales {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.circle {
+  width: 200px;
+  height: 200px;
+  background-color: #42A5F5;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-weight: bold;
+  position: relative;
+}
+
+.circle__title {
+  font-size: 16px;
+  margin: 0;
+}
+
+.circle__value-container {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Added line for alignment */
+  gap: 10px;
+}
+
+.circle__value {
+  font-size: 24px;
+  margin: 15px 0 0;
+  color: white !important;
+}
+
+.edit-icon {
+  cursor: pointer;
+  color: white;
+  width: 20px;
+  height: 20px;
+  transition: transform 0.3s;
+}
+
+.edit-icon:hover {
+  transform: scale(1.2);
+  background-color: #5caff7;
+  border-radius: 10px;
+}
+
+.edit-input {
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  text-align: center;
+}
+
+.save-button {
+  margin-top: 10px;
+  padding: 5px 10px;
+  border: none;
+  background-color: #1E88E5;
+  color: white;
+  font-size: 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.sales-summary {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-left: 20px;
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 30px;
+  background-color: #ffffff;
+}
+
+.percentage-circle {
+  width: 50px;
+  height: 50px;
+  background-color: #42A5F5;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.summary-details {
+  text-align: left;
+}
+
+.summary-details__name {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: black;
+  margin: 0;
+}
+
+.summary-details__text {
+  font-size: 14px;
+  color: black;
+}

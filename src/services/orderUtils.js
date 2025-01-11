@@ -67,17 +67,26 @@ export const addNewCustomer = async (buyerInfo) => {
 
 // Save order to Firebase
 export const saveOrderToFirebase = async (customerId, order, totalAmount, userId) => {
+
+  for (const item of order) {
+    if (!item.id) {
+      throw new Error(`❌ Product "${item.name}" is missing an ID.`);
+    }
+  }
+
   const orderData = {
     customerId, // Reference to the customer
     totalAmount,
     createdAt: new Date().toISOString(),
     paymentStatus: "Pending",
     products: order.map((item) => ({
+      id: item.id,
       name: item.name,
       price: item.editablePrice || 0,
       quantity: item.quantity || 0,
       imageUrl: item.imageUrl || "placeholder.png",
-      packaging: item.packaging || "N/A" 
+      packaging: item.packaging || "N/A", 
+      expiryDate: item.expiryDate || "N/A"
     })),
   };
 
@@ -93,8 +102,6 @@ export const saveOrderToFirebase = async (customerId, order, totalAmount, userId
     throw error;
   }
 };
-
-
 
 
 

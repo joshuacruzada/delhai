@@ -1,115 +1,98 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { getDatabase, ref, onValue } from 'firebase/database';
 import { Table, Form } from 'react-bootstrap';
 import './StockHistory.css';
 
 const StockHistory = () => {
+  const location = useLocation();
+  const { category } = location.state || { category: 'all' }; // Default to 'all' if not provided
+
   const [viewMode, setViewMode] = useState('all'); // "all", "stock-in", "stock-out"
-  const [stockInData, setStockInData] = useState([]);
-  const [stockOutData, setStockOutData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
+  const [stockHistoryData, setStockHistoryData] = useState([]); // All stock history data
+  const [filteredData, setFilteredData] = useState([]); // Filtered data based on view
   const [searchTerm, setSearchTerm] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [products, setProducts] = useState({}); // To store product details
+  const [isCategoryFiltered, setIsCategoryFiltered] = useState(false); // Tracks if category filtering applied
 
-  // Fetch Product Details from Stocks Node
+  // 📦 **Fetch Stock History from 'stocks' node**
   useEffect(() => {
     const db = getDatabase();
     const stocksRef = ref(db, 'stocks/');
-
+  
     onValue(stocksRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        setProducts(data); // Save the product data to state
-      }
-    });
-  }, []);
-
-  // Fetch Stock In Data
-  useEffect(() => {
-    const db = getDatabase();
-    const stockInRef = ref(db, 'restock/');
-
-    onValue(stockInRef, (snapshot) => {
-      const data = snapshot.val();
-      const stockInArray = [];
-
-      if (data) {
-        Object.keys(data).forEach((productId) => {
-          Object.keys(data[productId]).forEach((restockId) => {
-            const restockEntry = data[productId][restockId];
-            stockInArray.push({
-              ...restockEntry,
-              productId,
-              restockId,
-              productName: products[productId]?.name || 'Unknown', // Map product name
-              type: 'Stock In',
-            });
-          });
+      const stocksData = snapshot.val();
+      const historyArray = [];
+  
+      if (stocksData) {
+        Object.keys(stocksData).forEach((productId) => {
+          const product = stocksData[productId];
+          const productCategory = product.category?.toLowerCase() || '';
+  
+          if (category?.toLowerCase() === productCategory) {
+            if (product.stockHistory) {
+              Object.keys(product.stockHistory).forEach((historyId) => {
+                const historyEntry = product.stockHistory[historyId];
+                historyArray.push({
+                  ...historyEntry,
+                  productId,
+                  historyId,
+                  productName: product.name || 'Unknown',
+                  category: product.category || 'Uncategorized',
+                });
+              });
+            }
+          }
         });
       }
-
-      setStockInData(stockInArray);
+  
+      setStockHistoryData(historyArray);
+      setIsCategoryFiltered(true); // Indicate category-specific filtering
     });
-  }, [products]);
+  }, [category]);
+  
 
-  // Fetch Stock Out Data
+  // 🔍 **Filter Data Based on View Mode, Search, and Date Range**
   useEffect(() => {
-    const db = getDatabase();
-    const stockOutRef = ref(db, 'stockout/');
+    let data = [...stockHistoryData];
 
-    onValue(stockOutRef, (snapshot) => {
-      const data = snapshot.val();
-      const stockOutArray = [];
-
-      if (data) {
-        Object.keys(data).forEach((productId) => {
-          Object.keys(data[productId]).forEach((stockOutId) => {
-            const stockOutEntry = data[productId][stockOutId];
-            stockOutArray.push({
-              ...stockOutEntry,
-              productId,
-              stockOutId,
-              productName: products[productId]?.name || 'Unknown', // Map product name
-              type: 'Stock Out',
-            });
-          });
-        });
-      }
-
-      setStockOutData(stockOutArray);
-    });
-  }, [products]);
-
-  // Filter data based on view mode and user inputs
-  useEffect(() => {
-    let data = [];
+    // Filter by View Mode
     if (viewMode === 'stock-in') {
-      data = stockInData;
+      data = data.filter((item) => item.type === 'IN');
     } else if (viewMode === 'stock-out') {
-      data = stockOutData;
-    } else {
-      data = [...stockInData, ...stockOutData];
+      data = data.filter((item) => item.type === 'OUT');
     }
 
-    // Apply search and date filters
-    data = data.filter((item) => {
-      const matchesSearch = item.productName
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase());
-      const matchesStartDate = startDate
-        ? new Date(item.restockDate || item.stockOutDate) >= new Date(startDate)
-        : true;
-      const matchesEndDate = endDate
-        ? new Date(item.restockDate || item.stockOutDate) <= new Date(endDate)
-        : true;
+    // Apply Search Term Filter
+    if (searchTerm) {
+      data = data.filter((item) =>
+        item.productName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
 
-      return matchesSearch && matchesStartDate && matchesEndDate;
-    });
+    // Apply Date Filters
+    if (startDate) {
+      data = data.filter(
+        (item) => new Date(item.restockDate || item.date) >= new Date(startDate)
+      );
+    }
+    if (endDate) {
+      data = data.filter(
+        (item) => new Date(item.restockDate || item.date) <= new Date(endDate)
+      );
+    }
 
     setFilteredData(data);
-  }, [viewMode, stockInData, stockOutData, searchTerm, startDate, endDate]);
+  }, [viewMode, stockHistoryData, searchTerm, startDate, endDate]);
+
+  // 📅 **Format Date Utility**
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid Date';
+    return date.toLocaleDateString('en-CA'); // Format: YYYY-MM-DD
+  };
 
   return (
     <div className="stock-history-container">
@@ -119,7 +102,9 @@ const StockHistory = () => {
           <span className="back-button" onClick={() => window.history.back()}>
             ←
           </span>
-          <h2 className="stock-history-title">Stock History</h2>
+          <h2 className="stock-history-title">
+            Stock History
+          </h2>
         </div>
       </div>
 
@@ -183,16 +168,26 @@ const StockHistory = () => {
           {filteredData.length > 0 ? (
             filteredData.map((item, index) => (
               <tr key={index}>
-                <td>{item.restockDate || item.stockOutDate}</td>
+                <td>{formatDate(item.date || item.restockDate)}</td>
                 <td>{item.productName}</td>
-                <td>{item.quantityAdded || item.quantityRemoved}</td>
+                <td>{item.quantityAdded || item.quantityRemoved || 0}</td>
                 <td>{item.expiryDate || 'N/A'}</td>
-                <td>{item.type}</td>
+                <td>
+                  {item.type === 'IN' ? (
+                    <span className="stock-in">Stock In</span>
+                  ) : (
+                    <span className="stock-out">Stock Out</span>
+                  )}
+                </td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan="5">No records available.</td>
+              <td colSpan="5">
+                {isCategoryFiltered
+                  ? `No stock history available for ${category}.`
+                  : 'No stock history available.'}
+              </td>
             </tr>
           )}
         </tbody>

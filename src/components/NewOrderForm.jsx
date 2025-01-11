@@ -10,6 +10,7 @@ import { findCustomerByName, addNewCustomer } from "../services/orderUtils";
 import { getAuth } from 'firebase/auth';
 import { AuthContext } from "../AuthContext";
 
+
 const NewOrderForm = ({ onBackToOrders }) => {
   const [step, setStep] = useState(1); // Tracks form step (1: Buyer Info, 2: Order Info)
   const [products, setProducts] = useState([]);

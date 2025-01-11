@@ -30,6 +30,8 @@ import Settings from './components/Settings';
 import RequestOrder from './components/RequestOrder';
 import OrderConfirmation from './components/OrderConfirmation';
 import StockHistory from './components/StockHIstory';
+import NewOrderForm from './components/NewOrderForm';
+import NearlyExpiredProducts from './components/NearlyExpiredProducts';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -155,6 +157,8 @@ function App() {
             <Route path="/audit-trail" element={<ProtectedRoute element={AuditTrail} allowedRoles={['admin']} />} />
             <Route path="/stock-history" element={<ProtectedRoute element={StockHistory} allowedRoles={['admin', 'employee']} />} />
             <Route path="/request-orders" element={<ProtectedRoute element={RequestOrder} allowedRoles={['admin', 'employee']} />} />
+            <Route path="/new-order-form" element={<ProtectedRoute element={NewOrderForm} allowedRoles={['admin', 'employee']} />} />
+            <Route path="/nearly-expired" element={<ProtectedRoute element={NearlyExpiredProducts} allowedRoles={['admin', 'employee']} />} />
           </Routes>
         </div>
       </BrowserRouter>

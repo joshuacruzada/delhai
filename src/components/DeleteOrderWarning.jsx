@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
-import { getDatabase, ref, remove } from 'firebase/database';
-import { getAuth } from 'firebase/auth';
-import './DeleteWarningModal.css';
+import React, { useState } from "react";
+import { getDatabase, ref, remove } from "firebase/database";
+import { getAuth } from "firebase/auth"; // Use the same CSS file for consistency
 
-const DeleteWarningModal = ({ customerId, onClose }) => {
+const DeleteOrderWarning = ({ orderId, onClose }) => {
   const [isDeleted, setIsDeleted] = useState(false);
 
   const handleDelete = () => {
@@ -12,13 +11,13 @@ const DeleteWarningModal = ({ customerId, onClose }) => {
     const user = auth.currentUser;
 
     if (!user) {
-      alert('You must be logged in to delete a customer.');
+      alert("You must be logged in to delete an order.");
       return;
     }
 
-    const customerRef = ref(db, `customers/${user.uid}/${customerId}`);
+    const orderRef = ref(db, `orders/${user.uid}/${orderId}`);
 
-    remove(customerRef)
+    remove(orderRef)
       .then(() => {
         setIsDeleted(true); // Show success confirmation
         setTimeout(() => {
@@ -26,7 +25,7 @@ const DeleteWarningModal = ({ customerId, onClose }) => {
         }, 2000); // Delay to allow the animation to play
       })
       .catch((error) => {
-        console.error('Error deleting customer:', error);
+        console.error("Error deleting order:", error);
       });
   };
 
@@ -53,11 +52,12 @@ const DeleteWarningModal = ({ customerId, onClose }) => {
                 d="M16 26 l8 8 l16 -16"
               />
             </svg>
+            <p>Order deleted successfully!</p>
           </div>
         </div>
       ) : (
         <div className="delete-warning-modal-content">
-          <h3>Are you sure you want to delete this?</h3>
+          <h3>Are you sure you want to delete this order?</h3>
           <p>This action cannot be undone.</p>
           <button onClick={handleDelete} className="btn-confirm">
             Delete
@@ -71,4 +71,4 @@ const DeleteWarningModal = ({ customerId, onClose }) => {
   );
 };
 
-export default DeleteWarningModal;
+export default DeleteOrderWarning;

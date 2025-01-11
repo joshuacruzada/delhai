@@ -124,8 +124,7 @@ const EditProduct = () => {
       !product.pricePerBox ||
       !product.pricePerPiece ||
       !product.piecesPerBox ||
-      !product.criticalStock ||
-      !product.expiryDate
+      !product.criticalStock 
     ) {
       setErrorMessage('Please fill all required fields.');
       return;

@@ -77,7 +77,7 @@ const StockDetails = () => {
         {/* View Stock History Button */}
         <Button
           className="view-history-btn"
-          onClick={() => navigate('/stock-history')}
+          onClick={() => navigate('/stock-history', { state: { category } })}
         >
           View Stock History
         </Button>
@@ -116,7 +116,7 @@ const StockDetails = () => {
                 <td>
                   <strong>{stock.name}</strong>
                   <br />
-                  {stock.description || 'No description available'}
+                  {stock.description || 'No description available'}=
                 </td>
                 <td>{stock.quantity}</td>
                 <td>{stock.packaging}</td>

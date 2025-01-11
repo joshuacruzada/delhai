@@ -10,7 +10,7 @@
 /* Styling for the signup card */
 .signup-card {
   width: 100%;
-  max-width: 800px; /* Same width as login-card */
+  max-width: 800px; 
   padding: 30px;
   border-radius: 8px;
   text-align: center;
@@ -74,11 +74,11 @@
 }
 
 /* Adjusted layout for balanced fields */
-.signup-grid .signup-form-group:nth-child(5) { /* Email Address */
+.signup-grid .signup-form-group:nth-child(5) { 
   grid-column: 1 / 2;
 }
 
-.signup-grid .signup-form-group:nth-child(6) { /* Select Role */
+.signup-grid .signup-form-group:nth-child(6) { 
   grid-column: 2 / 3;
 }
 
@@ -94,11 +94,11 @@
 
 /* Label styling */
 .signup-form-label {
-  text-align: left; /* Align label to the left */
+  text-align: left; 
   font-weight: 500;
   color: #ffffff;
   margin-bottom: 5px;
-  display: block; /* Ensures the label is positioned above the input field */
+  display: block; 
 }
 
 /* Button styling */
@@ -136,16 +136,16 @@
 }
 
 .signup-alert.error {
-  color: #721c24; /* Dark red text */
-  background-color: #f8d7da; /* Light red background */
-  border: 1px solid #f5c6cb; /* Red border */
+  color: #721c24; 
+  background-color: #f8d7da; 
+  border: 1px solid #f5c6cb; 
 }
 
 
 .signup-alert.success {
-  color: #155724; /* Dark green text */
-  background-color: #d4edda; /* Light green background */
-  border: 1px solid #c3e6cb; /* Green border */
+  color: #155724; 
+  background-color: #d4edda; 
+  border: 1px solid #c3e6cb; 
 }
 
 

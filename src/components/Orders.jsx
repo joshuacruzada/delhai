@@ -3,12 +3,16 @@ import "./Orders.css";
 import NewOrderForm from "./NewOrderForm";
 import { FaCheck, FaTimes, FaTrashAlt, FaBan, FaEllipsisV, FaLink } from "react-icons/fa";
 import { database } from "../FirebaseConfig";
-import { ref, get, update, remove } from "firebase/database";
+import { ref, get } from "firebase/database";
 import { AuthContext } from "../AuthContext";
 import OrderDetailsModal from './OrderDetailsModal';
 import CustomerOrderLinkModal from "./CustomerOrderLinkModal";
 import { IconShoppingCartQuestion } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
+import { handlePaidOrder, handleCancelledOrder, handleUnpaidOrder } from "../utils/orderActions";
+import DeleteOrderWarning from "./DeleteOrderWarning";
+
+
 
 const Orders = () => {
   const [showNewOrderForm, setShowNewOrderForm] = useState(false);
@@ -194,34 +198,23 @@ const Orders = () => {
 
   // ** Update Payment Status **
   const updatePaymentStatus = async (orderId, newStatus) => {
-    const orderRef = ref(database, `orders/${user.uid}/${orderId}`);
-  
     try {
-      await update(orderRef, { paymentStatus: newStatus });
-      console.log(`Order ${orderId} payment status updated to ${newStatus}`);
+      if (newStatus === "Paid") {
+        await handlePaidOrder(user.uid, orderId);
+      } else if (newStatus === "Cancelled") {
+        await handleCancelledOrder(user.uid, orderId); 
+      } else if (newStatus === "Unpaid") {
+        await handleUnpaidOrder(user.uid, orderId);
+      }
   
-      // Close the dropdown after clicking an action
-      setActiveDropdown(null);
-  
-      // Refresh the order list
+      // Refresh Orders List
       fetchOrders();
+      setActiveDropdown(null); 
     } catch (error) {
-      console.error("Error updating payment status:", error);
+      console.error("❌ Error updating payment status:", error.message);
     }
   };
   
-
-  // ** Delete an Order **
-  const deleteOrder = async (orderId) => {
-    const orderRef = ref(database, `orders/${user.uid}/${orderId}`);
-
-    try {
-      await remove(orderRef);
-      console.log(`Order ${orderId} deleted successfully`);
-    } catch (error) {
-      console.error("Error deleting order:", error);
-    }
-  };
 
   // ** Open Delete Modal **
   const openDeleteModal = (orderId) => {
@@ -230,20 +223,6 @@ const Orders = () => {
     setActiveDropdown(false)
   };
 
-  // ** Confirm Deletion **
-  const confirmDelete = () => {
-    if (selectedOrderId) {
-      deleteOrder(selectedOrderId);
-      setShowDeleteModal(false);
-      setSelectedOrderId(null);
-    }
-  };
-
-  // ** Close Delete Modal **
-  const closeDeleteModal = () => {
-    setShowDeleteModal(false);
-    setSelectedOrderId(null);
-  };
 
   // ** Handle Search Input Change **
   const handleSearchChange = (e) => {
@@ -394,21 +373,16 @@ const Orders = () => {
         <NewOrderForm onBackToOrders={handleOrderCreated} />
       )}
 
-      {showDeleteModal && (
-        <div className="delete-modal">
-          <div className="modal-content">
-            <p>Are you sure you want to delete this order?</p>
-            <div className="modal-actions">
-              <button className="btn-confirm" onClick={confirmDelete}>
-                Yes
-              </button>
-              <button className="btn-order-cancel" onClick={closeDeleteModal}>
-                No
-              </button>
-            </div>
-          </div>
-        </div>      
-      )}
+      
+        {showDeleteModal && (
+          <DeleteOrderWarning
+            orderId={selectedOrderId} // Pass the selected order ID
+            onClose={() => {
+              setShowDeleteModal(false); // Close modal when action completes
+              setSelectedOrderId(null); // Reset the selected order ID
+            }}
+          />
+        )}
 
 
        {/* Order Details Modal */}

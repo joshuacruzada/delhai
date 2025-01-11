@@ -5,65 +5,68 @@ import "./RequestOrder.css";
 import { useNavigate } from 'react-router-dom';
 import { sendOrderConfirmationEmail } from "../services/requestOrderEmail";
 import { IconTrash } from "@tabler/icons-react";
-
+import RequestOrderDetailsModal from "./RequestOrderDetailsModal";
 const RequestOrder = () => {
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [activeFilter, setActiveFilter] = useState('all');
   const [timerData, setTimerData] = useState({});
   const navigate = useNavigate();
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
-  /** 🛠️ FETCH ORDERS */
-  useEffect(() => {
-    const ordersRef = ref(database, "requestOrders");
-    const customersRef = ref(database, "customers");
+const handleRowClick = (order) => {
+  setSelectedOrder(order);
+  setModalOpen(true);
+};
 
-    const unsubscribeOrders = onValue(ordersRef, (snapshot) => {
-      const ordersData = snapshot.val();
-      if (!ordersData) {
-        console.warn("No data found in requestOrders node!");
-        setOrders([]);
-        return;
-      }
+const closeModal = () => {
+  setModalOpen(false);
+  setSelectedOrder(null);
+};
 
-      const ordersList = Object.entries(ordersData).flatMap(([userId, userOrders]) =>
-        Object.entries(userOrders).map(([orderId, orderData]) => ({
-          userId,
-          orderId,
-          status: orderData.status || "N/A",
-          createdAt: orderData.createdAt || null,
-          expiry: orderData.expiry || null,
-          totalAmount: orderData.totalAmount || 0,
-        }))
-      );
 
-      onValue(customersRef, (customerSnapshot) => {
-        const customersData = customerSnapshot.val() || {};
+  /** 🛠️ FETCH ORDERS */useEffect(() => {
+  const ordersRef = ref(database, "requestOrders");
 
-        const enrichedOrders = ordersList.map((order) => {
-          const userCustomers = customersData[order.userId] || {};
-          const customerDetails = Object.values(userCustomers)[0] || {};
+  const unsubscribeOrders = onValue(ordersRef, (snapshot) => {
+    const ordersData = snapshot.val();
+    if (!ordersData) {
+      console.warn("No data found in requestOrders node!");
+      setOrders([]);
+      return;
+    }
 
-          return {
-            ...order,
-            customerName: customerDetails.name || "N/A",
-            customerEmail: customerDetails.email || "N/A",
-            customerAddress: customerDetails.completeAddress || "N/A",
-          };
-        });
+    // Flatten orders from all users
+    const ordersList = Object.entries(ordersData).flatMap(([userId, userOrders]) =>
+      Object.entries(userOrders).map(([orderId, orderData]) => ({
+        userId,
+        orderId,
+        status: orderData.status || "N/A",
+        createdAt: orderData.createdAt || null,
+        expiry: orderData.expiry || null,
+        totalAmount: orderData.totalAmount || 0,
+        customerName: orderData?.buyerInfo?.name || "N/A", // Include name
+        customerEmail: orderData?.buyerInfo?.email || "N/A", // Include email
+        customerAddress: orderData?.buyerInfo?.completeAddress || "N/A", // Include address
+        buyerInfo: orderData?.buyerInfo || {}, // Pass entire buyerInfo for modal
+        order: orderData?.order || [], // Pass the order items
+      }))
+    );
 
-        setOrders(enrichedOrders);
+    setOrders(ordersList);
 
-        const initialTimers = {};
-        enrichedOrders.forEach((order) => {
-          initialTimers[order.orderId] = calculateTimeLeft(order.expiry);
-        });
-        setTimerData(initialTimers);
-      });
+    // Initialize timers for countdown
+    const initialTimers = {};
+    ordersList.forEach((order) => {
+      initialTimers[order.orderId] = calculateTimeLeft(order.expiry);
     });
+    setTimerData(initialTimers);
+  });
 
-    return () => unsubscribeOrders();
-  }, []);
+  return () => unsubscribeOrders();
+}, []);
+
 
   /** 🛠️ FILTER ORDERS */
   const filterOrders = useCallback(() => {
@@ -102,20 +105,32 @@ const RequestOrder = () => {
       .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
   };
 
-  /** 🛠️ REAL-TIME TIMER */
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimerData((prevTimers) => {
-        const updatedTimers = {};
-        orders.forEach((order) => {
+ /** 🛠️ REAL-TIME TIMER */
+/** 🛠️ REAL-TIME TIMER */
+useEffect(() => {
+  const timer = setInterval(() => {
+    setTimerData((prevTimers) => {
+      const updatedTimers = {};
+      orders.forEach((order) => {
+        if (order.status === "pending") {
           updatedTimers[order.orderId] = calculateTimeLeft(order.expiry);
-        });
-        return updatedTimers;
+        } else if (order.status === "confirmed") {
+          updatedTimers[order.orderId] = "confirmed";
+        } else if (order.status === "unconfirmed") {
+          updatedTimers[order.orderId] = "unconfirmed";
+        } else if (order.expiry && Date.now() > order.expiry) {
+          updatedTimers[order.orderId] = "expired";
+        } else {
+          updatedTimers[order.orderId] = "N/A";
+        }
       });
-    }, 1000);
+      return updatedTimers;
+    });
+  }, 1000);
 
-    return () => clearInterval(timer);
-  }, [orders]);
+  return () => clearInterval(timer);
+}, [orders]);
+
 
   /** 🛠️ AUTO-UPDATE STATUS */
   useEffect(() => {
@@ -190,17 +205,33 @@ const RequestOrder = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredOrders.map(({ orderId, customerName, customerEmail, createdAt, expiry, totalAmount, status, userId }) => (
-              <tr key={orderId}>
-                <td>{formatDateTime(createdAt)}</td>
-                <td>{timerData[orderId] || "N/A"}</td>
-                <td>{customerName || "N/A"}</td>
-                <td>{customerEmail || "N/A"}</td>
-                <td>₱{totalAmount?.toFixed(2) || "0.00"}</td>
-                <td>{status}</td>
+            {filteredOrders.map((order) => (
+              <tr key={order.orderId} onClick={() => handleRowClick(order)}>
+                <td>{formatDateTime(order.createdAt)}</td>
+                <td>{timerData[order.orderId] || "N/A"}</td>
+                <td>{order.customerName || "N/A"}</td>
+                <td>{order.customerEmail || "N/A"}</td>
+                <td>₱{order.totalAmount?.toFixed(2) || "0.00"}</td>
+                <td>{order.status}</td>
                 <td className="actions-container">
-                  <button className="request-tab-emailbtn" onClick={() => handleSendEmail(customerEmail, orderId, customerName, totalAmount)}>Send Email</button>
-                  <button className="request-tab-deletebtn" onClick={() => handleDelete(orderId, userId)}><IconTrash stroke={2} /></button>
+                  <button
+                    className="request-tab-emailbtn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSendEmail(order.customerEmail, order.orderId, order.customerName, order.totalAmount);
+                    }}
+                  >
+                    Send Email
+                  </button>
+                  <button
+                    className="request-tab-deletebtn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(order.orderId, order.userId);
+                    }}
+                  >
+                    <IconTrash stroke={2} />
+                  </button>
                 </td>
               </tr>
             ))}
@@ -209,6 +240,13 @@ const RequestOrder = () => {
       ) : (
         <p>No orders match the selected filter.</p>
       )}
+
+    <RequestOrderDetailsModal
+      isOpen={isModalOpen}
+      order={selectedOrder}
+      onClose={closeModal}
+    />
+
     </div>
   );
 };

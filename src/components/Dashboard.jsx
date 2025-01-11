@@ -46,12 +46,13 @@ const Dashboard = () => {
           }
         }
   
+        // Nearly expired logic (within 6 months)
         if (stock.expiryDate) {
           const expiryDate = new Date(stock.expiryDate);
           const timeDifference = expiryDate - now;
           const daysToExpire = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
   
-          if (daysToExpire >= 0 && daysToExpire <= 30) {
+          if (daysToExpire >= 0 && daysToExpire <= 180) { // 180 days for 6 months
             nearlyExpired += 1;
           }
         }
@@ -65,24 +66,34 @@ const Dashboard = () => {
       outOfStocks,
     });
   }, []);
+  
     
   // Fetch stocks from Firebase
   useEffect(() => {
-    const stocksRef = ref(database, 'stocks/');
-    const unsubscribe = onValue(stocksRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const stockArray = Object.keys(data).map((key) => ({
-          id: key,
-          ...data[key],
-        }));
-        setStockData(stockArray);
-        calculateTotals(stockArray, activeTab);
+    const stocksRef = ref(database, "stocks/");
+    const unsubscribe = onValue(
+      stocksRef,
+      (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          const stockArray = Object.keys(data).map((key) => ({
+            id: key,
+            ...data[key],
+          }));
+          setStockData(stockArray);
+          calculateTotals(stockArray, activeTab);
+        } else {
+          setStockData([]); // Handle no data case
+        }
+      },
+      (error) => {
+        console.error("Error fetching stocks:", error);
       }
-    });
+    );
   
     return () => unsubscribe();
-  }, [activeTab, calculateTotals]); // Added calculateTotals
+  }, [activeTab, calculateTotals]);
+  
   
 
   
@@ -107,9 +118,22 @@ const Dashboard = () => {
       navigate('/out-stocks', { state: { stocks: outStocks, category: activeTab } });
     } else if (type === 'total-stocks') {
       navigate('/stock-details', { state: { stocks: filteredStocks, category: activeTab } });
+    } else if (type === 'stock-history') { 
+      navigate('/stock-history', { state: { category: activeTab } });
+    }else if (type === 'nearly-expired') {
+      const nearlyExpiredStocks = filteredStocks.filter((stock) => {
+        if (stock.expiryDate) {
+          const expiryDate = new Date(stock.expiryDate);
+          const now = new Date();
+          const timeDifference = expiryDate - now;
+          const daysToExpire = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+          return daysToExpire >= 0 && daysToExpire <= 180; // Adjust 180 for 6 months
+        }
+        return false;
+      });
+      navigate('/nearly-expired', { state: { stocks: nearlyExpiredStocks, category: activeTab } });
     }
   };
-  
   
   
   

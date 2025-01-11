@@ -147,3 +147,110 @@
   margin-top: 20px;
 }
 
+
+.customerorder-items-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  border-top: 1px solid #ccc;
+  margin-top: 20px;
+  padding-top: 20px;
+  overflow-y: auto;
+  padding-right: 10px;
+  max-height: 390px;
+}
+/* Scrollbar Styles for Order Items */
+.customerorder-items-container::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+}
+
+.customerorder-items-container::-webkit-scrollbar-track {
+  background: #f9f9f9; 
+  border-radius: 4px;
+}
+
+.customerorder-items-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1; 
+  border-radius: 4px;
+}
+
+.customerorder-items-container::-webkit-scrollbar-thumb:hover {
+  background: #9b9b9b; 
+}
+
+@media (max-width: 768px) {
+  .container.customer-order-form {
+    padding: 9px;
+  }
+
+  .customer-logo-title h2 {
+    font-size: 1.2rem;
+  }
+
+  .customer-logo-title p {
+    font-size: 0.8rem;
+  }
+
+  .order-form-title {
+    font-size: 1.3rem;
+  }
+
+  .customerorder-items-container {
+    max-height: 300px;
+  }
+
+  .order-item img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .order-item-details {
+    font-size: 0.8rem;
+  }
+
+  .customer-form-nextbtn,
+  .btn-outline-primary {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+  }
+
+  .order-item {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .order-item img {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 5px;
+  }
+
+  .order-item-details {
+    font-size: 0.8rem;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+
+  .customer-removebtn {
+    order: 1; /* Ensure it appears first */
+    margin-bottom: 5px;
+    align-self: flex-start;
+  }
+
+  /* Quantity Controls Positioned Inline */
+  .order-item-controls {
+    margin-top: 0;
+    align-self: center;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  .order-item-controls-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-left: auto;
+  }
+  
+}

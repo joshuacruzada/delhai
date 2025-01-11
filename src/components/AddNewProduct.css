@@ -36,7 +36,7 @@
   justify-content: space-between;
 }
 
-.image-section {
+.addorder-image-section {
   flex: 1;
   text-align: center;
   display: flex;
@@ -46,7 +46,7 @@
  
 }
 
-.image-preview {
+.addorder-image-preview {
   width: 250px;
   height: 250px;
   background-color: rgb(239, 238, 238);
@@ -107,7 +107,7 @@
   margin-top: 10px;
 }
 
-.image-preview img {
+.addorder-image-preview img {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;

@@ -14,10 +14,7 @@ export const sendOrderConfirmationEmail = async (customerEmail, totalAmount) => 
   }
 
   try {
-    // 📡 Fetch all `requestOrders`
     const ordersRef = ref(database, `requestOrders`);
-    console.log(`📡 Fetching all orders from path: requestOrders`);
-
     const snapshot = await get(ordersRef);
 
     if (!snapshot.exists()) {
@@ -27,23 +24,27 @@ export const sendOrderConfirmationEmail = async (customerEmail, totalAmount) => 
     }
 
     const allOrders = snapshot.val();
-    console.log("✅ All Orders Fetched:", allOrders);
 
-    // 🔍 Find the first matching order by customerEmail
     let matchingOrder = null;
     let matchingOrderId = null;
     let matchingUserId = null;
 
     for (const userId in allOrders) {
-      for (const orderId in allOrders[userId]) {
-        const order = allOrders[userId][orderId];
-        if (order.email === customerEmail) {
+      const userOrders = allOrders[userId];
+      if (!userOrders) continue;
+
+      for (const orderId in userOrders) {
+        const order = userOrders[orderId];
+        if (!order || !order.buyerInfo) continue;
+
+        if (order.buyerInfo.email === customerEmail) {
           matchingOrder = order;
           matchingOrderId = orderId;
           matchingUserId = userId;
           break;
         }
       }
+
       if (matchingOrder) break;
     }
 
@@ -53,58 +54,39 @@ export const sendOrderConfirmationEmail = async (customerEmail, totalAmount) => 
       return;
     }
 
-    console.log("✅ Matching Order Found:", matchingOrder);
-
-    // 🛍️ Build Order Summary
     const orderSummary = (matchingOrder.order || [])
-      .map((item) => `${item.name || 'N/A'} x ${item.quantity || 0} - ₱${item.price || 0}`)
+      .map((item) => `${item.name || "N/A"} x ${item.quantity || 0} - ₱${item.price || 0}`)
       .join("\n");
 
-    console.log("✅ Order Summary:", orderSummary);
-
-    // 🔗 Generate Confirmation Link
     const confirmationLink = `${window.location.origin}/confirm-order?userId=${matchingUserId}&orderId=${matchingOrderId}`;
-    console.log("🔗 Confirmation Link:", confirmationLink);
+    const customerName = matchingOrder?.buyerInfo?.name || "Valued Customer";
 
-    // 🔄 Fetch Customer Details from `customers` Node
-    const customerRef = ref(database, `customers/${matchingUserId}`);
-    const customerSnapshot = await get(customerRef);
-
-    if (!customerSnapshot.exists()) {
-      console.warn("⚠️ No customer details found for this userId.");
-      alert("⚠️ Customer details not found.");
-      return;
-    }
-
-    const customerDetails = customerSnapshot.val();
-    const customerName = customerDetails.name || "Valued Customer";
-
-    console.log("✅ Customer Details Fetched:", customerDetails);
-
-    // 📧 Prepare Email Template
     const templateParams = {
-      to_name: customerName, // Use fetched customer name
+      to_name: customerName,
       to_email: customerEmail,
-      order_summary: orderSummary || "No order details available.",
-      total_amount: `₱${(matchingOrder.totalAmount || 0).toFixed(2)}`,
+      order_summary: orderSummary || "No items in order.",
+      total_amount: `₱${(matchingOrder?.totalAmount || 0).toFixed(2)}`,
       confirmation_link: confirmationLink,
       from_name: "Delhai Medical Center",
     };
 
     console.log("📧 Sending Email with Template Params:", templateParams);
 
-    // 📤 Send the email using the correct template ID
-    await emailjs.send(
-      "service_xbzwe8f",   // Email service ID
-      "template_fppn99s",  // Updated Email template ID
+    const response = await emailjs.send(
+      "service_xbzwe8f",
+      "template_fppn99s",
       templateParams,
-      "Eaa7gEQkmCzf4Prdz"  // Email public key
+      "Eaa7gEQkmCzf4Prdz"
     );
 
-    console.log("✅ Email successfully sent with details:", templateParams);
+    console.log("✅ Email sent successfully:", response);
     alert(`✅ Confirmation email successfully sent to ${customerEmail}`);
   } catch (error) {
-    console.error("❌ Failed to fetch order details or send email:", error);
+    if (error.response) {
+      console.error("EmailJS Error Response:", error.response);
+    } else {
+      console.error("EmailJS Error:", error.message);
+    }
     alert("❌ Failed to send confirmation email. Please try again.");
   }
 };

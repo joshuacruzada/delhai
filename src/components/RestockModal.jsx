@@ -1,6 +1,8 @@
+// src/components/RestockModal.jsx
+
 import React, { useState } from 'react';
 import './RestockModal.css';
-import { getDatabase, ref, update, push, get } from 'firebase/database';
+import { handleRestock } from '../utils/restockUtils';
 
 const RestockModal = ({ product, onClose }) => {
   // State Management
@@ -23,38 +25,18 @@ const RestockModal = ({ product, onClose }) => {
       setLoading(true);
       setError('');
 
-      const db = getDatabase();
-      const productRef = ref(db, `stocks/${product.id}`);
-      const restockRef = ref(db, `restock/${product.id}`);
-
-      // Fetch current stock
-      const productSnapshot = await get(productRef);
-      const currentStock = productSnapshot.val()?.quantity || 0;
-
-      // Calculate new stock
-      const updatedStock = parseInt(currentStock) + parseInt(newStockQuantity);
-
-      // Prepare data for the database
-      const restockData = {
+      const restockDetails = {
         quantityAdded: parseInt(newStockQuantity),
         expiryDate: expiryDate || 'N/A',
         restockDate: restockDate,
       };
 
-      const updates = {};
-      updates[`/stocks/${product.id}/quantity`] = updatedStock;
-      updates[`/stocks/${product.id}/lastRestocked`] = restockDate;
+      await handleRestock(product.id, restockDetails);
 
-      const restockLogRef = push(restockRef);
-      updates[`/restock/${product.id}/${restockLogRef.key}`] = restockData;
-
-      // Update database
-      await update(ref(db), updates);
-
-      console.log('Restock Data:', restockData);
+      console.log('✅ Restock completed successfully.');
       onClose();
     } catch (err) {
-      console.error('Restock failed:', err);
+      console.error('❌ Restock failed:', err.message);
       setError('Failed to update stock. Please try again later.');
     } finally {
       setLoading(false);
@@ -75,7 +57,6 @@ const RestockModal = ({ product, onClose }) => {
             <p>{product.name}</p>
           </div>
 
-       
           <div className="form-group">
             <label>Stock:</label>
             <p>{product.quantity}</p>
@@ -92,7 +73,6 @@ const RestockModal = ({ product, onClose }) => {
             />
           </div>
 
-          {/* Expiry Date */}
           <div className="form-group">
             <label>Expiry Date (optional):</label>
             <input
@@ -102,10 +82,8 @@ const RestockModal = ({ product, onClose }) => {
             />
           </div>
 
-          {/* Error Message */}
           {error && <p className="error-message">{error}</p>}
 
-          {/* Modal Actions */}
           <div className="modal-actions">
             <button type="button" onClick={onClose} disabled={loading}>
               Cancel

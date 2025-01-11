@@ -186,8 +186,7 @@ useEffect(() => {
   console.log("AuthContext User:", user);
   if (!user) {
     console.warn("User is not authenticated. Redirecting to login...");
-    // Optional: Redirect to login
-    // navigate('/login');
+
   }
 }, [user]);
 
@@ -202,7 +201,10 @@ useEffect(() => {
         throw new Error("Invalid access. User ID is missing in the link.");
       }
   
-      // Map order to the simplified structure
+      // Build the complete address string
+      const completeAddress = `${buyerInfo.street}, ${buyerInfo.barangay}, ${buyerInfo.city}, ${buyerInfo.province}, ${buyerInfo.zipCode}`;
+  
+      // Map order to a simplified structure
       const simplifiedOrder = order.map((item) => ({
         name: item.name,
         price: item.price,
@@ -211,27 +213,61 @@ useEffect(() => {
         imageUrl: item.imageUrl || "placeholder.png",
       }));
   
-      // Push order to Firebase
-      const orderRef = ref(database, `requestOrders/${userId}`);
-      await push(orderRef, {
+      // Prepare order data
+      let orderData = {
         userId,
-        order: simplifiedOrder, // Use simplified order array
+        order: simplifiedOrder,
         totalAmount,
-        status: "pending", // Initial status is 'pending'
+        status: "pending",
         createdAt: new Date().toISOString(),
         expiry: new Date().getTime() + 24 * 60 * 60 * 1000, // 24 hours expiration
-        phone: buyerInfo.phone || "", 
-        email: buyerInfo.email || "",
-      });
+        buyerInfo: {
+          name: buyerInfo.name,
+          phone: buyerInfo.phone, // Included in buyerInfo
+          email: buyerInfo.email, // Included in buyerInfo
+          completeAddress: completeAddress, // Store full address as one field
+          tin: buyerInfo.tin,
+          drNo: buyerInfo.drNo,
+          poNo: buyerInfo.poNo,
+          terms: buyerInfo.terms,
+          salesman: buyerInfo.salesman,
+        }
+      };
   
-      alert("Order successfully submitted. Please confirm your order.");
+      // Push order data to requestOrders
+      const orderRef = ref(database, `requestOrders/${userId}`);
+      await push(orderRef, orderData);
+  
+      alert("Order successfully submitted. Please confirm it from the Request Orders tab.");
+
+      //  Reset the form after submission
+      setBuyerInfo({
+        name: "",
+        phone: "",
+        province: "",
+        city: "",
+        barangay: "",
+        street: "",
+        zipCode: "",
+        shippedTo: "",
+        tin: "",
+        drNo: "",
+        poNo: "",
+        terms: "",
+        salesman: "",
+        email: "",
+      });
+      setOrder([]);
+      setTotalAmount(0);
+      setStep(1); 
+
     } catch (error) {
       console.error("Error submitting order:", error.message);
       alert(`Failed to submit order: ${error.message}`);
     }
   };
+   
   
-
   return (
     <div className="container customer-order-form">
       {/* Header */}
@@ -367,7 +403,7 @@ useEffect(() => {
         <div className="customer-order-step2">
             {/* Header Section */}
             <div className="d-flex justify-content-between align-items-center mb-3">
-            <h4 className="fw-bold">ORDER INFORMATION</h4>
+            <h5 className="fw-bold">ORDER INFORMATION</h5>
             <button
                 className="btn btn-outline-primary"
                 onClick={() => setIsProductModalOpen(true)}
@@ -377,7 +413,7 @@ useEffect(() => {
             </div>
 
             {/* Order Items Section */}
-            <div className="order-items-container mb-4">
+            <div className="customerorder-items-container mb-4">
             {order.map((item) => (
                 <div key={item.id} className="order-item d-flex align-items-center justify-content-between mb-2 p-2 border rounded">
                 {/* Item Details */}
@@ -396,7 +432,7 @@ useEffect(() => {
                 </div>
 
                 {/* Quantity Controls */}
-                <div className="d-flex align-items-center">
+                <div className="order-item-controls-container d-flex align-items-center">
                     <button
                     className="btn btn-outline-secondary btn-sm"
                     onClick={() => updateQuantity(item.id, -1)}

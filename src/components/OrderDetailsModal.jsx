@@ -48,7 +48,7 @@ const OrderDetailsModal = ({ order, onClose }) => {
                 <img 
                   src={product.imageUrl || '/placeholder.png'} 
                   alt={product.name || 'Product Image'} 
-                  className="product-image"
+                  className="order-product-image"
                   onError={(e) => { e.target.src = '/placeholder.png'; }}
                 />
                 </div>

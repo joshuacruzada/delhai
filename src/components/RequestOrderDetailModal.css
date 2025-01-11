@@ -1,0 +1,14 @@
+.add-order-btn {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-right: 10px;
+  }
+  
+  .add-order-btn:hover {
+    background-color: #45a049;
+  }
+  
