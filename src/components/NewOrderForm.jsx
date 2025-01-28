@@ -1,339 +1,461 @@
 import React, { useState, useEffect, useContext } from "react";
 import { RiDeleteBin6Line } from "react-icons/ri";
+import ViewProductListModal from "./ViewProductListModal";
 import "./NewOrderForm.css";
 import { database } from "../FirebaseConfig";
-import { ref, onValue, update } from "firebase/database";
+import { ref, onValue, update, getDatabase, get  } from "firebase/database";
 import { completeOrderProcess } from "../services/orderUtils";
+import { cleanUpDuplicates } from "../services/customerCleanup";
+import { findCustomerByName, addNewCustomer } from "../services/orderUtils";
+import { getAuth } from 'firebase/auth';
 import { AuthContext } from "../AuthContext";
 
+
 const NewOrderForm = ({ onBackToOrders }) => {
+  const [step, setStep] = useState(1); // Tracks form step (1: Buyer Info, 2: Order Info)
   const [products, setProducts] = useState([]);
   const [order, setOrder] = useState([]);
+  const [customers, setCustomers] = useState([]); // All customers
+  const [filteredCustomers, setFilteredCustomers] = useState([]); // Matched customers
+  const [isSearching, setIsSearching] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
-  const [searchTerm, setSearchTerm] = useState("");
-  const { user } = useContext(AuthContext);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const { user } = useContext(AuthContext); // user contains user ID and role
 
   const [buyerInfo, setBuyerInfo] = useState({
-    soldTo: "",
-    address: "",
-    tin: "",
+    name: "",
+    province: "",
+    city: "",
+    street: "",
+    barangay: "",
+    zipCode: "",
     shippedTo: "",
     drNo: "",
-    date: "",
+    poNo: "",
     terms: "",
     salesman: "",
-    poNo: "",
     email: "",
-    userId: user.uid,
+    tin: '',    
   });
 
-  const [errors, setErrors] = useState({});
-
-  useEffect(() => {
-    const productsRef = ref(database, "stocks/");
-    onValue(productsRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const items = Object.keys(data).map((key) => ({
-          id: key,
-          name: data[key].name || "",
-          description: data[key].description || "No description available",
-          price: parseFloat(data[key].pricePerBox) || 0,
-          imageUrl: data[key].imageUrl || "",
-          quantity: data[key].quantity || 0,
-          criticalStock: data[key].criticalStock || 0,
-        }));
-        setProducts(items);
+  const placeholders = {
+    shippedTo: "Shipped To (optional)",
+    tin: "Tin #",
+    drNo: "DR.#",
+    poNo: "P.O #",
+    terms: "Terms",
+    salesman: "Salesman",
+    email: "Email",
+   };
+   
+   useEffect(() => {
+    const fetchCustomers = async () => {
+      const auth = getAuth();
+      const user = auth.currentUser;
+  
+      if (!user) {
+        console.error("User is not authenticated.");
+        return;
       }
-    });
+  
+      const db = getDatabase();
+      const customersRef = ref(db, `customers/${user.uid}`);
+  
+      try {
+        const customerSnapshot = await get(customersRef);
+  
+        if (customerSnapshot.exists()) {
+          const customerList = Object.entries(customerSnapshot.val()).map(
+            ([key, value]) => ({
+              id: key,
+              ...value,
+            })
+          );
+          console.log("Customers retrieved:", customerList);
+          setCustomers(customerList);
+        } else {
+          console.log("No customers found for the current user.");
+          setCustomers([]);
+        }
+      } catch (error) {
+        console.error("Error fetching customers:", error);
+      }
+    };
+  
+    fetchCustomers();
   }, []);
+  
+  useEffect(() => {
+      const productsRef = ref(database, "stocks/");
+      onValue(productsRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          const items = Object.keys(data).map((key) => ({
+            id: key,
+            name: data[key].name || "",
+            packaging: data[key].packaging || "N/A",
+            price: parseFloat(data[key].pricePerBox) || 0, // Correctly map pricePerBox to price
+            imageUrl: data[key].imageUrl || "",
+            quantity: data[key].quantity || 0,
+          }));
+          setProducts(items);
+        }
+      });
+  }, [user]);
 
   useEffect(() => {
     const total = order.reduce((sum, item) => sum + item.editablePrice * item.quantity, 0);
     setTotalAmount(total);
   }, [order]);
 
-  const handleBuyerInfoChange = (e) => {
-    const { name, value } = e.target;
-    setBuyerInfo((prevInfo) => ({ ...prevInfo, [name]: value }));
-    setErrors((prevErrors) => ({ ...prevErrors, [name]: "" })); // Clear the error for the field being edited
-  };
-
-  const validateFields = () => {
-    const newErrors = {};
-    const requiredFields = [
-      "soldTo",
-      "address",
-      "tin",
-      "shippedTo",
-      "drNo",
-      "date",
-      "terms",
-      "salesman",
-      "poNo",
-      "email",
-    ];
-
-    requiredFields.forEach((field) => {
-      if (!buyerInfo[field]) {
-        newErrors[field] = "This field is required.";
-      }
-    });
-
-    // Additional validation for email format
-    if (buyerInfo.email && !/\S+@\S+\.\S+/.test(buyerInfo.email)) {
-      newErrors.email = "Please enter a valid email address.";
-    }
-
-    // Additional validation for complete address format
-    if (buyerInfo.address) {
-      const addressParts = buyerInfo.address.split(",");
-      if (addressParts.length < 4) {
-        newErrors.address =
-          "Please enter a complete address (House No, Street Name, Barangay, City).";
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleCreateInvoice = async (e) => {
-    e.preventDefault();
-    if (!validateFields()) {
-      return;
-    }
-
+  
+  const handleCreateOrder = async () => {
     if (order.length === 0) {
       alert("No items in the order");
       return;
     }
-
+  
     try {
-      await completeOrderProcess(buyerInfo, order, totalAmount, products, setProducts);
-      alert("Order process completed successfully!");
-      onBackToOrders();
+      const userId = user?.uid; // Get the user ID from the authenticated user
+      if (!userId) {
+        throw new Error("User ID is missing. Cannot save the order.");
+      }
+  
+      // Clean up duplicate customers in the database
+      await cleanUpDuplicates(userId);
+  
+      // Check if customer already exists in the database
+      const existingCustomer = await findCustomerByName(buyerInfo.name, userId);
+  
+      if (!existingCustomer) {
+        console.log("Customer not found. Adding as a new customer.");
+        await addNewCustomer(buyerInfo);
+      } else {
+        console.log("Customer already exists:", existingCustomer.name);
+        
+        // Update existing customer with new terms
+        const db = getDatabase();
+        const customerRef = ref(db, `customers/${userId}/${existingCustomer.id}`);
+        
+        await update(customerRef, {
+          terms: buyerInfo.terms || "", // Update terms if available
+        });
+        
+        console.log("Customer terms updated successfully:", buyerInfo.terms);
+      }
+  
+      // Complete the order process
+      await completeOrderProcess(buyerInfo, order, totalAmount, products, setProducts, userId);
+  
+      alert("Order created successfully!");
+      onBackToOrders(); // Call the parent callback to refresh and close form
     } catch (error) {
       console.error("Error creating order:", error);
-      alert("Error creating order. Please try again.");
+      alert("Failed to create order. Please try again.");
     }
+  };
+  
+  
+  
+const [noRecordFound, setNoRecordFound] = useState(false); // New state for "No record" logic
+
+const handleBuyerInfoChange = (e) => {
+  const { name, value } = e.target;
+
+  setBuyerInfo((prevInfo) => ({
+    ...prevInfo,
+    [name]: value,
+  }));
+
+  if (name === "name" && value.trim() !== "") {
+    setIsSearching(true);
+    setTimeout(() => {
+      const matches = customers.filter((customer) =>
+        customer.name.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredCustomers(matches);
+      setIsSearching(false);
+
+      // Set noRecordFound based on matches
+      setNoRecordFound(matches.length === 0);
+    }, 500);
+  } else if (name === "name") {
+    setFilteredCustomers([]);
+    setIsSearching(false);
+    setNoRecordFound(false); // Clear "No record" message when input is empty
+  }
+};
+  
+
+  
+  
+
+  const validateBuyerInfo = () => {
+    const requiredFields = [
+      "name",
+      "province",
+      "city",
+      "street",
+      "barangay",
+      "zipCode",
+      "tin",
+      "drNo",
+      "poNo",
+      "terms",
+      "salesman",
+      "email",
+    ];
+    return requiredFields.every((field) => buyerInfo[field]?.trim() !== "");
+  };
+  
+
+  const handleNextStep = () => {
+    if (validateBuyerInfo()) {
+      setStep(2);
+    } else {
+      alert("Please fill out all required fields.");
+    }
+  };
+
+  const handlePreviousStep = () => setStep(1);
+
+  const updateQuantity = (productId, amount) => {
+    setOrder((prevOrder) =>
+      prevOrder.map((item) =>
+        item.id === productId
+          ? { ...item, quantity: Math.max(item.quantity + amount, 0) }
+          : item
+      )
+    );
+  };
+
+  const updatePrice = (productId, newPrice) => {
+    setOrder((prevOrder) =>
+      prevOrder.map((item) =>
+        item.id === productId
+          ? { ...item, editablePrice: newPrice || 0 } // Default to 0 if newPrice is invalid
+          : item
+      )
+    );
   };
 
   const addProductToOrder = (product) => {
     const existingProduct = order.find((item) => item.id === product.id);
+  
     if (existingProduct) {
       setOrder(
         order.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
         )
       );
     } else {
       setOrder([
         ...order,
-        { ...product, quantity: 1, packaging: "pcs", editablePrice: product.price },
+        {
+          ...product,
+          quantity: 1,
+          packaging: product.packaging || "N/A",
+          editablePrice: parseFloat(product.pricePerBox) || 0, // Use pricePerBox here
+          imageUrl: product.imageUrl || "placeholder.png",
+        },
       ]);
     }
-    setProducts(products.map((p) => (p.id === product.id ? { ...p, quantity: p.quantity - 1 } : p)));
   };
+  
+  
+  
+  
 
   const removeProductFromOrder = (productId) => {
     const productToRemove = order.find((item) => item.id === productId);
     if (productToRemove) {
-      setProducts(
-        products.map((p) =>
-          p.id === productId ? { ...p, quantity: p.quantity + productToRemove.quantity } : p
-        )
-      );
+      const productRef = ref(database, `stocks/${productToRemove.id}`);
+      update(productRef, { quantity: productToRemove.quantity + productToRemove.quantity });
     }
     setOrder(order.filter((item) => item.id !== productId));
   };
-
-  const updateProductDetails = (productId, key, value) => {
-    const updatedOrder = order.map((item) => {
-      if (item.id === productId) {
-        const updatedItem = { ...item };
-        if (key === "quantity") {
-          const newQuantity = Math.max(1, value);
-          const quantityChange = newQuantity - item.quantity;
-          const productRef = ref(database, `stocks/${productId}`);
-          const product = products.find((p) => p.id === productId);
-          if (product) {
-            const updatedQuantity = Math.max(product.quantity - quantityChange, 0);
-            update(productRef, { quantity: updatedQuantity })
-              .then(() => {
-                setProducts(
-                  products.map((p) =>
-                    p.id === productId ? { ...p, quantity: updatedQuantity } : p
-                  )
-                );
-              })
-              .catch((error) => {
-                console.error("Error updating quantity in Firebase:", error);
-              });
-          }
-          updatedItem.quantity = newQuantity;
-        }
-
-        if (key === "price") {
-          const newPrice = parseFloat(value) || item.price;
-          updatedItem.editablePrice = newPrice;
-        }
-
-        return updatedItem;
-      }
-      return item;
+  const handleCustomerSelect = (customer) => {
+    setBuyerInfo({
+      name: customer.name,
+      province: customer.province || "",
+      city: customer.city || "",
+      street: customer.street || "",
+      barangay: customer.barangay || "",
+      zipCode: customer.zipCode || "",
+      tin: customer.tin || "",
+      drNo: customer.drNo || "",
+      poNo: customer.poNo || "",
+      terms: customer.terms || "", 
+      shippedTo: customer.shippedTo || "",
+      salesman: customer.salesman || "",
+      email: customer.email || "",
     });
-
-    setOrder(updatedOrder);
+    
+    setFilteredCustomers([]);
+    setIsSearching(false);
+    
   };
 
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+ 
 
   return (
-    <div className="new-order-form">
-      <div className="header-section">
-        <button className="btn btn-link back-button" onClick={onBackToOrders}>
-          ← Back
-        </button>
-      </div>
-
-      <div className="order-container">
-        <div className="product-list-section">
-          <h4>Product List</h4>
-          <div className="search-container">
-            <input
-              type="text"
-              placeholder="Search product"
-              className="form-control search-product"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-
-          <div className="product-list">
-            {filteredProducts.map((product) => (
-              <div
-                key={product.id}
-                className={`product-card ${
-                  product.quantity < product.criticalStock ? "low-stock-order" : ""
-                }`}
-              >
-                <img src={product.imageUrl} alt={product.name} className="product-image" />
-                <div className="product-info">
-                  <span className="product-name">{product.name}</span>
-                  <p className="product-description">{product.description}</p>
-                  <p className="product-price">₱{product.price.toFixed(2)}</p>
-                </div>
-                <div className="product-quantity">Stocks: {product.quantity}</div>
-                <button
-                  className="btn btn-success addto-order-btn"
-                  onClick={() => addProductToOrder(product)}
-                >
-                  +
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="buyer-order-section">
-          <div className="buyer-info-container">
-            <h4>Buyer Information</h4>
-            <form className="buyer-info-form">
-              <div className="buyer-info-grid">
-                {["soldTo", "address", "tin", "shippedTo", "drNo", "date", "terms", "salesman", "poNo", "email"].map(
-                  (field) => (
-                    <div className="buyer-form-group" key={field}>
-                      <label htmlFor={field}>
-                        {field}{" "}
-                        <span className="required-asterisk">
-                          {["soldTo", "address", "email", "tin", "shippedTo", "drNo", "date", "terms", "salesman", "poNo"].includes(
-                            field
-                          )
-                            ? "*"
-                            : ""}
-                        </span>
-                      </label>
-                      <input
-                        type={field === "date" ? "date" : field === "email" ? "email" : "text"}
-                        id={field}
-                        name={field}
-                        className={`form-control ${errors[field] ? "is-invalid" : ""}`}
-                        placeholder={`Enter ${field}`}
-                        value={buyerInfo[field]}
-                        onChange={handleBuyerInfoChange}
-                      />
-                      {/* Error Message */}
-                      {errors[field] && <div className="error-message">{errors[field]}</div>}
-                    </div>
-                  )
-                )}
-                </div>
-              </form>
+    <div>
+      <button className="back-btn" onClick={onBackToOrders}>
+        ← Back
+      </button>
+      <div className="new-order-form-container">
+      
+      <div className="new-order-form">
+        {step === 1 && (
+          <div className="buyer-info-page">
+            <div className="form-header">
+              <h2 className="form-title">Add New Order Form</h2>
+              <p className="form-date">{new Date().toLocaleDateString()}</p>
             </div>
+            <h3 className="section-title">Buyer Information</h3>
+            <div className="form-group">
+              <input
+                type="text"
+                name="name"
+                placeholder="Name"
+                value={buyerInfo.name}
+                onChange={handleBuyerInfoChange}
+                autoComplete="off"
+                className="form-input"
+              />
+
+            {/* Dropdown with loading and no-record feedback */}
+            {buyerInfo.name.trim() !== "" && (
+                <div className="suggestion-popup">
+                  {isSearching ? (
+                    <div className="loading-item">Searching...</div>
+                  ) : filteredCustomers.length > 0 ? (
+                    filteredCustomers.map((customer) => (
+                      <div
+                        key={customer.id}
+                        className="suggestion-item"
+                        onClick={() => handleCustomerSelect(customer)}
+                      >
+                        {customer.name}
+                      </div>
+                    ))
+                  ) : (
+                    noRecordFound && <div className="no-record-item">No customer record</div>
+                  )}
+                </div>
+              )}
 
 
-          <div className="order-details-section">
-            <h4>Order Information</h4>
-            {order.length === 0 ? (
-              <p>No products in order</p>
-            ) : (
-              order.map((item) => (
-                <div className="order-item" key={item.id}>
-                  <img src={item.imageUrl} alt={item.name} />
-                  <div className="order-product-info">
-                    <span className="product-name">{item.name}</span>
-                    <span className="product-description">{item.description}</span>
+            </div>
+            <h3 className="address-section-title">Address</h3>
+            <div className="form-grid">
+              {["province", "city", "street", "barangay", "zipCode"].map((field) => (
+                <input
+                  key={field}
+                  type="text"
+                  name={field}
+                  placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                  value={buyerInfo[field]}
+                  onChange={handleBuyerInfoChange}
+                  className="form-input"
+                />
+              ))}
+            </div>
+            <h3 className="other-section-title">Other Information</h3>
+            <div className="form-grid">
+              {["shippedTo","tin", "drNo", "poNo", "terms", "salesman", "email"].map((field) => (
+                <input
+                  key={field}
+                  type={field === "email" ? "email" : "text"}
+                  name={field}
+                  placeholder={placeholders[field]}
+                  value={buyerInfo[field]}
+                  onChange={handleBuyerInfoChange}
+                  className="form-input"
+                />
+              ))}
+            </div>
+            <div className="form-footer">
+              <button className="btn-primary" onClick={handleNextStep}>
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="order-info-section">
+            <button className="back-to-buyer-btn" onClick={handlePreviousStep}>
+              ← Previous
+            </button>
+            <div className="order-info-header">
+              <h2 className="order-info-title">Order Information</h2>
+            </div>
+            <div className="view-product-btn-container">
+              <button className="view-product-btn" onClick={() => setIsProductModalOpen(true)}>
+                  View Product List
+              </button>
+            </div>
+              <div className="order-items-container">
+              {order.map((item) => (
+                <div key={item.id} className="order-item-container">
+                  <img src={item.imageUrl || "placeholder.png"} alt={item.name} className="order-item-image" />
+                  <div className="order-item-details">
+                    <p className="order-item-name">{item.name}</p>
+                    <p className="order-item-packaging">{item.packaging}</p>
                   </div>
-                  <div className="quantity-control">
-                    <button
-                      onClick={() => updateProductDetails(item.id, "quantity", item.quantity - 1)}
-                    >
-                      -
-                    </button>
+                  <div className="order-quantity-control">
+                    <button onClick={() => updateQuantity(item.id, -1)}>-</button>
                     <input
-                      type="number"
+                      type="text"
                       value={item.quantity}
-                      onChange={(e) =>
-                        updateProductDetails(item.id, "quantity", parseInt(e.target.value, 10))
-                      }
-                      min="1"
+                      readOnly
+                      className="order-quantity-input"
                     />
-                    <button
-                      onClick={() => updateProductDetails(item.id, "quantity", item.quantity + 1)}
-                    >
-                      +
-                    </button>
+                    <button onClick={() => updateQuantity(item.id, 1)}>+</button>
                   </div>
-                  <div className="price-wrapper">
-                    <span>₱</span>
-                    <input
-                      type="number"
-                      value={item.editablePrice}
-                      onChange={(e) =>
-                        updateProductDetails(item.id, "price", parseFloat(e.target.value))
-                      }
-                    />
-                  </div>
-                  <button onClick={() => removeProductFromOrder(item.id)}>
+                  <input
+                    type="text"
+                    value={(item.editablePrice || 0).toFixed(2)} // Display the price
+                    onChange={(e) => updatePrice(item.id, parseFloat(e.target.value) || 0)}
+                    className="order-editable-price-input"
+                  />
+                  <button
+                    className="remove-order-item-btn"
+                    onClick={() => removeProductFromOrder(item.id)}
+                  >
                     <RiDeleteBin6Line />
                   </button>
                 </div>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
 
-          <div className="total-amount-container">
-            <strong>Total Amount:</strong> ₱{totalAmount.toFixed(2)}
-            <button className="btn btn-primary" onClick={handleCreateInvoice}>
-              Create Invoice
-            </button>
+            <div className="total-section">
+              <div className="total-amount-wrapper">
+                <strong className="total-label">Total Amount:</strong>
+                <p className="total-value">₱{(totalAmount || 0).toFixed(2)}</p>
+              </div>
+              <button className="create-order-btn" onClick={handleCreateOrder }>
+                Create Order
+              </button>
+            </div>
           </div>
-        </div>
+        )}
+
+        {isProductModalOpen && (
+          <ViewProductListModal
+            products={products}
+            onAddProduct={addProductToOrder}
+            onClose={() => setIsProductModalOpen(false)}
+          />
+        )}
       </div>
     </div>
+
+    </div>
+    
   );
 };
 

@@ -1,0 +1,83 @@
+/* Container for the Nearly Expired Products Page */
+.nearly-expired-container {
+    padding: 20px;
+    background-color: transparent;
+  }
+  
+  /* Title Styling */
+  .nearly-expired-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: left;
+  }
+  
+  /* Table Styling */
+  .nearly-expired-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .nearly-expired-table th,
+  .nearly-expired-table td {
+    padding: 12px 15px;
+    border-bottom: 4px solid rgb(239, 238, 238); /* Subtle divider between rows */
+  }
+  
+  .nearly-expired-table th {
+    background-color: #fff;
+    color: #373A40;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    text-align: left; /* Align headers to the left */
+  }
+  
+  .nearly-expired-table td {
+    font-size: 16px;
+    color: #5a5d63;
+    text-align: left; /* Align data to the left */
+  }
+  
+  /* Hover Effect */
+  .nearly-expired-table tbody tr:hover {
+    background-color: #f8f9fa;
+  }
+  
+  /* Image Column Styling */
+  .image-column img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 5px;
+  }
+  
+  .image-column span {
+    color: #999;
+    font-style: italic;
+    font-size: 12px;
+  }
+  
+  /* Empty State Styling */
+  .nearly-expired-table tbody tr td {
+    text-align: left; /* Align empty state message to the left */
+    color: #777;
+    font-size: 14px;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .nearly-expired-table th,
+    .nearly-expired-table td {
+      font-size: 12px;
+      padding: 8px;
+    }
+  
+    .nearly-expired-title {
+      font-size: 18px;
+    }
+  }
+  

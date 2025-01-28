@@ -6,7 +6,7 @@ import RestockModal from "./RestockModal"; // Import the RestockModal
 import { logActivity } from "./LogActivity"; // Adjust the path if necessary
 import { fetchUserProfile } from "../services/UserProfile";
 import { getAuth } from "firebase/auth"; // Firebase Authentication
-
+import { Dropdown } from "react-bootstrap";
 const Inventory = () => {
   const [inventoryItems, setInventoryItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -265,25 +265,42 @@ const Inventory = () => {
                             {item.subCategory || "No Subcategory"}
                           </td>
                           <td className="actions">
-                            <button
-                              className="restock-btn"
-                              onClick={() => handleRestock(item.id)}
-                            >
-                              <i className="bi bi-box-seam"></i>
-                            </button>
-                            <button
-                              className="edit-btn"
-                              onClick={() => handleEdit(item.id)}
-                            >
-                              <i className="bi bi-pencil"></i>
-                            </button>
-                            <button
-                              className="delete-btn"
-                              onClick={() => handleDelete(item.id)}
-                            >
-                              <i className="bi bi-trash"></i>
-                            </button>
+                                <Dropdown>
+                                  <Dropdown.Toggle
+                                    variant="link"
+                                    id="dropdown-basic"
+                                    className="actions-dropdown"
+                                  >
+                                    <i className="bi bi-three-dots"></i>
+                                  </Dropdown.Toggle>
+
+                                  <Dropdown.Menu>
+                                    <Dropdown.Item
+                                      as="button"
+                                      className="action-btn restock-btn"
+                                      onClick={() => handleRestock(item.id)}
+                                    >
+                                      <i className="bi bi-box-seam"></i> Restock
+                                    </Dropdown.Item>
+                                    <Dropdown.Item
+                                      as="button"
+                                      className="action-btn edit-btn"
+                                      onClick={() => handleEdit(item.id)}
+                                    >
+                                      <i className="bi bi-pencil"></i> Edit
+                                    </Dropdown.Item>
+                                    <Dropdown.Item
+                                      as="button"
+                                      className="action-btn delete-btn"
+                                      onClick={() => handleDelete(item.id)}
+                                    >
+                                      <i className="bi bi-trash"></i> Delete
+                                    </Dropdown.Item>
+                                  </Dropdown.Menu>
+                                </Dropdown>
+
                           </td>
+
                         </tr>
                       );
                     })

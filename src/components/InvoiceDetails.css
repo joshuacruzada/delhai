@@ -1,0 +1,145 @@
+/* Modal Overlay */
+.invoice-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  /* Modal Content */
+  .invoice-modal-content {
+    background: #fff;
+    border-radius: 8px;
+    width: 95%;
+    max-width: 68rem;
+    max-height: 90%;
+    overflow-y: auto;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    padding: 1.5rem;
+  }
+  
+  /* Invoice Info */
+  .invoice-modal-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+  }
+  
+  /* Product List */
+  /* Product List Container (Scrollable Section) */
+.invoice-products-container {
+    max-height: 300px; /* Set a fixed height for scrollable area */
+    overflow-y: auto; /* Enable vertical scrolling */
+    border-top: 1px solid #e0e0e0;
+    border-bottom: 1px solid #e0e0e0;
+    margin-top: 1rem;
+    padding: 0.5rem 0;
+  }
+  
+  /* Product Table */
+  .invoice-products-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .invoice-products-table th,
+  .invoice-products-table td {
+    padding: 0.5rem;
+    text-align: left;
+    font-size: 0.9rem;
+  }
+  
+  .invoice-products-table th {
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+  }
+  
+  .invoice-products-table tbody tr:nth-child(even) {
+    background-color: #f9fafb;
+  }
+  
+  /* Ensure Scrollbar is visible and styled */
+  .invoice-products-container::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .invoice-products-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  
+  .invoice-products-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+  }
+  
+  .invoice-products-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+  
+  
+  /* Footer Total */
+  .invoice-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+    font-size: 1rem;
+    font-weight: bold;
+  }
+  
+  /* Print Button */
+  .invoice-actions {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .btn-print {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+  
+  /* Print Button */
+.invoice-actions {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .btn-print {
+    background-color: #4D869C;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 500;
+    opacity: 1; /* Ensure it's fully visible */
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn-print:hover {
+    background-color: #218838;
+  }
+  
+  /* Prevent Fading in Print Mode */
+  @media print {
+    .btn-print {
+      display: none; /* Hide the button during printing */
+    }
+  }
+  

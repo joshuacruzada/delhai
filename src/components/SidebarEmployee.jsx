@@ -16,22 +16,34 @@ const SidebarEmployee = ({ onLogout }) => {
       <div className="nav-links-wrapper">
         <nav className="nav flex-column">
           {/* Dashboard Link */}
-          <NavLink className="nav-link" to="/employee-dashboard">
+          <NavLink 
+            to="/employee-dashboard" 
+            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+          >
             <i className="bi bi-grid-fill"></i> <span>Dashboard</span>
           </NavLink>
 
           {/* Orders Link */}
-          <NavLink className="nav-link" to="/orders">
+          <NavLink 
+            to="/orders" 
+            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+          >
             <i className="bi bi-list-check"></i> <span>Orders</span>
           </NavLink>
 
           {/* Invoices Link */}
-          <NavLink className="nav-link" to="/invoices">
+          <NavLink 
+            to="/invoices" 
+            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+          >
             <i className="bi bi-file-text-fill"></i> <span>Invoices</span>
           </NavLink>
 
           {/* Products List Link */}
-          <NavLink className="nav-link" to="/products">
+          <NavLink 
+            to="/products" 
+            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+          >
             <i className="bi bi-box-seam"></i> <span>Products List</span>
           </NavLink>
 

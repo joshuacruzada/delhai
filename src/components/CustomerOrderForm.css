@@ -1,0 +1,256 @@
+.customer-suggestion-popup {
+  
+    background-color: #1f1f1f;
+    color: whitesmoke;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    width: 100%;
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    font-size: 0.8rem;
+    
+  }
+  
+  .customer-suggestion-item {
+    padding: 8px;
+    cursor: pointer;
+  }
+  
+  .customer-suggestion-item:hover {
+    background-color: #3d3c3c;
+    color: whitesmoke;
+  }
+  
+  .customer-loading-item {
+    color: rgb(232, 232, 232);
+    padding: 8px;
+    font-style: italic;
+  }
+  
+  .no-record-item {
+    color: red;
+    padding: 8px;
+    font-style: italic;
+  }
+
+/* Button Container for Next Button */
+.customer-form-nextbtn {
+    display: inline-block; /* Ensure it's treated as a block element */
+    margin-top: 20px; /* Adjust spacing from the top */
+    margin-bottom: 10px; /* Add spacing at the bottom */
+    padding: 8px 20px; /* Add spacing inside the button */
+    font-size: 14px; /* Maintain consistent font size */
+  }
+  
+  /* Align Button to the Right in Its Parent Container */
+  .customer-form-nextbtn-container {
+    display: flex; /* Enable flexbox for alignment */
+    justify-content: flex-end; /* Push button to the right */
+    width: 100% ; 
+  }
+  
+ /* Circular Delete Button */
+.customer-removebtn {
+    background-color: #f5f5f5; /* Light gray background */
+    border: none;
+    border-radius: 50%; /* Makes it circular */
+    padding: 8px;
+    font-size: 16px;
+    height: 40px; /* Fixed height */
+    width: 40px; /* Fixed width */
+    display: flex;
+    align-items: center; /* Center icon vertically */
+    justify-content: center; /* Center icon horizontally */
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+  }
+  
+  /* Icon Styling */
+  .customer-removebtn svg {
+    color: #333; /* Default icon color */
+    font-size: 18px;
+  }
+  
+  /* Hover Effect */
+  .customer-removebtn:hover {
+    background-color: #ff4d4f; /* Red background on hover */
+    transform: scale(1.1); /* Slight zoom effect */
+  }
+  
+  /* Icon Hover Effect */
+  .customer-removebtn:hover svg {
+    color: #fff; /* White icon on hover */
+  }
+  
+  /* Active Effect */
+  .customer-removebtn:active {
+    background-color: #d9363e; /* Darker red on click */
+    transform: scale(0.95); /* Slight shrink effect */
+  }
+  
+/* Header Container */
+.customer-form-header {
+  display: flex;
+  justify-content: flex-start; /* Align to the left */
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+
+  /* Logo Section Container */
+.customer-form-logo {
+  display: flex; /* Enable flexbox for alignment */
+  align-items: center; /* Vertically center items */
+  justify-content: center; /* Center horizontally */
+  text-align: left; /* Align text to the left */
+  margin-bottom: 20px; /* Add space below the logo section */
+   /* Space between logo and text */
+}
+
+
+/* Logo Image */
+.customer-form-logo .logo-img {
+  width: 40px;
+  height: 50px;
+  object-fit: contain;
+}
+
+/* Logo Text */
+.customer-logo-title {
+  display: flex;
+  flex-direction: column; /* Text vertically aligned */
+  justify-content: center;
+  line-height: 1.2;
+}
+
+/* Title Text */
+.customer-logo-title h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #4D869C;
+}
+
+.customer-logo-title p {
+  margin: 0;
+  font-size: 1rem;
+  color: #4D869C;
+}
+
+/* Center the ORDER FORM Title */
+.order-form-title {
+  text-align: center;
+  font-size: 1.75rem;
+  font-weight: bold;
+  margin-top: 20px;
+}
+
+
+.customerorder-items-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  border-top: 1px solid #ccc;
+  margin-top: 20px;
+  padding-top: 20px;
+  overflow-y: auto;
+  padding-right: 10px;
+  max-height: 390px;
+}
+/* Scrollbar Styles for Order Items */
+.customerorder-items-container::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+}
+
+.customerorder-items-container::-webkit-scrollbar-track {
+  background: #f9f9f9; 
+  border-radius: 4px;
+}
+
+.customerorder-items-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1; 
+  border-radius: 4px;
+}
+
+.customerorder-items-container::-webkit-scrollbar-thumb:hover {
+  background: #9b9b9b; 
+}
+
+@media (max-width: 768px) {
+  .container.customer-order-form {
+    padding: 9px;
+  }
+
+  .customer-logo-title h2 {
+    font-size: 1.2rem;
+  }
+
+  .customer-logo-title p {
+    font-size: 0.8rem;
+  }
+
+  .order-form-title {
+    font-size: 1.3rem;
+  }
+
+  .customerorder-items-container {
+    max-height: 300px;
+  }
+
+  .order-item img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .order-item-details {
+    font-size: 0.8rem;
+  }
+
+  .customer-form-nextbtn,
+  .btn-outline-primary {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+  }
+
+  .order-item {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .order-item img {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 5px;
+  }
+
+  .order-item-details {
+    font-size: 0.8rem;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+
+  .customer-removebtn {
+    order: 1; /* Ensure it appears first */
+    margin-bottom: 5px;
+    align-self: flex-start;
+  }
+
+  /* Quantity Controls Positioned Inline */
+  .order-item-controls {
+    margin-top: 0;
+    align-self: center;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  .order-item-controls-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-left: auto;
+  }
+  
+}

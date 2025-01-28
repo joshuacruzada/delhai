@@ -97,14 +97,14 @@
 .inventory-table th {
   background-color: #fff;
   color: #373A40;
-  font-size: 14px;
+  font-size: 0.9rem;
   font-weight: 600;
   text-transform: uppercase;
   /* To make headers stand out */
 }
 
 .inventory-table td {
-  font-size: 16px;
+  font-size: 0.9rem;
   color: #5a5d63;
 }
 
@@ -160,6 +160,44 @@
   border-bottom: 1px solid #ddd;
  
 }
+
+.actions-dropdown .dropdown-menu {
+  position: absolute !important; /* Ensure the dropdown is positioned properly */
+  top: 100%; /* Align dropdown below the toggle */
+  left: auto; /* Prevent horizontal misalignment */
+  z-index: 1050; /* Ensure it appears above other elements */
+}
+.actions-dropdown {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 1.5rem; /* Adjust size of the three dots */
+  color: #6c757d;
+}
+
+.actions-dropdown:hover {
+  color: #000; /* Change color on hover */
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  width: 95%; /* Button width */
+  height: 30%;
+  gap: 0.5rem; /* Space between icon and text */
+  background: none;
+  border: none;
+  color: #495057;
+  font-size: 1rem;
+  padding: 0.5rem;
+  text-align: center;
+}
+
+.action-btn:hover {
+  background-color: #f8f9fa; /* Light background on hover */
+  color: #000;
+}
+
 
 .restock-btn,.edit-btn, .delete-btn {
   background: none;

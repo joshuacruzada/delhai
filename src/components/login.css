@@ -133,7 +133,7 @@
 
 /* Center the alert message */
 .login-card .alert {
-  font-size: 12px; /* Smaller font size for alerts */
+  font-size: 0.8rem; /* Smaller font size for alerts */
   padding: 8px;
   border-radius: 5px;
   margin-top: 10px;

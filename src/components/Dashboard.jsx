@@ -1,84 +1,101 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { database } from '../FirebaseConfig';
 import { ref, onValue } from 'firebase/database';
 import './Dashboard.css';
 import ActivityLog from './ActivityLog';
-import Analytics from './Analytics';
+import SalesChart from './SalesChart';
+import TargetAndSummary from './TargetAndSummary';
+
+const safeString = (value) => (typeof value === "string" ? value.trim() : "");
 
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState(localStorage.getItem('activeTab') || 'Pharmaceuticals');
   const [stockData, setStockData] = useState([]);
   const [totals, setTotals] = useState({
-    nearlyExpired: 0, // New state to hold products that are nearly expired
+    nearlyExpired: 0,
     totalStocks: 0,
     lowStocks: 0,
     outOfStocks: 0,
   });
+  const [activeTab, setActiveTab] = useState(localStorage.getItem('activeTab') || 'Pharmaceuticals');
 
   const navigate = useNavigate();
 
-  // Fetch stocks from Firebase
-  useEffect(() => {
-    const stocksRef = ref(database, 'stocks/');
-    const unsubscribe = onValue(stocksRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const stockArray = Object.keys(data).map((key) => ({
-          id: key,
-          ...data[key],
-        }));
-        setStockData(stockArray);
-        calculateTotals(stockArray, activeTab);
-      }
-    });
-
-    return () => unsubscribe();
-  }, [activeTab]);
-
-  // Function to calculate totals, including nearly expired products
-  const calculateTotals = (stockArray, category) => {
-    let nearlyExpired = 0; // Count products that are nearly expired
+  const calculateTotals = useCallback((stockArray, category) => {
+    let nearlyExpired = 0; 
     let totalStocks = 0;
     let lowStocks = 0;
     let outOfStocks = 0;
   
-    const now = new Date(); // Get the current date
+    const now = new Date();
   
     stockArray.forEach((stock) => {
-      if (stock.category.trim().toLowerCase() === category.trim().toLowerCase()) {
+      const stockCategory = safeString(stock?.category);
+      const activeCategory = safeString(category);
+  
+      if (stockCategory.toLowerCase() === activeCategory.toLowerCase()) {
         const quantity = parseInt(stock.quantity, 10);
         const criticalStock = parseInt(stock.criticalStock, 10) || 0;
   
         if (!isNaN(quantity)) {
-          totalStocks += quantity; // Add to total stock count
+          totalStocks += quantity;
           if (quantity === 0) {
-            outOfStocks += 1; // Count out-of-stock items
+            outOfStocks += 1;
           } else if (quantity < criticalStock) {
-            lowStocks += 1; // Count low-stock items
+            lowStocks += 1;
           }
         }
   
-        // Check if the product is nearly expired (e.g., expires within 30 days)
+        // Nearly expired logic (within 6 months)
         if (stock.expiryDate) {
           const expiryDate = new Date(stock.expiryDate);
           const timeDifference = expiryDate - now;
-          const daysToExpire = Math.floor(timeDifference / (1000 * 60 * 60 * 24)); // Convert time difference to days
+          const daysToExpire = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
   
-          if (daysToExpire >= 0 && daysToExpire <= 30) {
-            nearlyExpired += 1; // Count nearly expired items
+          if (daysToExpire >= 0 && daysToExpire <= 180) { // 180 days for 6 months
+            nearlyExpired += 1;
           }
         }
       }
     });
   
     setTotals({
-      nearlyExpired, // Update the nearly expired count
+      nearlyExpired,
       totalStocks,
       lowStocks,
       outOfStocks,
     });
-  };
+  }, []);
+  
+    
+  // Fetch stocks from Firebase
+  useEffect(() => {
+    const stocksRef = ref(database, "stocks/");
+    const unsubscribe = onValue(
+      stocksRef,
+      (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          const stockArray = Object.keys(data).map((key) => ({
+            id: key,
+            ...data[key],
+          }));
+          setStockData(stockArray);
+          calculateTotals(stockArray, activeTab);
+        } else {
+          setStockData([]); // Handle no data case
+        }
+      },
+      (error) => {
+        console.error("Error fetching stocks:", error);
+      }
+    );
+  
+    return () => unsubscribe();
+  }, [activeTab, calculateTotals]);
+  
+  
+
   
 
   const handleTabChange = (category) => {
@@ -87,24 +104,34 @@ const Dashboard = () => {
   };
 
   const handleCardClick = (type) => {
-    // Filter stocks by the selected category
     const filteredStocks = stockData.filter(
-      (stock) => stock.category.trim().toLowerCase() === activeTab.trim().toLowerCase()
+      (stock) => safeString(stock?.category).toLowerCase() === safeString(activeTab).toLowerCase()
     );
   
     if (type === 'low-stocks') {
-      // Filter low stock items
       const lowStocks = filteredStocks.filter(
         (stock) => stock.quantity > 0 && stock.quantity < stock.criticalStock
       );
       navigate('/low-stocks', { state: { stocks: lowStocks, category: activeTab } });
     } else if (type === 'out-of-stocks') {
-      // Filter out of stock items
       const outStocks = filteredStocks.filter((stock) => stock.quantity === 0);
       navigate('/out-stocks', { state: { stocks: outStocks, category: activeTab } });
     } else if (type === 'total-stocks') {
-      // Pass all stocks in the selected category
       navigate('/stock-details', { state: { stocks: filteredStocks, category: activeTab } });
+    } else if (type === 'stock-history') { 
+      navigate('/stock-history', { state: { category: activeTab } });
+    }else if (type === 'nearly-expired') {
+      const nearlyExpiredStocks = filteredStocks.filter((stock) => {
+        if (stock.expiryDate) {
+          const expiryDate = new Date(stock.expiryDate);
+          const now = new Date();
+          const timeDifference = expiryDate - now;
+          const daysToExpire = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+          return daysToExpire >= 0 && daysToExpire <= 180; // Adjust 180 for 6 months
+        }
+        return false;
+      });
+      navigate('/nearly-expired', { state: { stocks: nearlyExpiredStocks, category: activeTab } });
     }
   };
   
@@ -166,10 +193,13 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Right Section for Analytics */}
+        {/* Right Section for SalesChart and TargetSales */}
         <div className="right-section">
-          <div className="analytics-container">
-            <Analytics showExportButtons={false} />
+          <div className="sales-chart-container">
+            <SalesChart />
+          </div>
+          <div className="target-summary-container">
+            <TargetAndSummary />
           </div>
         </div>
       </div>

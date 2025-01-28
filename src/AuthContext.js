@@ -7,9 +7,9 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // For UI blocking until auth state is known
+  const [loading, setLoading] = useState(true);
 
-  // Track the user's authentication state using Firebase Auth
+  // ✅ Track the user's authentication state using Firebase Auth
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
@@ -19,18 +19,26 @@ export const AuthProvider = ({ children }) => {
           email: currentUser.email,
         };
         setUser(formattedUser);
-        localStorage.setItem('user', JSON.stringify(formattedUser));
+        try {
+          localStorage.setItem('user', JSON.stringify(formattedUser));
+        } catch (error) {
+          console.error('Failed to store user in localStorage:', error);
+        }
       } else {
         setUser(null);
-        localStorage.removeItem('user');
+        try {
+          localStorage.removeItem('user');
+        } catch (error) {
+          console.error('Failed to remove user from localStorage:', error);
+        }
       }
-      setLoading(false); // Stop the loading indicator
+      setLoading(false);
     });
 
-    return () => unsubscribe(); // Clean up the listener on unmount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);  // Ignore the ESLint warning for missing dependency by disabling it
+    return () => unsubscribe(); // Ensure cleanup on unmount
+  }, []);
 
+  // ✅ Handle Login
   const login = async (userData) => {
     try {
       setUser(userData);
@@ -42,6 +50,7 @@ export const AuthProvider = ({ children }) => {
         action: 'User Logged In',
         timestamp: new Date().toISOString(),
       };
+
       await push(ref(database, 'auditTrail/'), auditLogEntry);
     } catch (error) {
       console.error('Login failed:', error);
@@ -49,34 +58,39 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // ✅ Handle Logout
   const logout = async () => {
     try {
       if (user) {
-        // Create the audit log entry first, before clearing the user or signing out
         const auditLogEntry = {
           userId: user.uid,
           userName: user.name || 'Anonymous User',
           action: 'User Logged Out',
           timestamp: new Date().toISOString(),
         };
-        await push(ref(database, 'auditTrail/'), auditLogEntry); // Push the log before signing out
+        await push(ref(database, 'auditTrail/'), auditLogEntry);
       }
 
-      // Now proceed to sign out the user
-      await signOut(auth); // Firebase sign-out
-      setUser(null); // Clear local user state
-      localStorage.removeItem('user'); // Clear user from local storage
-      window.location.assign('/login-page'); // Full page refresh for logout
+      await signOut(auth);
+      setUser(null);
+      localStorage.removeItem('user');
+      window.location.assign('/login-page');
     } catch (error) {
       console.error('Logout failed:', error);
       alert('An error occurred during logout. Please try again.');
     }
   };
 
+  // ✅ Display Loading State
   if (loading) {
-    return <div>Loading...</div>; // Optional loading indicator while auth state is being determined
+    return (
+      <div style={{ textAlign: 'center', marginTop: '50px' }}>
+        <h3>Loading...</h3>
+      </div>
+    );
   }
 
+  // ✅ Provide Context Values
   return (
     <AuthContext.Provider value={{ user, login, logout }}>
       {children}

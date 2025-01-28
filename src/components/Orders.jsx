@@ -1,130 +1,250 @@
-import React, { useState, useEffect, useContext } from 'react';
-import './Orders.css';
-import NewOrderForm from './NewOrderForm';
-import {FaCheck, FaTimes, FaTrashAlt } from 'react-icons/fa';
-import { database } from '../FirebaseConfig';
-import { ref, onValue, update, remove } from 'firebase/database';
-import { AuthContext } from '../AuthContext';
+import React, { useState, useEffect, useContext, useCallback, useRef } from "react";
+import "./Orders.css";
+import NewOrderForm from "./NewOrderForm";
+import { FaCheck, FaTimes, FaTrashAlt, FaBan, FaEllipsisV, FaLink } from "react-icons/fa";
+import { database } from "../FirebaseConfig";
+import { ref, get } from "firebase/database";
+import { AuthContext } from "../AuthContext";
+import OrderDetailsModal from './OrderDetailsModal';
+import CustomerOrderLinkModal from "./CustomerOrderLinkModal";
+import { IconShoppingCartQuestion } from '@tabler/icons-react';
+import { useNavigate } from 'react-router-dom';
+import { handlePaidOrder, handleCancelledOrder, handleUnpaidOrder } from "../utils/orderActions";
+import DeleteOrderWarning from "./DeleteOrderWarning";
+
+
 
 const Orders = () => {
   const [showNewOrderForm, setShowNewOrderForm] = useState(false);
   const [orderHistory, setOrderHistory] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('All');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("All");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [activeDropdown, setActiveDropdown] = useState(null); 
+  const [showOrderDetailsModal, setShowOrderDetailsModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [showCustomerOrderLinkModal, setShowCustomerOrderLinkModal] = useState(false);
+
   const { user } = useContext(AuthContext);
+  
+  const dropdownRef = useRef(null); 
+  const modalRef = useRef(null);
+  const openCustomerOrderLinkModal = () => setShowCustomerOrderLinkModal(true);
+  const closeCustomerOrderLinkModal = () => setShowCustomerOrderLinkModal(false);
+
 
   const openNewOrderForm = () => setShowNewOrderForm(true);
-  const closeNewOrderForm = () => setShowNewOrderForm(false);
+  //const closeNewOrderForm = () => setShowNewOrderForm(false);
 
-  // Fetch orders from the database
-  useEffect(() => {
-    const fetchOrders = () => {
-      const ordersRef = ref(database, 'orders/');
-      onValue(ordersRef, (snapshot) => {
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          const allOrders = Object.keys(data).map((key) => ({
-            id: key,
-            ...data[key],
-          }));
+  
+  const handleOrderCreated = () => {
+    fetchOrders(); // Refresh the order list
+    setShowNewOrderForm(false); // Close the form
+  };
 
-          const filteredOrders =
-            user?.role === 'admin'
-              ? allOrders
-              : allOrders.filter((order) => order.userId === user.uid);
+  const openOrderDetailsModal = (order) => {
+    setSelectedOrder(order);
+    setShowOrderDetailsModal(true);
+    setActiveDropdown(null); // Ensure dropdown closes
+  };
+  
+  
+  const closeOrderDetailsModal = () => {
+    setSelectedOrder(null);
+    setShowOrderDetailsModal(false);
+  };
+  
+  const navigate = useNavigate();
 
-          setOrderHistory(filteredOrders);
-          setFilteredOrders(filteredOrders); // Initialize filtered orders
-        } else {
-          setOrderHistory([]);
-          setFilteredOrders([]);
-        }
+  const goToRequestOrders = () => {
+    navigate('/request-orders');
+  };
+  
+
+  // ** Filter Orders **
+  const filterOrders = useCallback(() => {
+    const filtered = orderHistory.filter((order) => {
+      const matchesStatus =
+        activeTab === "All" ||
+        (activeTab === "Pending" && order.paymentStatus === "Pending") ||
+        (activeTab === "Paid" && order.paymentStatus === "Paid") ||
+        (activeTab === "Unpaid" && order.paymentStatus === "Unpaid") ||
+        (activeTab === "Cancelled" && order.paymentStatus === "Cancelled");
+  
+      const matchesSearch =
+        order.customerName?.toLowerCase().includes(searchTerm) ||
+        order.customerAddress?.toLowerCase().includes(searchTerm);
+  
+      return matchesStatus && matchesSearch;
+    });
+  
+    console.log("Filtered Orders:", filtered); // Debug filtered results
+    setFilteredOrders(filtered);
+  }, [orderHistory, searchTerm, activeTab]);
+  
+  
+
+
+  // ** Fetch Orders and Merge Customer Information **
+  const fetchOrders = useCallback(async () => {
+    try {
+      if (!user?.uid) throw new Error("User not authenticated");
+  
+      // References
+      const ordersRef = ref(database, `orders/${user.uid}`);
+      const customersRef = ref(database, `customers/${user.uid}`);
+      const stocksRef = ref(database, `stocks`);
+  
+      // Fetch data concurrently
+      const [ordersSnapshot, customersSnapshot, stocksSnapshot] = await Promise.all([
+        get(ordersRef),
+        get(customersRef),
+        get(stocksRef),
+      ]);
+  
+      const ordersData = ordersSnapshot.exists() ? ordersSnapshot.val() : {};
+      const customersData = customersSnapshot.exists() ? customersSnapshot.val() : {};
+      const stocksData = stocksSnapshot.exists() ? stocksSnapshot.val() : {};
+     
+  
+      // Map through orders and enrich data
+      const allOrders = Object.keys(ordersData).map((key) => {
+        const order = ordersData[key];
+        const customer = customersData[order.customerId] || {};
+  
+        // Map products with stock data
+        const products = (order.products || []).map((product) => {
+          const stock = stocksData[product.id] || {};
+  
+          return {
+            id: product.id || 'N/A',
+            name: stock.name || product.name || 'N/A',
+            quantity: product.quantity || 0,
+            price: product.price || 0,
+            imageUrl: stock.imageUrl || product.imageUrl || '/placeholder.png',
+          };
+        });
+  
+        return {
+          id: key,
+          ...order,
+          customerName: customer.name || 'N/A',
+          customerAddress: customer.completeAddress || 'N/A',
+          tin: customer.tin || 'N/A',
+          shippedTo: customer.shippedTo || '',
+          drNo: customer.drNo || 'N/A',
+          poNo: customer.poNo || 'N/A',
+          terms: customer.terms || 'N/A',
+          salesman: customer.salesman || 'N/A',
+          email: customer.email || 'N/A',
+          products,
+        };
       });
-    };
-
-    if (user) fetchOrders();
+  
+      console.log("Fetched and Merged Orders with Stocks:", allOrders);
+      setOrderHistory(allOrders);
+    } catch (error) {
+      console.error("Error fetching orders:", error.message);
+      setOrderHistory([]);
+    }
   }, [user]);
+  
 
-  // Update payment status
+
+  // ** Fetch Orders From Database ** 
+  useEffect(() => {
+    if (user) {
+      fetchOrders();
+    }
+  }, [user, fetchOrders]);
+
+  // ** Apply Filters Whenever searchTerm, filterStatus, or orderHistory changes **
+  useEffect(() => {
+    filterOrders();
+  }, [filterOrders]);
+
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      // Close Dropdown if clicking outside
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target)
+      ) {
+        setActiveDropdown(null);
+      }
+  
+      // Close Modal if clicking outside the modal content
+      if (
+        showOrderDetailsModal &&
+        modalRef.current &&
+        !modalRef.current.contains(event.target)
+      ) {
+        closeOrderDetailsModal();
+      }
+    };
+  
+    document.addEventListener('mousedown', handleOutsideClick);
+  
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, [showOrderDetailsModal]);
+  
+  
+  
+
+  // ** Update Payment Status **
   const updatePaymentStatus = async (orderId, newStatus) => {
-    const orderRef = ref(database, `orders/${orderId}`);
-
     try {
-      await update(orderRef, { paymentStatus: newStatus });
-      console.log(`Order ${orderId} payment status updated to ${newStatus}`);
+      if (newStatus === "Paid") {
+        await handlePaidOrder(user.uid, orderId);
+      } else if (newStatus === "Cancelled") {
+        await handleCancelledOrder(user.uid, orderId); 
+      } else if (newStatus === "Unpaid") {
+        await handleUnpaidOrder(user.uid, orderId);
+      }
+  
+      // Refresh Orders List
+      fetchOrders();
+      setActiveDropdown(null); 
     } catch (error) {
-      console.error('Error updating payment status:', error);
+      console.error("❌ Error updating payment status:", error.message);
     }
   };
+  
 
-  // Delete an order
-  const deleteOrder = async (orderId) => {
-    const orderRef = ref(database, `orders/${orderId}`);
-
-    try {
-      await remove(orderRef);
-      console.log(`Order ${orderId} deleted successfully`);
-    } catch (error) {
-      console.error('Error deleting order:', error);
-    }
-  };
-
-  // Open delete modal
+  // ** Open Delete Modal **
   const openDeleteModal = (orderId) => {
     setSelectedOrderId(orderId);
     setShowDeleteModal(true);
+    setActiveDropdown(false)
   };
 
-  // Confirm deletion
-  const confirmDelete = () => {
-    if (selectedOrderId) {
-      deleteOrder(selectedOrderId);
-      setShowDeleteModal(false);
-      setSelectedOrderId(null);
-    }
-  };
 
-  // Close delete modal
-  const closeDeleteModal = () => {
-    setShowDeleteModal(false);
-    setSelectedOrderId(null);
-  };
-
-  // Handle search input change
+  // ** Handle Search Input Change **
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value.toLowerCase());
-    filterOrders(e.target.value.toLowerCase(), filterStatus);
   };
 
-  // Handle filter dropdown change
-  const handleFilterChange = (e) => {
-    setFilterStatus(e.target.value);
-    filterOrders(searchTerm, e.target.value);
+  // ** Toggle Dropdown Menu **
+  const toggleDropdown = (orderId, event) => {
+    if (event) {
+      event.stopPropagation(); 
+    }
+    setActiveDropdown((prev) => (prev === orderId ? null : orderId));
   };
-
-  // Filter orders based on search term and payment status
-  const filterOrders = (search, status) => {
-    const filtered = orderHistory.filter((order) => {
-      const matchesStatus =
-        status === 'All' || order.paymentStatus === status;
-      const matchesSearch =
-        order.buyerInfo?.soldTo.toLowerCase().includes(search) ||
-        order.buyerInfo?.address.toLowerCase().includes(search);
-
-      return matchesStatus && matchesSearch;
-    });
-    setFilteredOrders(filtered);
-  };
+  
+  
 
   return (
     <div className="orders-section">
       {!showNewOrderForm ? (
         <>
           <div className="page-header">
-            <h3>Order History</h3>
+            <h3>Order List</h3>
             <div className="order-controls">
               <input
                 type="text"
@@ -133,21 +253,44 @@ const Orders = () => {
                 value={searchTerm}
                 onChange={handleSearchChange}
               />
-              <select
-                className="order-filter-dropdown"
-                value={filterStatus}
-                onChange={handleFilterChange}
-              >
-                <option value="All">All Status</option>
-                <option value="Paid">Paid</option>
-                <option value="Unpaid">Unpaid</option>
-                <option value="Pending">Pending</option>
-              </select>
               <button className="new-order-button" onClick={openNewOrderForm}>
                 + Create Order
               </button>
             </div>
           </div>
+            
+
+          <div className="order-linktab-container">
+            <div className="request-orders-tab" onClick={goToRequestOrders}>
+              <IconShoppingCartQuestion stroke={2} color="gray" size={48} />
+              <h6>Request Orders</h6>
+            </div>
+
+            <div className="customer-order-link-container">
+              <button
+                className="btn btn-primary customer-order-link-btn"
+                onClick={openCustomerOrderLinkModal}
+              >
+                <FaLink /> Customer Order Link
+              </button>
+            </div>
+          </div>
+          
+           {/* Filter Tabs */}
+          <div className="filter-tabs">
+            {["All", "Pending", "Paid", "Unpaid", "Cancelled"].map((status) => (
+              <button
+                key={status}
+                className={`filter-tab ${activeTab === status ? "active" : ""}`}
+                onClick={() => setActiveTab(status)}
+              >
+                {status}
+              </button>
+            ))}
+          </div>
+
+
+          
 
           <div className="order-history-container">
             {filteredOrders.length > 0 ? (
@@ -155,69 +298,66 @@ const Orders = () => {
                 <thead>
                   <tr>
                     <th>Date</th>
-                    <th>Sold To</th>
+                    <th>Name</th>
                     <th>Address</th>
-                    <th>Shipped To</th>
                     <th>Total Amount</th>
                     <th>Payment Status</th>
-                    <th>Actions</th>
+                    
                   </tr>
                 </thead>
                 <tbody>
                   {filteredOrders.map((order) => (
-                    <tr key={order.id}>
+                     <tr key={order.id} onClick={() => openOrderDetailsModal(order)} style={{ cursor: "pointer" }}>
                       <td>
                         {order.createdAt
-                          ? new Date(order.createdAt)
-                              .toLocaleDateString('en-US', {
-                                year: '2-digit',
-                                month: '2-digit',
-                                day: '2-digit',
-                              })
-                              .replace(/\//g, '-')
-                          : 'N/A'}
+                          ? new Date(order.createdAt).toLocaleDateString()
+                          : "N/A"}
                       </td>
-                      <td>{order.buyerInfo?.soldTo || 'N/A'}</td>
-                      <td>{order.buyerInfo?.address || 'N/A'}</td>
-                      <td>{order.buyerInfo?.shippedTo || 'N/A'}</td>
-                      <td>₱{order.totalAmount?.toFixed(2) || '0.00'}</td>
-                      <td
-                        className={`status ${
-                          order.paymentStatus?.toLowerCase() || 'pending'
-                        }`}
-                      >
-                        {order.paymentStatus || 'Pending'}
+                      <td>{order.customerName || "N/A"}</td>
+                      <td>{order.customerAddress || "N/A"}</td>
+                      <td>₱{order.totalAmount?.toFixed(2) || "0.00"}</td>
+                      <td className={`status ${order.paymentStatus?.toLowerCase()}`}>
+                        {order.paymentStatus || "Pending"}
                       </td>
                       <td>
-                        <div className="actions-container">
-                          <div className="action-buttons">
-                            <button
-                              className="action-button btn-paid"
-                              onClick={() =>
-                                updatePaymentStatus(order.id, 'Paid')
-                              }
-                              disabled={order.paymentStatus === 'Paid'}
-                            >
-                              <FaCheck style={{ marginRight: '5px' }} />
-                              Paid
-                            </button>
-                            <button
-                              className="action-button btn-unpaid"
-                              onClick={() =>
-                                updatePaymentStatus(order.id, 'Unpaid')
-                              }
-                              disabled={order.paymentStatus === 'Unpaid'}
-                            >
-                              <FaTimes style={{ marginRight: '5px' }} />
-                              Unpaid
-                            </button>
-                          </div>
+                      <div className="actions-container">
                           <button
-                            className="action-button btn-delete"
-                            onClick={() => openDeleteModal(order.id)}
+                            className="action-button"
+                            onClick={(e) => {
+                              e.stopPropagation(); // Prevent row click
+                              toggleDropdown(order.id, e);
+                            }}
                           >
-                            <FaTrashAlt />
+                            <FaEllipsisV />
                           </button>
+                          {activeDropdown === order.id && (
+                            <div className="order-dropdown-menu" ref={dropdownRef} onClick={(e) => e.stopPropagation()}>
+                              <button
+                                className="btn-paid"
+                                onClick={() => updatePaymentStatus(order.id, "Paid")}
+                              >
+                                <FaCheck /> Paid
+                              </button>
+                              <button
+                                className="btn-unpaid"
+                                onClick={() => updatePaymentStatus(order.id, "Unpaid")}
+                              >
+                                <FaTimes /> Unpaid
+                              </button>
+                              <button
+                                className="btn-cancel"
+                                onClick={() => updatePaymentStatus(order.id, "Cancelled")}
+                              >
+                                <FaBan /> Cancel
+                              </button>
+                              <button
+                                className="btn-delete"
+                                onClick={() => openDeleteModal(order.id)}
+                              >
+                                <FaTrashAlt /> Delete
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -225,31 +365,44 @@ const Orders = () => {
                 </tbody>
               </table>
             ) : (
-              <div className="no-order-history">
-                No order history available.
-              </div>
+              <div className="no-order-history">No order history available.</div>
             )}
           </div>
         </>
       ) : (
-        <NewOrderForm onBackToOrders={closeNewOrderForm} />
+        <NewOrderForm onBackToOrders={handleOrderCreated} />
       )}
 
-      {showDeleteModal && (
-        <div className="delete-modal">
-          <div className="modal-content">
-            <p>Are you sure you want to delete this order?</p>
-            <div className="modal-actions">
-              <button className="btn-confirm" onClick={confirmDelete}>
-                Yes
-              </button>
-              <button className="btn-cancel" onClick={closeDeleteModal}>
-                No
-              </button>
+      
+        {showDeleteModal && (
+          <DeleteOrderWarning
+            orderId={selectedOrderId} // Pass the selected order ID
+            onClose={() => {
+              setShowDeleteModal(false); // Close modal when action completes
+              setSelectedOrderId(null); // Reset the selected order ID
+            }}
+          />
+        )}
+
+
+       {/* Order Details Modal */}
+       {showOrderDetailsModal && (
+          <div className="modal-overlay">
+            <div className="modal-content" ref={modalRef}>
+              <OrderDetailsModal
+                order={selectedOrder}
+                onClose={closeOrderDetailsModal}
+              />
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+    <CustomerOrderLinkModal 
+      show={showCustomerOrderLinkModal} 
+      onClose={closeCustomerOrderLinkModal} 
+    />
+
+
     </div>
   );
 };

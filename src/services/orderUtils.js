@@ -1,118 +1,187 @@
-import { ref, push, set, update, get } from 'firebase/database';
-import { database } from '../FirebaseConfig';
-import emailjs from 'emailjs-com';
+import { ref, push, set, update, get } from "firebase/database";
+import { database } from "../FirebaseConfig";
+import { getAuth } from "firebase/auth";
+import emailjs from "emailjs-com";
 
-// Save order to Firebase
-export const saveOrderToFirebase = (buyerInfo, order, totalAmount, userId) => {
-  // Structure the order data correctly before saving
-  const orderData = {
-    userId: buyerInfo.userId,  // Must be present
-    totalAmount: totalAmount,  // Must be present
-    createdAt: new Date().toISOString(),
-    buyerInfo: {  // Store buyer info separately
-      soldTo: buyerInfo.soldTo,  // Buyer's name
-      address: buyerInfo.address,  // Buyer's address
-      shippedTo: buyerInfo.shippedTo,  // Shipping address
-      tin: buyerInfo.tin,  // Buyer's TIN
-      drNo: buyerInfo.drNo,  // Delivery receipt number
-      terms: buyerInfo.terms,  // Payment terms
-      salesman: buyerInfo.salesman,  // Salesman
-      poNo: buyerInfo.poNo,  // Purchase order number
-      email: buyerInfo.email  // Buyer's email
-    },
-    products: order.map((item) => ({
-      name: item.name,
-      price: item.editablePrice,
-      quantity: item.quantity,
-      packaging: item.packaging,
-    }))
+export const findCustomerByName = async (name, userId) => {
+  if (!name || !userId) {
+    throw new Error("Name and User ID are required to find a customer.");
+  }
+
+  const customersRef = ref(database, `customers/${userId}`);
+  const snapshot = await get(customersRef);
+
+  if (snapshot.exists()) {
+    const customers = snapshot.val();
+    const customerList = Object.keys(customers).map((key) => ({
+      id: key,
+      ...customers[key],
+    }));
+
+    // Find a customer by name (case-insensitive)
+    return customerList.find(
+      (customer) =>
+        customer.name && customer.name.toLowerCase() === name.toLowerCase()
+    );
+  }
+  return null;
+};
+
+
+
+
+
+// Add a new customer to the database
+export const addNewCustomer = async (buyerInfo) => {
+  const auth = getAuth();
+  const user = auth.currentUser;
+
+  if (!user) throw new Error("User must be logged in to add a customer.");
+
+  const customersRef = ref(database, `customers/${user.uid}`);
+  const newCustomerRef = push(customersRef);
+
+  const customerData = {
+    name: buyerInfo.name,
+    street: buyerInfo.street,
+    barangay: buyerInfo.barangay,
+    city: buyerInfo.city,
+    province: buyerInfo.province,
+    zipCode: buyerInfo.zipCode,
+    email: buyerInfo.email,
+    tin: buyerInfo.tin || "",
+    drNo: buyerInfo.drNo || "",
+    poNo: buyerInfo.poNo || "",
+    terms: buyerInfo.terms || "", 
+    shippedTo: buyerInfo.shippedTo || "",
+    salesman: buyerInfo.salesman || "",
+    completeAddress: `${buyerInfo.street}, ${buyerInfo.barangay}, ${buyerInfo.city}`,
+    dateAdded: new Date().toISOString(),
   };
 
-  const ordersRef = ref(database, 'orders');
+  await set(newCustomerRef, customerData);
+  console.log("New customer added successfully:", buyerInfo.name);
+  return newCustomerRef.key; // Return customerId
+};
+
+
+// Save order to Firebase
+export const saveOrderToFirebase = async (customerId, order, totalAmount, userId) => {
+
+  for (const item of order) {
+    if (!item.id) {
+      throw new Error(`❌ Product "${item.name}" is missing an ID.`);
+    }
+  }
+
+  const orderData = {
+    customerId, // Reference to the customer
+    totalAmount,
+    createdAt: new Date().toISOString(),
+    paymentStatus: "Pending",
+    products: order.map((item) => ({
+      id: item.id,
+      name: item.name,
+      price: item.editablePrice || 0,
+      quantity: item.quantity || 0,
+      imageUrl: item.imageUrl || "placeholder.png",
+      packaging: item.packaging || "N/A", 
+      expiryDate: item.expiryDate || "N/A"
+    })),
+  };
+
+  const ordersRef = ref(database, `orders/${userId}`);
   const newOrderRef = push(ordersRef);
 
-  return set(newOrderRef, orderData)
-    .then(() => {
-      console.log('Order saved successfully');
-      return { orderId: newOrderRef.key, orderData };
-    })
-    .catch((error) => {
-      console.error('Error saving order:', error);
-      throw error;
-    });
+  try {
+    await set(newOrderRef, orderData);
+    console.log("Order saved successfully:", newOrderRef.key);
+    return { orderId: newOrderRef.key, orderData };
+  } catch (error) {
+    console.error("Error saving order:", error);
+    throw error;
+  }
 };
+
+
+
 
 // Create invoice in Firebase
-export const createInvoice = (orderId, totalAmount, buyerInfo, orderData) => {
-  const invoicesRef = ref(database, 'invoices');
+export const createInvoice = async (orderId, customerId, totalAmount, orderData) => {
+  const auth = getAuth();
+  const user = auth.currentUser;
 
-  return new Promise((resolve, reject) => {
-    get(invoicesRef)
-      .then((snapshot) => {
-        const data = snapshot.val();
-        let newInvoiceNumber = '000001'; // Default starting invoice number
+  if (!user) throw new Error("User must be logged in to create an invoice.");
+  if (!orderId || !customerId) throw new Error("Order ID and Customer ID are required.");
 
-        if (data) {
-          const invoiceNumbers = Object.values(data).map((invoice) => invoice.invoiceNumber);
-          const maxInvoiceNumber = Math.max(
-            ...invoiceNumbers.map((num) => parseInt(num.slice(4), 10)) // Get numeric part
-          );
-          newInvoiceNumber = (maxInvoiceNumber + 1).toString().padStart(6, '0');
-        }
+  const invoicesRef = ref(database, `invoices/${user.uid}`);
+  const orderRef = ref(database, `orders/${user.uid}/${orderId}`); // Reference to the specific order
 
-        const newInvoiceRef = push(invoicesRef);
+  try {
+    // Step 1: Fetch the latest invoice number
+    const snapshot = await get(invoicesRef);
+    let newInvoiceNumber = "000001";
 
-        const { email, ...buyerInfoWithoutEmail } = buyerInfo;
+    if (snapshot.exists()) {
+      const existingInvoices = Object.values(snapshot.val());
+      const maxInvoiceNumber = Math.max(
+        ...existingInvoices.map((invoice) => parseInt(invoice.invoiceNumber, 10))
+      );
+      newInvoiceNumber = (maxInvoiceNumber + 1).toString().padStart(6, "0");
+    }
 
-        const invoiceData = {
-          orderId,
-          invoiceNumber: `${newInvoiceNumber}`,
-          totalAmount,
-          paymentStatus: 'Pending',
-          issuedAt: new Date().toISOString(),
-          buyerInfo: buyerInfoWithoutEmail,
-          orderDetails: orderData.products,
-          userId: buyerInfo.userId // Ensure the userId is saved in the invoice
-        };
+    // Step 2: Fetch order payment status
+    const orderSnapshot = await get(orderRef);
+    if (!orderSnapshot.exists()) {
+      throw new Error("Order data not found.");
+    }
+    const orderDataFromDB = orderSnapshot.val();
 
-        set(newInvoiceRef, invoiceData)
-          .then(() => {
-            console.log('Invoice created successfully');
-            resolve();
-          })
-          .catch((error) => {
-            console.error('Error creating invoice:', error);
-            reject(error);
-          });
-      })
-      .catch((error) => {
-        console.error('Error fetching invoice data:', error);
-        reject(error);
-      });
-  });
+    // Step 3: Prepare invoice data with only customerId and other essentials
+    const newInvoiceRef = push(invoicesRef);
+    const invoiceData = {
+      orderId,
+      customerId, 
+      invoiceNumber: newInvoiceNumber,
+      totalAmount,
+      paymentStatus: orderDataFromDB.paymentStatus || "Pending", // Link to the order's status
+      issuedAt: new Date().toISOString(),
+      orderDetails: orderData.products, // Use products data
+    };
+
+    // Step 4: Save the invoice data to Firebase
+    await set(newInvoiceRef, invoiceData);
+    console.log("Invoice created successfully:", invoiceData.invoiceNumber);
+
+    return newInvoiceRef.key; // Return the new invoice key
+  } catch (error) {
+    console.error("Error creating invoice:", error);
+    throw error;
+  }
 };
+
 
 
 // Send email notification using EmailJS
 export const sendEmailNotification = (buyerInfo, orderData, totalAmount) => {
-  const emailParams = {
-    to_name: buyerInfo.soldTo,
-    to_email: buyerInfo.email,
+  const emailParams = { 
+    to_name: buyerInfo.name, 
+    to_email: buyerInfo.email,      
     order_summary: orderData.products
       .map((item) => `${item.name} x ${item.quantity} - ₱${item.price.toFixed(2)}`)
-      .join('\n'),
+      .join("\n"),
     total_amount: `₱${totalAmount.toFixed(2)}`,
   };
 
-  console.log('Email Params:', emailParams); // Log email params for debugging
+  console.log("Email Params:", emailParams); // Log email params for debugging
 
   emailjs
-    .send('service_xbzwe8f', 'template_op31jrk', emailParams, 'Eaa7gEQkmCzf4Prdz')
+    .send("service_xbzwe8f", "template_op31jrk", emailParams, "Eaa7gEQkmCzf4Prdz")
     .then((response) => {
-      console.log('Email successfully sent!', response.status, response.text);
+      console.log("Email successfully sent!", response.status, response.text);
     })
     .catch((error) => {
-      console.error('Failed to send email:', error);
+      console.error("Failed to send email:", error);
     });
 };
 
@@ -122,51 +191,67 @@ export const updateStock = async (productId, quantityChange, products, setProduc
   const product = products.find((p) => p.id === productId);
 
   if (product) {
-    const currentStock = Number(product.stock) || 0;
-    const updatedStock = Math.max(currentStock + quantityChange, 0);
+    const currentQuantity = Number(product.quantity) || 0; // Use 'quantity' instead of 'stock'
+    const updatedQuantity = Math.max(currentQuantity + quantityChange, 0); // Prevent negative quantity
 
-    if (!isNaN(updatedStock)) {
+    if (!isNaN(updatedQuantity)) {
       try {
-        await update(productRef, { stock: updatedStock });
+        await update(productRef, { quantity: updatedQuantity }); // Update 'quantity' in Firebase
         setProducts((prevProducts) =>
-          prevProducts.map((p) => (p.id === productId ? { ...p, stock: updatedStock } : p))
+          prevProducts.map((p) =>
+            p.id === productId ? { ...p, quantity: updatedQuantity } : p
+          )
         );
-        console.log(`Stock updated successfully for product: ${productId}`);
+        console.log(`Quantity updated successfully for product: ${productId}`);
       } catch (error) {
-        console.error('Error updating stock in Firebase:', error);
+        console.error("Error updating quantity in Firebase:", error);
       }
     } else {
-      console.error('Invalid stock value detected:', updatedStock);
+      console.error("Invalid quantity value detected:", updatedQuantity);
     }
   } else {
-    console.error('Product not found for stock update');
+    console.error("Product not found for quantity update");
   }
 };
 
+
+
 // Complete order process with proper stock updates
-export const completeOrderProcess = async (buyerInfo, order, totalAmount, products, setProducts) => {
+export const completeOrderProcess = async (buyerInfo, order, totalAmount, products, setProducts, userId) => {
   try {
-    // Validate that userId is provided
-    if (!buyerInfo.userId) {
-      throw new Error('User ID is missing in buyerInfo');
+    console.log("Starting Complete Order Process");
+
+    if (!userId) throw new Error("User ID is required.");
+
+    // Step 1: Find or add customer
+    let customerId;
+    const existingCustomer = await findCustomerByName(buyerInfo.name, userId);
+
+    if (existingCustomer) {
+      customerId = existingCustomer.id;
+      console.log("Customer found:", existingCustomer.name);
+    } else {
+      console.log("Customer not found. Adding as new customer.");
+      customerId = await addNewCustomer(buyerInfo);
     }
 
-    // Save the order
-    const { orderId, orderData } = await saveOrderToFirebase(buyerInfo, order, totalAmount, buyerInfo.userId);
+    // Step 2: Save the order
+    const { orderId, orderData } = await saveOrderToFirebase(customerId, order, totalAmount, userId);
 
-    // Create invoice with all order data but without the email
-    await createInvoice(orderId, totalAmount, buyerInfo, orderData);
+    // Step 3: Create invoice
+    await createInvoice(orderId, customerId, totalAmount, orderData);
 
-    // Send email notification
+    // Step 4: Send email notification
     await sendEmailNotification(buyerInfo, orderData, totalAmount);
 
-    // Update stock for each item in the order
+    // Step 5: Update stock
     for (const item of order) {
-      await updateStock(item.id, -item.quantity, products, setProducts); // Decrease stock by quantity ordered
+      await updateStock(item.id, -item.quantity, products, setProducts);
     }
 
-    console.log('Order process completed successfully!');
+    console.log("Order process completed successfully.");
   } catch (error) {
-    console.error('Error completing the order process:', error);
+    console.error("Error in order process:", error);
+    throw error;
   }
 };

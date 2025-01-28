@@ -2,24 +2,39 @@ import { database } from '../FirebaseConfig';
 import { ref, set, push, onValue, get } from 'firebase/database';
 
 // Fetch stocks from the database
-export const fetchStocks = (callback) => {
+export const fetchStocks = (callback = () => {}) => {
   const stocksRef = ref(database, 'stocks/');
-  onValue(stocksRef, (snapshot) => {
-    const data = snapshot.val();
-    if (data) {
-      const formattedData = Object.keys(data).map(key => ({
-        id: key,
-        ...data[key],
-        quantityUnit: data[key].quantityUnit || '', // Ensure default unit is an empty string if not specified
-        measurementValue: data[key].measurementValue || '', // Ensure default value if not specified
-        measurementUnit: data[key].measurementUnit || '', // Ensure default value if not specified
-      }));
-      callback(formattedData);
-    } else {
-      callback([]); // Return an empty array if no data exists
+  onValue(
+    stocksRef,
+    (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const formattedData = Object.keys(data).map((key) => ({
+          id: key,
+          ...data[key],
+        }));
+        if (typeof callback === "function") {
+          callback(formattedData);
+        } else {
+          console.warn("Callback is not a valid function:", callback);
+        }
+      } else {
+        if (typeof callback === "function") {
+          callback([]);
+        } else {
+          console.warn("Callback is not a valid function:", callback);
+        }
+      }
+    },
+    (error) => {
+      console.error('Error fetching stocks:', error);
+      if (typeof callback === "function") {
+        callback([]);
+      }
     }
-  });
+  );
 };
+
 
 // Fetch a single product by ID
 export const fetchProductById = (id, callback) => {
@@ -91,4 +106,3 @@ export const deleteProduct = (id, callback) => {
       console.error('Error deleting item:', error);
     });
 };
-

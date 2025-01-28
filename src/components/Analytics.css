@@ -1,62 +1,46 @@
-.analytics {
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
+.analytics-container {
+ 
+    margin: auto;
+    padding: 20px;
+  }
+  
+  .analytics-container h2 {
+    text-align: center;
+    font-size: 28px;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two equal columns */
+    gap: 20px;
+  }
+  
 
-.chart-controls {
-  margin-bottom: 20px;
-}
-
-.chart-controls button {
-  padding: 10px 15px;
-  margin-right: 10px;
-  background-color: #e0e0e0;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.chart-controls button:hover {
-  background-color: #a6cfff;
-}
-
-.chart-controls button.active {
-  background-color: #36A2EB;
-  color: white;
-}
-
-.chart-container {
-  position: relative;
-  height: 400px;
-}
-
-canvas {
-  width: 100% !important;
-  height: 400px !important;
-}
-
-.chart-controls {
-  margin-bottom: 20px;
-}
-
-.chart-controls button {
-  padding: 10px 15px;
-  margin-right: 10px;
-  background-color: #e0e0e0;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.chart-controls button:hover {
-  background-color: #a6cfff;
-}
-
-.chart-controls button.active {
-  background-color: #36A2EB;
-  color: white;
-}
+  /* Target and Summary Section (Optional) */
+  .target-summary-section {
+    grid-column: span 1; /* Span both columns */
+    margin-top: 10px; 
+    padding: 20px;
+    
+  }
+  
+  .generate-report-button {
+    position: absolute;
+    right: 40px;
+    top: 20px;
+    background-color: #4D869C;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .generate-report-button:hover {
+    background-color: #3B6E7D;
+  }
+  

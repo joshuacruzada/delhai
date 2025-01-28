@@ -1,133 +1,102 @@
-/* Container for the entire products page */
-.products-page {
-  padding: 20px;
-  background-color: transparent; 
-}
-
-/* Header styles for the products page */
+/* Products Header */
 .products-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   margin-bottom: 20px;
-  border-bottom: 2px solid #cdcdcd;
-  padding-bottom: 10px;
+  padding: 10px 20px;
 }
 
-.products-header h2 {
-  margin: 0;
-  font-size: 28px;
-  font-weight: 700;
-  color: #333; /* Darker color for better contrast */
-}
-
+/* Controls Wrapper (Search, Categories, Subcategories) */
 .products-controls {
   display: flex;
+  gap: 10px;
   align-items: center;
-  gap: 15px; /* Space between search and category dropdown */
 }
 
+/* Search Input */
 .products-search {
-  padding: 8px;
-  font-size: 14px;
-  border: 1px solid #ddd; /* Softer border */
-  background-color: #fff; /* White background */
+  padding: 8px 12px;
+  border: 1px solid #ccc;
   border-radius: 6px;
-  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1); /* Subtle shadow for input */
-  transition: all 0.2s ease;
-  width: 84vh;
+  font-size: 0.9rem;
+  width: 300px; /* Adjust width as needed */
 }
 
-.products-search:focus {
-  border-color: #6c757d; /* Focused border */
-  outline: none;
-}
-
-.category-products {
-  padding: 8px;
-  font-size: 14px;
-  border: 1px solid #ddd;
-  background-color: #fff;
+/* Category Dropdown */
+.category-products,
+.subcategory-products {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
   border-radius: 6px;
-  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1); /* Subtle shadow for select */
+  font-size: 0.9rem;
+  width: 200px; /* Adjust width as needed */
 }
 
-/* Products table styling */
-.products-table {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: #fff;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Softer shadow */
-  border-radius: 8px;
-  overflow: hidden;
+/* Subcategory Dropdown Always Visible */
+.subcategory-products {
+  display: inline-block;
 }
 
-.products-table th, .products-table td {
-  padding: 12px 15px;
-  text-align: left;
-  border-bottom: 4px solid rgb(239, 238, 238);
-}
+/* Product List Grid */
 
-.products-table th {
-  background-color: #fff;
-  color: #373A40;
-  font-size: 14px;
-  font-weight: 600;
-  text-transform: uppercase;
-   /* To make headers stand out */
-}
-
-.products-table td {
-  font-size: 16px;
-  color: #5a5d63;
-}
-
-.products-table tbody tr {
-  transition: background-color 0.2s ease;
-}
-
-.products-table tbody tr:hover {
-  background-color: whitesmoke; /* Lighter hover effect */
-}
-
-/* Date column */
-.products-date {
-  color: #333;
-  font-weight: 500;
-}
-
-/* Product name column */
-.products-name {
-  font-weight: 600;
-  color: #373A40;
-}
-
-/* Category column */
-.products-category {
-  font-weight: 500;
-  color: #6c757d; /* Lighter color for secondary info */
-}
-
-/* Scrollable table container */
-.products-table-container {
+.product-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
+  gap: 20px;
   margin-top: 20px;
-  max-height: 500px; /* Set a max height */
-  overflow-y: auto;
-  border-radius: 10px;
-  background-color: #fff;
+  padding: 0 20px;
 }
 
-/* Add hover effect to button-like links */
-.products-link {
-  color: #007bff;
-  text-decoration: none;
+/* Individual Product Card */
+.product-card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  text-align: center;
+  transition: box-shadow 0.3s ease-in-out;
+  cursor: pointer;
+}
+
+.product-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color:     #ebeaea;
+}
+
+/* Product Image */
+.productlist-image {
+    max-width: 100%;
+    max-height: 100px;
+    object-fit: contain;
+    padding: 5px;
+  
+}
+/* Product Info */
+.product-info {
+  text-align: center;
+}
+
+.product-name {
+  font-size: 1rem;
   font-weight: bold;
+  margin: 5px 0;
 }
 
-.products-link:hover {
-  text-decoration: underline;
+.product-description {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 10px;
 }
 
-/* Responsive adjustments */
+.product-price,
+.product-quantity {
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+}
+
+
+/* Responsive Adjustment */
 @media (max-width: 768px) {
   .products-header {
     flex-direction: column;
@@ -135,86 +104,26 @@
   }
 
   .products-controls {
-    width: 100%;
     flex-direction: column;
-    gap: 10px;
+    align-items: flex-start;
+    gap: 5px;
   }
 
-  .products-table th, .products-table td {
-    padding: 10px;
-  }
-
-  .products-table {
-    font-size: 14px;
+  .products-search,
+  .category-products,
+  .subcategory-products {
+    width: 100%;
   }
 }
 
-.products-image {
-  width: 120px; /* Adjust width based on your preference */
-  text-align: center;
-}
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .product-list {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Smaller grids for mobile */
+  }
 
-/* Styling for the product images */
-.product-image {
-  max-width: 100%; /* Ensure the image does not exceed the column width */
-  max-height: 120px; /* Limit the image height */
-  object-fit: contain; /* Ensure the image maintains its aspect ratio */
-  padding: 5px;
-  border-radius: 5px;
-  border: 1px solid #ddd; /* Optional: add a border */
-  background-color: #f9f9f9; /* Optional: add a background */
-}
-
-/* Optional: Add hover effect to images for better UX */
-.product-image:hover {
-  transform: scale(1.05); /* Slightly enlarge on hover */
-  transition: transform 0.3s ease;
-}
-
-.low-stock-highlight {
-  background-color: rgb(250, 145, 145); /* Light red with opacity */
-}
-
-
-/* Remove bottom border of the product row when it's expanded */
-.products-table tbody tr.expanded-row td {
-  border-bottom: 4px solid rgb(239, 238, 238); /* Removes the product list's bottom border */
-}
-
-/* Ensure the expanded content is part of the same visual container */
-.expanded-content {
-  position: relative; /* Remove absolute positioning to keep it part of the same row */
-  width: 100%;
-  background-color: #fff; /* Match the background color */
-  padding: 10px; /* Ensure consistent padding */
-  border-bottom: none !important; /* Remove any bottom border */
-  box-shadow: none !important; /* Remove shadow if there is any */
-  z-index: 1; /* Adjust z-index if necessary */
-}
-
-/* Remove bottom padding from last element inside expanded content to keep consistency */
-.expanded-content p:last-child {
-  margin-bottom: 0;
-}
-
-/* Styles for the toggle button to remove background and border */
-.toggle-btn {
-  background-color: transparent; /* Remove background color */
-  border: none; /* Remove border */
-  cursor: pointer; /* Make the button look clickable */
-  padding: 0; /* Remove padding */
-  margin: 0; /* Remove margin */
-}
-
-.toggle-btn:hover {
-  background-color: transparent; /* No background on hover */
-}
-
-.toggle-btn:focus {
-  outline: none; /* Remove the default focus outline */
-}
-
-/* Optional: Adjust icon size */
-.toggle-btn i {
-  font-size: 18px; /* You can change the icon size here */
+  .product-image {
+    max-width: 150px;
+    height: 150px;
+  }
 }

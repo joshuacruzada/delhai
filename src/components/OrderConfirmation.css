@@ -1,0 +1,90 @@
+/* OrderConfirmation.css */
+
+.order-confirmation-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f3f4f6, #e2e8f0);
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .confirmation-card {
+    background: #ffffff;
+    padding: 30px 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 500px;
+    width: 100%;
+    animation: fadeIn 1s ease-in-out;
+  }
+
+  /* Confirmation Message */
+.status-message {
+  font-size: 1rem;
+  color: #4a5568;
+  margin-bottom: 20px;
+}
+
+  
+  .confirmation-success-message {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #28a745;
+    animation: bounceIn 0.8s ease-in-out;
+  }
+  
+  h2 {
+    margin-bottom: 20px;
+    color: #2c3e50;
+    font-size: 24px;
+  }
+  
+  .status-message {
+    font-size: 16px;
+    margin-bottom: 20px;
+    color: #4a5568;
+  }
+  
+  .order-details {
+    margin-top: 20px;
+    text-align: left;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  
+  .order-details h4 {
+    margin-bottom: 10px;
+    color: #2c3e50;
+  }
+  
+  .confirm-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 20px;
+    transition: background-color 0.3s;
+  }
+  
+  .confirm-button:hover {
+    background-color: #388E3C;
+  }
+  
+  /* Fade-in Animation */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  

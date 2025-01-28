@@ -1,286 +1,311 @@
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  Chart,
-  LineElement,
-  LinearScale,
-  CategoryScale,
-  Title,
-  Tooltip,
-  Legend,
-  PointElement,
-  LineController,
-} from 'chart.js';
+import React, { useState, useEffect } from 'react';
 import { ref, onValue } from 'firebase/database';
 import { database } from '../FirebaseConfig';
-
-Chart.register(LineElement, LinearScale, CategoryScale, Title, Tooltip, Legend, PointElement, LineController);
-
-const aggregateData = (sales, stock) => {
-  const dailyData = { sales: {}, stockIn: {}, stockOut: {} };
-  const monthlyData = { sales: {}, stockIn: {}, stockOut: {} };
-  const yearlyData = { sales: {}, stockIn: {}, stockOut: {} };
-
-  sales.forEach((item) => {
-    const date = new Date(item.date);
-    if (isNaN(date.getTime())) return;
-
-    const day = date.toISOString().split('T')[0];
-    const month = date.toISOString().slice(0, 7);
-    const year = date.getFullYear();
-
-    dailyData.sales[day] = (dailyData.sales[day] || 0) + (item.amount || 0);
-    monthlyData.sales[month] = (monthlyData.sales[month] || 0) + (item.amount || 0);
-    yearlyData.sales[year] = (yearlyData.sales[year] || 0) + (item.amount || 0);
-  });
-
-  stock.forEach((item) => {
-    const date = new Date(item.date);
-    if (isNaN(date.getTime())) return;
-
-    const day = date.toISOString().split('T')[0];
-    const month = date.toISOString().slice(0, 7);
-    const year = date.getFullYear();
-
-    dailyData.stockIn[day] = (dailyData.stockIn[day] || 0) + (item.stockIn || 0);
-    dailyData.stockOut[day] = (dailyData.stockOut[day] || 0) + (item.stockOut || 0);
-
-    monthlyData.stockIn[month] = (monthlyData.stockIn[month] || 0) + (item.stockIn || 0);
-    monthlyData.stockOut[month] = (monthlyData.stockOut[month] || 0) + (item.stockOut || 0);
-
-    yearlyData.stockIn[year] = (yearlyData.stockIn[year] || 0) + (item.stockIn || 0);
-    yearlyData.stockOut[year] = (yearlyData.stockOut[year] || 0) + (item.stockOut || 0);
-  });
-
-  return { dailyData, monthlyData, yearlyData };
-};
+import SalesChart from './SalesChart';
+import InventoryChart from './InventoryChart';
+import TargetAndSummary from './TargetAndSummary';
+import GenerateReportModal from './GenerateReportModal';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import './Analytics.css';
 
 const Analytics = () => {
   const [salesData, setSalesData] = useState([]);
-  const [stockData, setStockData] = useState([]);
-  const [salesView, setSalesView] = useState('daily');
-  const [stockView, setStockView] = useState('daily');
-
-  const salesChartRef = useRef(null);
-  const stockChartRef = useRef(null);
-  const salesChartInstance = useRef(null);
-  const stockChartInstance = useRef(null);
+  const [inventoryData, setInventoryData] = useState([]);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   useEffect(() => {
     const salesRef = ref(database, 'sales/');
-    const stockRef = ref(database, 'stocks/');
-
+    const inventoryRef = ref(database, 'stocks/');
+  
+    // Fetch sales data
     onValue(salesRef, (snapshot) => {
       const data = snapshot.val();
+      let flattenedSalesData = [];
+  
       if (data) {
-        setSalesData(Object.values(data));
+        // Flatten data by iterating through userId and unique salesId
+        Object.values(data).forEach((userSales) => {
+          flattenedSalesData = [
+            ...flattenedSalesData,
+            ...Object.values(userSales), // Flatten sales under each userId
+          ];
+        });
       }
+  
+      setSalesData(flattenedSalesData); // Update the state
+      console.log("Flattened Sales Data:", flattenedSalesData);
     });
-
-    onValue(stockRef, (snapshot) => {
+  
+    // Fetch inventory data
+    onValue(inventoryRef, (snapshot) => {
       const data = snapshot.val();
-      if (data) {
-        setStockData(Object.values(data));
-      }
+      const flattenedInventoryData = data ? Object.values(data) : [];
+      setInventoryData(flattenedInventoryData);
+      console.log("Flattened Inventory Data:", flattenedInventoryData);
     });
   }, []);
+  
 
-  const initializeChart = (ref, labels, datasets, chartInstance) => {
-    if (ref && ref.current) {
-      if (chartInstance.current) {
-        chartInstance.current.destroy(); // Destroy previous instance if it exists
-      }
-
-      chartInstance.current = new Chart(ref.current, {
-        type: 'line',
-        data: {
-          labels,
-          datasets,
-        },
-        options: {
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: 'Amount',
-              },
-            },
-          },
-          plugins: {
-            tooltip: {
-              mode: 'index',
-              intersect: false,
-              callbacks: {
-                label: (context) => `${context.dataset.label}: $${context.parsed.y.toFixed(2)}`,
-              },
-            },
-            legend: {
-              display: true,
-              position: 'top',
-            },
-          },
-          interaction: {
-            mode: 'index',
-            intersect: false,
-          },
-        },
+  const handleGenerateReport = (config) => {
+    const { reportType, dateRange, fileType } = config;
+  
+    console.log("Report Type:", reportType);
+    console.log("Date Range:", dateRange);
+    console.log("File Type:", fileType);
+    console.log("Sales Data:", salesData);
+    console.log("Inventory Data:", inventoryData);
+  
+    let filteredData = [];
+    
+    if (reportType === "sales") {
+      filteredData = salesData.filter((sale) => {
+        const saleDate = new Date(sale.date).toISOString().split('T')[0]; // Extract only the date part
+        const startDate = dateRange.start; // Already in YYYY-MM-DD format
+        const endDate = dateRange.end; // Already in YYYY-MM-DD format
+        return saleDate >= startDate && saleDate <= endDate;
       });
+      }else if (reportType === "inventory") {
+      filteredData = inventoryData.map((item) => ({
+        name: item.name,
+        packaging: item.packaging,
+        price: item.pricePerBox || item.pricePerPiece || 0, // Select price based on availability
+        quantity: item.quantity,
+      }));
     }
+  
+    console.log("Filtered Data:", filteredData);
+  
+    if (filteredData.length === 0) {
+      alert("No data available for the selected filters.");
+      return;
+    }
+  
+    generateFile(filteredData, fileType, reportType);
   };
+  
+const generateFile = (data, fileType, reportType) => {
+  if (data.length === 0) {
+    alert("No data available for the selected filters.");
+    return;
+  }
 
-  useEffect(() => {
-    if (salesData.length && stockData.length) {
-      const { dailyData, monthlyData, yearlyData } = aggregateData(salesData, stockData);
+  if (fileType === "csv") {
+    exportToCSV(data, `${reportType}-report`, reportType);
+  } else if (fileType === "xls") {
+    exportToXLS(data, `${reportType}-report`, reportType);
+  } else if (fileType === "pdf") {
+    exportToPDF(data, `${reportType}-report`, reportType);
+  }
+};
 
-      let salesLabels, salesDataset;
-      if (salesView === 'daily') {
-        salesLabels = Object.keys(dailyData.sales).sort();
-        salesDataset = [
-          {
-            label: 'Daily Sales',
-            data: salesLabels.map((label) => dailyData.sales[label]),
-            borderColor: '#FF6384',
-            fill: false,
-            tension: 0.4,
-            pointRadius: 3,
-          },
-        ];
-      } else if (salesView === 'monthly') {
-        salesLabels = Object.keys(monthlyData.sales).sort();
-        salesDataset = [
-          {
-            label: 'Monthly Sales',
-            data: salesLabels.map((label) => monthlyData.sales[label]),
-            borderColor: '#FF6384',
-            fill: false,
-            tension: 0.4,
-            pointRadius: 3,
-          },
-        ];
-      } else if (salesView === 'yearly') {
-        salesLabels = Object.keys(yearlyData.sales).sort();
-        salesDataset = [
-          {
-            label: 'Yearly Sales',
-            data: salesLabels.map((label) => yearlyData.sales[label]),
-            borderColor: '#FF6384',
-            fill: false,
-            tension: 0.4,
-            pointRadius: 3,
-          },
-        ];
-      }
+ const exportToCSV = (data, filename, reportType) => {
+  let csvContent = `\uFEFFDELHAI ${
+    reportType === "sales" ? "SALES" : "INVENTORY"
+  } REPORT\n\n`;
 
-      initializeChart(salesChartRef, salesLabels, salesDataset, salesChartInstance);
+  if (reportType === "sales") {
+    data.forEach((sale) => {
+      csvContent += `Date:,${new Date(sale.date).toLocaleDateString()}\n`;
+      csvContent += "Product Name,Packaging,Price,Quantity,Amount\n";
 
-      let stockLabels, stockDatasets;
-      if (stockView === 'daily') {
-        stockLabels = Object.keys(dailyData.stockIn).sort();
-        stockDatasets = [
-          {
-            label: 'Daily Stock In',
-            data: stockLabels.map((label) => dailyData.stockIn[label]),
-            borderColor: '#36A2EB',
-            fill: false,
-            tension: 0.4,
-            pointRadius: 3,
-          },
-          {
-            label: 'Daily Stock Out',
-            data: stockLabels.map((label) => dailyData.stockOut[label]),
-            borderColor: '#FFCE56',
-            fill: false,
-            tension: 0.4,
-            pointRadius: 3,
-          },
-        ];
-      } else if (stockView === 'monthly') {
-        stockLabels = Object.keys(monthlyData.stockIn).sort();
-        stockDatasets = [
-          {
-            label: 'Monthly Stock In',
-            data: stockLabels.map((label) => monthlyData.stockIn[label]),
-            borderColor: '#36A2EB',
-            fill: false,
-            tension: 0.4,
-            pointRadius: 3,
-          },
-          {
-            label: 'Monthly Stock Out',
-            data: stockLabels.map((label) => monthlyData.stockOut[label]),
-            borderColor: '#FFCE56',
-            fill: false,
-            tension: 0.4,
-            pointRadius: 3,
-          },
-        ];
-      } else if (stockView === 'yearly') {
-        stockLabels = Object.keys(yearlyData.stockIn).sort();
-        stockDatasets = [
-          {
-            label: 'Yearly Stock In',
-            data: stockLabels.map((label) => yearlyData.stockIn[label]),
-            borderColor: '#36A2EB',
-            fill: false,
-            tension: 0.4,
-            pointRadius: 3,
-          },
-          {
-            label: 'Yearly Stock Out',
-            data: stockLabels.map((label) => yearlyData.stockOut[label]),
-            borderColor: '#FFCE56',
-            fill: false,
-            tension: 0.4,
-            pointRadius: 3,
-          },
-        ];
-      }
+      sale.products.forEach((product) => {
+        csvContent += `"${product.name}","${product.packaging}",${product.price.toFixed(
+          2
+        )},${product.quantity},${(product.price * product.quantity).toFixed(2)}\n`;
+      });
 
-      initializeChart(stockChartRef, stockLabels, stockDatasets, stockChartInstance);
-    }
-  }, [salesView, stockView, salesData, stockData]);
+      csvContent += `,,,"Total Amount",${sale.totalAmount.toFixed(2)}\n\n`;
+    });
+  } else if (reportType === "inventory") {
+    csvContent += "Product Name,Packaging,Price,Quantity\n";
 
-  return (
-    <div className="analytics container-fluid">
-      <h2>Sales and Stock Analytics</h2>
+    data.forEach((item) => {
+      csvContent += `"${item.name}","${item.packaging}",${item.price.toFixed(
+        2
+      )},${item.quantity}\n`;
+    });
 
-      {/* Sales Graph */}
-      <div className="charts-row">
-        <h3>Sales Data</h3>
-        <div className="chart-controls">
-          <button className={salesView === 'daily' ? 'active' : ''} onClick={() => setSalesView('daily')}>
-            Daily
-          </button>
-          <button className={salesView === 'monthly' ? 'active' : ''} onClick={() => setSalesView('monthly')}>
-            Monthly
-          </button>
-          <button className={salesView === 'yearly' ? 'active' : ''} onClick={() => setSalesView('yearly')}>
-            Yearly
-          </button>
+    const totalQuantity = data.reduce((sum, item) => sum + item.quantity, 0);
+    csvContent += `,,Total Stocks Available,${totalQuantity}\n`;
+  }
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", `${filename}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+  
+  
+const exportToXLS = (data, filename, reportType) => {
+  const worksheetData = [
+    [`DELHAI ${reportType === "sales" ? "SALES" : "INVENTORY"} REPORT`],
+    [],
+  ];
+
+  if (reportType === "sales") {
+    data.forEach((sale) => {
+      worksheetData.push([`Date: ${new Date(sale.date).toLocaleDateString()}`]);
+      worksheetData.push(["Product Name", "Packaging", "Price", "Quantity", "Amount"]);
+
+      sale.products.forEach((product) => {
+        worksheetData.push([
+          product.name,
+          product.packaging,
+          product.price.toFixed(2),
+          product.quantity,
+          (product.price * product.quantity).toFixed(2),
+        ]);
+      });
+
+      worksheetData.push([
+        "",
+        "",
+        "",
+        "Total Amount",
+        `${sale.totalAmount.toFixed(2)}`,
+      ]);
+      worksheetData.push([]);
+    });
+  } else if (reportType === "inventory") {
+    worksheetData.push(["Product Name", "Packaging", "Price", "Quantity"]);
+
+    data.forEach((item) => {
+      worksheetData.push([
+        item.name,
+        item.packaging,
+        item.price.toFixed(2),
+        item.quantity,
+      ]);
+    });
+
+    const totalQuantity = data.reduce((sum, item) => sum + item.quantity, 0);
+    worksheetData.push([]);
+    worksheetData.push(["", "", "Total Stocks Available", totalQuantity]);
+  }
+
+  const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, `${reportType} Report`);
+  XLSX.writeFile(workbook, `${filename}.xlsx`);
+};
+
+
+const exportToPDF = (data, filename, reportType) => {
+  const doc = new jsPDF();
+
+  // Set Title
+  doc.setFontSize(18);
+  const title = reportType === "sales" ? "DELHAI SALES REPORT" : "DELHAI INVENTORY REPORT";
+  doc.text(title, 10, 10);
+
+  let y = 20; // Initial y-coordinate for table rendering
+
+  if (reportType === "sales") {
+    data.forEach((sale) => {
+      doc.setFontSize(12);
+      doc.text(`Date: ${new Date(sale.date).toLocaleDateString()}`, 10, y);
+      y += 10;
+
+      const headers = [["Product Name", "Packaging", "Price", "Quantity", "Amount"]];
+      const rows = sale.products.map((product) => [
+        product.name,
+        product.packaging,
+        (Number(product.price) || 0).toFixed(2), // Safely handle price
+        product.quantity,
+        ((Number(product.price) || 0) * product.quantity).toFixed(2), // Safely calculate amount
+      ]);
+
+      doc.autoTable({
+        startY: y,
+        head: headers,
+        body: rows,
+        theme: "grid",
+        headStyles: { fillColor: [41, 128, 185] },
+        styles: { fontSize: 10 },
+      });
+
+      y = doc.lastAutoTable.finalY + 10;
+      doc.setFontSize(12);
+      const label = "Total Amount:";
+      const totalAmount = `${sale.totalAmount.toFixed(2)}`;
+      
+      // Calculate the width of the label
+      const labelWidth = doc.getTextWidth(label);
+      
+      doc.text(label, 10, y); // Add the label
+      doc.text(totalAmount, 10 + labelWidth + 135, y);
+      y += 20; // Add spacing between sales
+    });
+  } else if (reportType === "inventory") {
+    const headers = [["Product Name", "Packaging", "Price", "Quantity"]];
+    const rows = data.map((item) => [
+      item.name,
+      item.packaging,
+      (Number(item.price) || 0).toFixed(2), // Safely handle price
+      item.quantity,
+    ]);
+
+    doc.autoTable({
+      startY: y,
+      head: headers,
+      body: rows,
+      theme: "grid",
+      headStyles: { fillColor: [41, 128, 185] },
+      styles: { fontSize: 10 },
+    });
+
+    y = doc.lastAutoTable.finalY + 10;
+    doc.setFontSize(12);
+    const label = "Total Stocks:";
+    const totalStocks = data.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    
+    // Calculate the width of the label
+    const labelWidth = doc.getTextWidth(label);
+    
+    doc.text(label, 10, y); // Add the label
+    doc.text(`${totalStocks}`, 10 + labelWidth + 130, y); 
+    y += 20; 
+    
+  }
+
+  doc.save(`${filename}.pdf`);
+};
+
+   return (
+    <div className="analytics-container">
+      <h2>Analytics and Reports</h2>
+      <button
+        className="generate-report-button"
+        onClick={() => setShowReportModal(true)}
+      >
+        Generate Report
+      </button>
+
+      <div className="grid-container">
+        <div className="inventory-section">
+          <InventoryChart inventoryData={inventoryData} />
         </div>
-        <div className="chart-container">
-          <canvas ref={salesChartRef}></canvas>
+        <div className="sales-section">
+          <SalesChart salesData={salesData} />
         </div>
       </div>
 
-      {/* Stock Graph */}
-      <div className="charts-row">
-        <h3>Stock Data</h3>
-        <div className="chart-controls">
-          <button className={stockView === 'daily' ? 'active' : ''} onClick={() => setStockView('daily')}>
-            Daily
-          </button>
-          <button className={stockView === 'monthly' ? 'active' : ''} onClick={() => setStockView('monthly')}>
-            Monthly
-          </button>
-          <button className={stockView === 'yearly' ? 'active' : ''} onClick={() => setStockView('yearly')}>
-            Yearly
-          </button>
-        </div>
-        <div className="chart-container">
-          <canvas ref={stockChartRef}></canvas>
-        </div>
-      </div>
+      <TargetAndSummary salesData={salesData} />
+
+      {showReportModal && (
+        <GenerateReportModal
+          show={showReportModal}
+          onClose={() => setShowReportModal(false)}
+          onGenerate={handleGenerateReport}
+        />
+      )}
     </div>
   );
 };

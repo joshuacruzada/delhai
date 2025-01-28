@@ -3,6 +3,7 @@
   background-color: transparent;
   border: none;
   width: 100%;
+  overflow-y: hidden; /* This should not have a scrollbar */
 }
 
 .activity-log-header {
@@ -16,18 +17,18 @@
 }
 
 .table-container {
-  max-height: 300px; 
-  overflow-y: auto;  
+  max-height: 300px; /* Restrict the height to allow scrolling */
+  overflow-y: hidden; /* Enable vertical scrolling */
   margin-top: 10px; 
   border: 1px solid #ddd; 
   border-radius: 8px;
 }
 
-
 .activity-log-table {
   width: 100%;
   margin: 0;
   border-collapse: collapse;
+  table-layout: fixed; /* Ensure consistent column widths */
 }
 
 .activity-log-table th, .activity-log-table td {
@@ -35,6 +36,7 @@
   padding: 10px 15px;
   text-align: center;
   vertical-align: middle;
+  font-size: 12px; /* Ensure consistent font size */
 }
 
 /* Ensure thead takes full width */
@@ -43,6 +45,7 @@
   width: 100%;
   table-layout: fixed;
   border-bottom: 1px solid #d0d1d2; /* Prevent columns from shifting */
+  font-size: 12px; /* Reduce the font size */
 }
 
 .activity-log-table thead th {
@@ -54,18 +57,17 @@
   top: 0;
   z-index: 10;
   padding: 10px; /* Adjust padding if necessary */
-  width: auto;
-   /* Ensure width auto-adjusts to the content */
 }
 
 .activity-log-table tbody {
-  display: block;
-  max-height: 260px;
-  overflow-y: auto;
+  display: block; /* Separate table body from header */
+  max-height: 260px; /* Restrict table body height */
+  overflow-y: auto; /* Enable scrolling */
   width: 100%;
 }
 
 .activity-log-table tbody tr {
+  font-size: 12px; /* Reduce the font size */
   display: table;
   width: 100%;
   table-layout: fixed;
@@ -74,47 +76,8 @@
 .activity-log-table tbody tr td {
   text-align: center; /* Horizontal centering for the body */
   vertical-align: middle; /* Vertical centering for the body */
-}
-.activity-log-table {
-  width: 100%;
-  margin: 0;
-  border-collapse: collapse;
-}
-
-.activity-log-table th, .activity-log-table td {
-  border: none;
-  padding: 10px 15px;
-  text-align: center;
-  vertical-align: middle; /* Ensures vertical centering as well */
-}
-
-.activity-log-table thead th {
-  background-color: #eee;
-  color: #595757;
-  text-align: center;
-  position: sticky;  /* Make header sticky */
-  top: 0;           /* Stick to top of the table */
-  z-index: 10;      /* Ensure header stays above table body */
-  vertical-align: middle; /* Ensures vertical centering as well */
-}
-
-
-.activity-log-table tbody {
-  display: block; /* Separate table body from header */
-  max-height: 260px; /* Control table body height */
-  overflow-y: auto; /* Scroll within the body */
-}
-
-.activity-log-table tbody tr {
-  display: table; /* Ensure rows behave like a table */
-  width: 100%; /* Full width for rows */
-  table-layout: fixed; /* Prevent column shifting */
-}
-
-.activity-log-table tbody tr td {
   color: #495057;
   background-color: transparent;
-  text-align: center;
 }
 
 .activity-log-table tbody tr:hover {
