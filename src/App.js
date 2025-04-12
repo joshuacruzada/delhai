@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ref, push, get } from 'firebase/database';
 import { database } from './FirebaseConfig';
 import { getAuth } from 'firebase/auth';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import StaffLayout from './layouts/StaffLayout';
+
 
 // Components
 import Sidebar from './components/Sidebar';
@@ -124,14 +126,7 @@ function App() {
     }
   };
 
-  const ProtectedRoute = ({ element: Component, allowedRoles }) => {
-    const token = localStorage.getItem('authToken');
-    const role = localStorage.getItem('userRole');
 
-    if (!token) return <Navigate to="/login-page" />;
-    if (allowedRoles.includes(role)) return <Component />;
-    return <Navigate to="/403" />;
-  };
 
   return (
     <div className="App">
@@ -155,32 +150,35 @@ function App() {
 
             {/* Public Routes */}
           
-            <Route path="/staff-login" element={<LoginForm onLogin={handleLogin} />} />
+            <Route path="/login-page" element={<LoginForm onLogin={handleLogin} />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/signup-page" element={<SignUpForm />} />
             <Route path="/confirm-order" element={<OrderConfirmation />} />
             <Route path="/user/:userId/customer-order" element={<CustomerOrderForm />} />
 
             {/* Protected Routes */}
-            <Route path="/dashboard" element={<ProtectedRoute element={Dashboard} allowedRoles={['admin', 'employee']} />} />
-            <Route path="/invoices" element={<ProtectedRoute element={Invoices} allowedRoles={['admin', 'employee']} />} />
-            <Route path="/products" element={<ProtectedRoute element={Products} allowedRoles={['admin', 'employee']} />} />
-            <Route path="/analytics" element={<ProtectedRoute element={Analytics} allowedRoles={['admin']} />} />
-            <Route path="/orders" element={<ProtectedRoute element={Orders} allowedRoles={['admin', 'employee']} />} />
-            <Route path="/customers" element={<ProtectedRoute element={CustomerList} allowedRoles={['admin', 'employee']} />} />
-            <Route path="/inventory" element={<ProtectedRoute element={Inventory} allowedRoles={['admin']} />} />
-            <Route path="/stock-details" element={<ProtectedRoute element={StockDetails} allowedRoles={['admin', 'employee']} />} />
-            <Route path="/low-stocks" element={<ProtectedRoute element={LowStocksTable} allowedRoles={['admin', 'employee']} />} />
-            <Route path="/out-stocks" element={<ProtectedRoute element={OutStockTable} allowedRoles={['admin', 'employee']} />} />
-            <Route path="/add-product" element={<ProtectedRoute element={AddNewProduct} allowedRoles={['admin']} />} />
-            <Route path="/edit-product/:id" element={<ProtectedRoute element={EditProduct} allowedRoles={['admin']} />} />
-            <Route path="/settings" element={<ProtectedRoute element={Settings} allowedRoles={['admin']} />} />
-            <Route path="/audit-trail" element={<ProtectedRoute element={AuditTrail} allowedRoles={['admin']} />} />
-            <Route path="/stock-history" element={<ProtectedRoute element={StockHistory} allowedRoles={['admin', 'employee']} />} />
-            <Route path="/item-history" element={<ProtectedRoute element={ItemHistory} allowedRoles={['admin', 'employee']} />} />
-            <Route path="/request-orders" element={<ProtectedRoute element={RequestOrder} allowedRoles={['admin', 'employee']} />} />
-            <Route path="/new-order-form" element={<ProtectedRoute element={NewOrderForm} allowedRoles={['admin', 'employee']} />} />
-            <Route path="/nearly-expired" element={<ProtectedRoute element={NearlyExpiredProducts} allowedRoles={['admin', 'employee']} />} />
+            <Route element={<StaffLayout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/orders" element={<Orders />} />
+              <Route path="/customers" element={<CustomerList />} />
+              <Route path="/inventory" element={<Inventory />} />
+              <Route path="/invoices" element={<Invoices />} />
+              <Route path="/products" element={<Products />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/audit-trail" element={<AuditTrail />} />
+              <Route path="/stock-details" element={<StockDetails />} />
+              <Route path="/low-stocks" element={<LowStocksTable />} />
+              <Route path="/out-stocks" element={<OutStockTable />} />
+              <Route path="/add-product" element={<AddNewProduct />} />
+              <Route path="/edit-product/:id" element={<EditProduct />} />
+              <Route path="/stock-history" element={<StockHistory />} />
+              <Route path="/item-history" element={<ItemHistory />} />
+              <Route path="/request-orders" element={<RequestOrder />} />
+              <Route path="/new-order-form" element={<NewOrderForm />} />
+              <Route path="/nearly-expired" element={<NearlyExpiredProducts />} />
+            </Route>
+
           </Routes>
         </div>
       </BrowserRouter>
