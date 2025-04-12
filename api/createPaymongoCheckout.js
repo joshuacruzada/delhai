@@ -15,6 +15,12 @@ export default async function handler(req, res) {
       quantity: item.quantity,
     }));
 
+    // 🔍 Add logging here for debugging
+    console.log("Line Items:", lineItems);
+    console.log("SUCCESS_URL:", process.env.SUCCESS_URL);
+    console.log("CANCEL_URL:", process.env.CANCEL_URL);
+    console.log("PAYMONGO_SECRET_KEY is defined:", !!process.env.PAYMONGO_SECRET_KEY);
+
     const response = await axios.post(
       "https://api.paymongo.com/v1/checkout_sessions",
       {
@@ -37,7 +43,7 @@ export default async function handler(req, res) {
 
     res.status(200).json({ checkout_url: response.data.data.attributes.checkout_url });
   } catch (error) {
-    console.error("API error:", error.response?.data || error.message);
+    console.error(" PayMongo Error:", error.response?.data || error.message);
     res.status(500).json({ error: "Failed to create checkout session" });
   }
 }

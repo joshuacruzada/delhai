@@ -9,7 +9,7 @@ export const createCheckoutSession = async (cartItems) => {
     });
     
 
-    const result = await response.json();
+    const result = await response.text();
 
     if (!response.ok) {
       throw new Error(result.error || "Unknown error");
