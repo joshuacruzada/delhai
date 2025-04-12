@@ -1,20 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { ref, push, get } from 'firebase/database';
-import { database } from './FirebaseConfig';
-import { getAuth } from 'firebase/auth';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
+
+import { handleLogin, handleLogout } from './utils/authHandler';
 import StaffLayout from './layouts/StaffLayout';
 
+// Ecommerce
+import LandingPage from './ecommerce/components/LandingPage';
+import Shop from './ecommerce/components/Shop';
+import ProductDetail from './ecommerce/components/ProductDetail';
+import SocialLogin from './ecommerce/components/SocialLogin';
+import Cart from './ecommerce/components/Cart';
+import PaymentSuccess from './ecommerce/components/PaymentSuccess';
+import PaymentCancel from './ecommerce/components/PaymentCancel';
 
-// Components
-import Sidebar from './components/Sidebar';
-import SidebarEmployee from './components/SidebarEmployee';
+// Public
+import LoginForm from './components/login';
+import ForgotPassword from './components/ForgotPassword';
+import SignUpForm from './components/signup';
+import OrderConfirmation from './components/OrderConfirmation';
+import CustomerOrderForm from './components/CustomerOrderForm';
+
+// Staff
 import Dashboard from './components/Dashboard';
 import Orders from './components/Orders';
 import CustomerList from './components/CustomerList';
-import CustomerOrderForm from './components/CustomerOrderForm';
 import Invoices from './components/Invoices';
 import Products from './components/Products';
 import Inventory from './components/Inventory';
@@ -24,118 +35,29 @@ import LowStocksTable from './components/LowStocksTable';
 import OutStockTable from './components/OutStockTable';
 import AddNewProduct from './components/AddNewProduct';
 import EditProduct from './components/EditProduct';
-import LoginForm from './components/login';
-import SignUpForm from './components/signup';
-import ForgotPassword from './components/ForgotPassword';
 import AuditTrail from './components/AuditTrail';
 import Settings from './components/Settings';
 import RequestOrder from './components/RequestOrder';
-import OrderConfirmation from './components/OrderConfirmation';
 import StockHistory from './components/StockHIstory';
 import NewOrderForm from './components/NewOrderForm';
 import NearlyExpiredProducts from './components/NearlyExpiredProducts';
 import ItemHistory from './components/ItemHistory';
-import LandingPage from './ecommerce/components/LandingPage';
-import Shop from './ecommerce/components/Shop';
-import ProductDetail from './ecommerce/components/ProductDetail';
-import SocialLogin from './ecommerce/components/SocialLogin';
-import Cart from './ecommerce/components/Cart';
-import PaymentSuccess from './ecommerce/components/PaymentSuccess';
-import PaymentCancel from './ecommerce/components/PaymentCancel';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userRole, setUserRole] = useState('');
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
-    const role = localStorage.getItem('userRole');
-
-    if (token) {
-      setIsAuthenticated(true);
-      setUserRole(role); 
-    }
+    setIsReady(!!token);
   }, []);
 
-  const handleLogin = async (role, userId, userName) => {
-    setIsAuthenticated(true);
-    setUserRole(role);
-
-    localStorage.setItem('authToken', 'your-token');
-    localStorage.setItem('userRole', role);
-    localStorage.setItem('userId', userId);
-    localStorage.setItem('userName', userName);
-
-    const auditLogEntry = {
-      userId,
-      userName,
-      action: 'User Logged In',
-      timestamp: new Date().toISOString(),
-    };
-
-    const auditRef = ref(database, 'auditTrail/');
-    try {
-      await push(auditRef, auditLogEntry);
-      console.log('Login audit log entry created successfully.');
-    } catch (error) {
-      console.error('Error creating login audit log entry:', error);
-    }
-  };
-
-  const handleLogout = async () => {
-    const auth = getAuth();
-    const currentUser = auth.currentUser;
-    let userId = null;
-    let userName = null;
-
-    if (currentUser) {
-      userId = currentUser.uid;
-
-      try {
-        const userRef = ref(database, `users/${userId}`);
-        const snapshot = await get(userRef);
-
-        if (snapshot.exists()) {
-          const userData = snapshot.val();
-          userName = userData.name || 'Unknown User';
-        }
-      } catch (error) {
-        console.error('Error fetching user details during logout:', error);
-      }
-    }
-
-    const auditLogEntry = {
-      userId: userId || 'Unknown ID',
-      userName: userName || 'Unknown User',
-      action: 'User Logged Out',
-      timestamp: new Date().toISOString(),
-    };
-
-    const auditRef = ref(database, 'auditTrail/');
-    try {
-      await push(auditRef, auditLogEntry);
-      console.log('Logout audit log entry created successfully.');
-
-      setIsAuthenticated(false);
-      setUserRole('');
-      localStorage.clear();
-
-      window.location.assign('/login-page');
-    } catch (error) {
-      console.error('Error logging out:', error);
-    }
-  };
-
-
+  if (!isReady) return null;
 
   return (
     <div className="App">
       <BrowserRouter>
-        {isAuthenticated && userRole === 'admin' && <Sidebar onLogout={handleLogout} />}
-        {isAuthenticated && userRole === 'employee' && <SidebarEmployee onLogout={handleLogout} />}
-
-        <div className="content">
-          <Routes>
+        <Routes>
+          {/* Ecommerce */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<SocialLogin />} />
           <Route path="/shop" element={<Shop />} />
@@ -144,47 +66,39 @@ function App() {
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/payment-cancel" element={<PaymentCancel />} />
 
+          {/* Public */}
+          <Route path="/login-page" element={<LoginForm onLogin={handleLogin} />} />
+          <Route path="/signup-page" element={<SignUpForm />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/confirm-order" element={<OrderConfirmation />} />
+          <Route path="/user/:userId/customer-order" element={<CustomerOrderForm />} />
 
-
-
-
-            {/* Public Routes */}
-          
-            <Route path="/login-page" element={<LoginForm onLogin={handleLogin} />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/signup-page" element={<SignUpForm />} />
-            <Route path="/confirm-order" element={<OrderConfirmation />} />
-            <Route path="/user/:userId/customer-order" element={<CustomerOrderForm />} />
-
-            {/* Protected Routes */}
-            <Route element={<StaffLayout />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/orders" element={<Orders />} />
-              <Route path="/customers" element={<CustomerList />} />
-              <Route path="/inventory" element={<Inventory />} />
-              <Route path="/invoices" element={<Invoices />} />
-              <Route path="/products" element={<Products />} />
-              <Route path="/analytics" element={<Analytics />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/audit-trail" element={<AuditTrail />} />
-              <Route path="/stock-details" element={<StockDetails />} />
-              <Route path="/low-stocks" element={<LowStocksTable />} />
-              <Route path="/out-stocks" element={<OutStockTable />} />
-              <Route path="/add-product" element={<AddNewProduct />} />
-              <Route path="/edit-product/:id" element={<EditProduct />} />
-              <Route path="/stock-history" element={<StockHistory />} />
-              <Route path="/item-history" element={<ItemHistory />} />
-              <Route path="/request-orders" element={<RequestOrder />} />
-              <Route path="/new-order-form" element={<NewOrderForm />} />
-              <Route path="/nearly-expired" element={<NearlyExpiredProducts />} />
-            </Route>
-
-          </Routes>
-        </div>
+          {/* Staff */}
+          <Route element={<StaffLayout onLogout={handleLogout} />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/customers" element={<CustomerList />} />
+            <Route path="/invoices" element={<Invoices />} />
+            <Route path="/products" element={<Products />} />
+            <Route path="/inventory" element={<Inventory />} />
+            <Route path="/analytics" element={<Analytics />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/audit-trail" element={<AuditTrail />} />
+            <Route path="/stock-details" element={<StockDetails />} />
+            <Route path="/low-stocks" element={<LowStocksTable />} />
+            <Route path="/out-stocks" element={<OutStockTable />} />
+            <Route path="/add-product" element={<AddNewProduct />} />
+            <Route path="/edit-product/:id" element={<EditProduct />} />
+            <Route path="/stock-history" element={<StockHistory />} />
+            <Route path="/item-history" element={<ItemHistory />} />
+            <Route path="/request-orders" element={<RequestOrder />} />
+            <Route path="/new-order-form" element={<NewOrderForm />} />
+            <Route path="/nearly-expired" element={<NearlyExpiredProducts />} />
+          </Route>
+        </Routes>
       </BrowserRouter>
     </div>
   );
 }
 
 export default App;
-
