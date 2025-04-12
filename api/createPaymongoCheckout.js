@@ -1,21 +1,13 @@
 import axios from "axios";
 
 export default async function handler(req, res) {
-  console.log(" PayMongo Checkout hit");
-  console.log("Method:", req.method);
-  console.log("Body:", req.body);
-  console.log("ENV:", {
-    SUCCESS_URL: process.env.SUCCESS_URL,
-    CANCEL_URL: process.env.CANCEL_URL,
-    PAYMONGO_SECRET_KEY: !!process.env.PAYMONGO_SECRET_KEY // just check presence
-  });
-
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
     const { items } = req.body;
+    console.log("📦 Received items:", items); // ✅ Log incoming payload
 
     const lineItems = items.map((item) => ({
       name: item.name,
@@ -23,6 +15,12 @@ export default async function handler(req, res) {
       currency: item.currency || "PHP",
       quantity: item.quantity,
     }));
+
+    console.log("🧾 Line Items to PayMongo:", lineItems); // ✅ Log line items
+
+    console.log("🔐 Using SECRET_KEY:", process.env.PAYMONGO_SECRET_KEY ? '✅ Available' : '❌ Missing');
+    console.log("✅ SUCCESS_URL:", process.env.SUCCESS_URL);
+    console.log("❌ CANCEL_URL:", process.env.CANCEL_URL);
 
     const response = await axios.post(
       "https://api.paymongo.com/v1/checkout_sessions",
@@ -44,10 +42,11 @@ export default async function handler(req, res) {
       }
     );
 
-    console.log("✅ PayMongo response:", response.data);
+    console.log("✅ PayMongo Response:", response.data); // ✅ Log full PayMongo response
+
     res.status(200).json({ checkout_url: response.data.data.attributes.checkout_url });
   } catch (error) {
-    console.error(" API error:", error.response?.data || error.message);
+    console.error("❌ API error:", error.response?.data || error.message); // ✅ Catch and log error details
     res.status(500).json({ error: "Failed to create checkout session" });
   }
 }
