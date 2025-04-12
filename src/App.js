@@ -155,7 +155,7 @@ function App() {
 
             {/* Public Routes */}
           
-            <Route path="/login-page" element={<LoginForm onLogin={handleLogin} />} />
+            <Route path="/staff-login" element={<LoginForm onLogin={handleLogin} />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/signup-page" element={<SignUpForm />} />
             <Route path="/confirm-order" element={<OrderConfirmation />} />
