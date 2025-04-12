@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, matchPath, BrowserRouter } from 'react-router-dom';
 import { ref, push, get } from 'firebase/database';
-import { database } from './FirebaseConfig';
 import { getAuth } from 'firebase/auth';
+import { database } from './FirebaseConfig';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -54,15 +54,14 @@ function App() {
   const [userRole, setUserRole] = useState('');
   const location = useLocation();
 
-  const isEcommerceRoute = [
-    '/',
-    '/shop',
-    '/cart',
-    '/productdetail/:productId',
-    '/payment-success',
-    '/payment-cancel',
-    '/login'
-  ].some((route) => location.pathname.startsWith(route));
+  const ecommercePaths = [
+    '/', '/shop', '/cart', '/productdetail/:productId',
+    '/payment-success', '/payment-cancel', '/login'
+  ];
+
+  const isEcommerceRoute = ecommercePaths.some((path) =>
+    matchPath({ path, end: false }, location.pathname)
+  );
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -90,9 +89,8 @@ function App() {
       timestamp: new Date().toISOString(),
     };
 
-    const auditRef = ref(database, 'auditTrail/');
     try {
-      await push(auditRef, auditLogEntry);
+      await push(ref(database, 'auditTrail/'), auditLogEntry);
     } catch (error) {
       console.error('Error logging in:', error);
     }
@@ -106,7 +104,6 @@ function App() {
 
     if (currentUser) {
       userId = currentUser.uid;
-
       try {
         const userRef = ref(database, `users/${userId}`);
         const snapshot = await get(userRef);
@@ -156,7 +153,7 @@ function App() {
 
       <div className="content">
         <Routes>
-          {/* Ecommerce / Public */}
+          {/* Ecommerce */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<SocialLogin />} />
           <Route path="/shop" element={<Shop />} />
