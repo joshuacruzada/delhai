@@ -1,13 +1,16 @@
-//import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-//import { ref, push, get } from 'firebase/database';
-//import { database } from './FirebaseConfig';
-//import { getAuth } from 'firebase/auth';
+import { ref, push, get } from 'firebase/database';
+import { database } from './FirebaseConfig';
+import { getAuth } from 'firebase/auth';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import StaffLayout from './layouts/StaffLayout';
 
+
 // Components
+import Sidebar from './components/Sidebar';
+import SidebarEmployee from './components/SidebarEmployee';
 import Dashboard from './components/Dashboard';
 import Orders from './components/Orders';
 import CustomerList from './components/CustomerList';
@@ -41,38 +44,126 @@ import PaymentSuccess from './ecommerce/components/PaymentSuccess';
 import PaymentCancel from './ecommerce/components/PaymentCancel';
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState('');
+
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    const role = localStorage.getItem('userRole');
+
+    if (token) {
+      setIsAuthenticated(true);
+      setUserRole(role); 
+    }
+  }, []);
+
+  const handleLogin = async (role, userId, userName) => {
+    setIsAuthenticated(true);
+    setUserRole(role);
+
+    localStorage.setItem('authToken', 'your-token');
+    localStorage.setItem('userRole', role);
+    localStorage.setItem('userId', userId);
+    localStorage.setItem('userName', userName);
+
+    const auditLogEntry = {
+      userId,
+      userName,
+      action: 'User Logged In',
+      timestamp: new Date().toISOString(),
+    };
+
+    const auditRef = ref(database, 'auditTrail/');
+    try {
+      await push(auditRef, auditLogEntry);
+      console.log('Login audit log entry created successfully.');
+    } catch (error) {
+      console.error('Error creating login audit log entry:', error);
+    }
+  };
+
+  const handleLogout = async () => {
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+    let userId = null;
+    let userName = null;
+
+    if (currentUser) {
+      userId = currentUser.uid;
+
+      try {
+        const userRef = ref(database, `users/${userId}`);
+        const snapshot = await get(userRef);
+
+        if (snapshot.exists()) {
+          const userData = snapshot.val();
+          userName = userData.name || 'Unknown User';
+        }
+      } catch (error) {
+        console.error('Error fetching user details during logout:', error);
+      }
+    }
+
+    const auditLogEntry = {
+      userId: userId || 'Unknown ID',
+      userName: userName || 'Unknown User',
+      action: 'User Logged Out',
+      timestamp: new Date().toISOString(),
+    };
+
+    const auditRef = ref(database, 'auditTrail/');
+    try {
+      await push(auditRef, auditLogEntry);
+      console.log('Logout audit log entry created successfully.');
+
+      setIsAuthenticated(false);
+      setUserRole('');
+      localStorage.clear();
+
+      window.location.assign('/login-page');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
 
 
 
   return (
     <div className="App">
       <BrowserRouter>
+        {isAuthenticated && userRole === 'admin' && <Sidebar onLogout={handleLogout} />}
+        {isAuthenticated && userRole === 'employee' && <SidebarEmployee onLogout={handleLogout} />}
+
         <div className="content">
           <Routes>
-            {/* Ecommerce Routes (no sidebar) */}
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<SocialLogin />} />
-            <Route path="/shop" element={<Shop />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/productdetail/:productId" element={<ProductDetail />} />
-            <Route path="/payment-success" element={<PaymentSuccess />} />
-            <Route path="/payment-cancel" element={<PaymentCancel />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<SocialLogin />} />
+          <Route path="/shop" element={<Shop />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/productdetail/:productId" element={<ProductDetail />} />
+          <Route path="/payment-success" element={<PaymentSuccess />} />
+          <Route path="/payment-cancel" element={<PaymentCancel />} />
 
-            {/* Auth & Public */}
-            <Route path="/login-page" element={<LoginForm />} />
-            <Route path="/signup-page" element={<SignUpForm />} />
+
+
+
+
+            {/* Public Routes */}
+          
+            <Route path="/login-page" element={<LoginForm onLogin={handleLogin} />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/signup-page" element={<SignUpForm />} />
             <Route path="/confirm-order" element={<OrderConfirmation />} />
             <Route path="/user/:userId/customer-order" element={<CustomerOrderForm />} />
 
-            {/* Staff-Only Layout with Sidebar */}
+            {/* Protected Routes */}
             <Route element={<StaffLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/orders" element={<Orders />} />
               <Route path="/customers" element={<CustomerList />} />
+              <Route path="/inventory" element={<Inventory />} />
               <Route path="/invoices" element={<Invoices />} />
               <Route path="/products" element={<Products />} />
-              <Route path="/inventory" element={<Inventory />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/audit-trail" element={<AuditTrail />} />
@@ -87,6 +178,7 @@ function App() {
               <Route path="/new-order-form" element={<NewOrderForm />} />
               <Route path="/nearly-expired" element={<NearlyExpiredProducts />} />
             </Route>
+
           </Routes>
         </div>
       </BrowserRouter>
@@ -95,3 +187,4 @@ function App() {
 }
 
 export default App;
+
