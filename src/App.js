@@ -144,7 +144,7 @@ function App() {
         <div className="content">
           <Routes>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/customer-login" element={<SocialLogin />} />
+          <Route path="/login" element={<SocialLogin />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/productdetail/:productId" element={<ProductDetail />} />
