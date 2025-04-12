@@ -16,10 +16,12 @@ export default async function handler(req, res) {
     }));
 
     // 🔍 Add logging here for debugging
-    console.log("Line Items:", lineItems);
-    console.log("SUCCESS_URL:", process.env.SUCCESS_URL);
-    console.log("CANCEL_URL:", process.env.CANCEL_URL);
-    console.log("PAYMONGO_SECRET_KEY is defined:", !!process.env.PAYMONGO_SECRET_KEY);
+    console.log("📦 Incoming Items:", items);
+    console.log("🧾 Line Items:", lineItems);
+    console.log("✅ SUCCESS_URL:", process.env.SUCCESS_URL);
+    console.log("✅ CANCEL_URL:", process.env.CANCEL_URL);
+    console.log("🔑 PAYMONGO_SECRET_KEY exists:", !!process.env.PAYMONGO_SECRET_KEY);
+    
 
     const response = await axios.post(
       "https://api.paymongo.com/v1/checkout_sessions",
