@@ -59,7 +59,7 @@ const RestockModal = ({ product, onClose }) => {
 
           <div className="form-group">
             <label>Stock:</label>
-            <p>{product.quantity}</p>
+            <p>{product.stock}</p>
           </div>
 
           <div className="form-group">

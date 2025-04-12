@@ -242,6 +242,8 @@ const Inventory = () => {
                           className={`${isLowStock ? "low-stock-highlight" : ""} ${
                             isNearlyExpired ? "nearly-expired-highlight" : ""
                           }`}
+                          onClick={() => navigate('/item-history', { state: { item } })}
+                          style={{ cursor: "pointer" }} // Make the row look clickable
                         >
                           <td className="image-column">
                             {item.imageUrl ? (
@@ -254,7 +256,7 @@ const Inventory = () => {
                               <span>No Image</span>
                             )}
                           </td>
-                          <td className="stock">{`${item.quantity} ${item.quantityUnit || ""}`}</td>
+                          <td className="stock">{`${item.stock} ${item.quantityUnit || ""}`}</td>
                           <td className="packaging">{item.packaging || "N/A"}</td>
                           <td className="item-name">{item.name}</td>
                           <td className="item-description">
@@ -265,41 +267,51 @@ const Inventory = () => {
                             {item.subCategory || "No Subcategory"}
                           </td>
                           <td className="actions">
-                                <Dropdown>
-                                  <Dropdown.Toggle
-                                    variant="link"
-                                    id="dropdown-basic"
-                                    className="actions-dropdown"
-                                  >
-                                    <i className="bi bi-three-dots"></i>
-                                  </Dropdown.Toggle>
+                          <Dropdown
+                            onClick={(e) => e.stopPropagation()} // Prevent propagation of click to the row
+                          >
+                            <Dropdown.Toggle
+                              variant="link"
+                              id="dropdown-basic"
+                              className="actions-dropdown"
+                            >
+                              <i className="bi bi-three-dots"></i>
+                            </Dropdown.Toggle>
 
-                                  <Dropdown.Menu>
-                                    <Dropdown.Item
-                                      as="button"
-                                      className="action-btn restock-btn"
-                                      onClick={() => handleRestock(item.id)}
-                                    >
-                                      <i className="bi bi-box-seam"></i> Restock
-                                    </Dropdown.Item>
-                                    <Dropdown.Item
-                                      as="button"
-                                      className="action-btn edit-btn"
-                                      onClick={() => handleEdit(item.id)}
-                                    >
-                                      <i className="bi bi-pencil"></i> Edit
-                                    </Dropdown.Item>
-                                    <Dropdown.Item
-                                      as="button"
-                                      className="action-btn delete-btn"
-                                      onClick={() => handleDelete(item.id)}
-                                    >
-                                      <i className="bi bi-trash"></i> Delete
-                                    </Dropdown.Item>
-                                  </Dropdown.Menu>
-                                </Dropdown>
-
-                          </td>
+                            <Dropdown.Menu>
+                              <Dropdown.Item
+                                as="button"
+                                className="action-btn restock-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent row click
+                                  handleRestock(item.id);
+                                }}
+                              >
+                                <i className="bi bi-box-seam"></i> Restock
+                              </Dropdown.Item>
+                              <Dropdown.Item
+                                as="button"
+                                className="action-btn edit-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent row click
+                                  handleEdit(item.id);
+                                }}
+                              >
+                                <i className="bi bi-pencil"></i> Edit
+                              </Dropdown.Item>
+                              <Dropdown.Item
+                                as="button"
+                                className="action-btn delete-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent row click
+                                  handleDelete(item.id);
+                                }}
+                              >
+                                <i className="bi bi-trash"></i> Delete
+                              </Dropdown.Item>
+                            </Dropdown.Menu>
+                          </Dropdown>
+                        </td>
 
                         </tr>
                       );

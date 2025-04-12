@@ -34,7 +34,7 @@ const Dashboard = () => {
       const activeCategory = safeString(category);
   
       if (stockCategory.toLowerCase() === activeCategory.toLowerCase()) {
-        const quantity = parseInt(stock.quantity, 10);
+        const quantity = parseInt(stock.stock, 10);
         const criticalStock = parseInt(stock.criticalStock, 10) || 0;
   
         if (!isNaN(quantity)) {
@@ -47,14 +47,18 @@ const Dashboard = () => {
         }
   
         // Nearly expired logic (within 6 months)
-        if (stock.expiryDate) {
-          const expiryDate = new Date(stock.expiryDate);
-          const timeDifference = expiryDate - now;
-          const daysToExpire = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+        if (stock.stockHistory) {
+          Object.values(stock.stockHistory).forEach((batch) => {
+            if (batch.expiryDate) {
+              const expiryDate = new Date(batch.expiryDate);
+              const timeDifference = expiryDate - now;
+              const daysToExpire = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
   
-          if (daysToExpire >= 0 && daysToExpire <= 180) { // 180 days for 6 months
-            nearlyExpired += 1;
-          }
+              if (daysToExpire >= 0 && daysToExpire <= 180) { // 180 days for 6 months
+                nearlyExpired += 1;
+              }
+            }
+          });
         }
       }
     });

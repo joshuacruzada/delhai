@@ -82,6 +82,7 @@ const CustomerOrderForm = () => {
             ...prevOrder,
             {
                 ...product,
+                id: product.id,
                 quantity: 1,
                 packaging: product.packaging || "N/A",
                 price: parseFloat(product.pricePerBox || product.price || 0),
@@ -206,6 +207,7 @@ useEffect(() => {
   
       // Map order to a simplified structure
       const simplifiedOrder = order.map((item) => ({
+        id: item.id,
         name: item.name,
         price: item.price,
         quantity: item.quantity,

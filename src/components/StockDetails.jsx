@@ -98,9 +98,7 @@ const StockDetails = () => {
           {filteredStocks.length > 0 ? (
             filteredStocks.map((stock) => (
               <tr
-                key={stock.id}
-                onClick={() => navigate(`/stock-history/${stock.id}`, { state: { stock } })}
-                style={{ cursor: 'pointer' }}
+                
               >
                 <td>
                   {stock.imageUrl ? (
@@ -118,7 +116,7 @@ const StockDetails = () => {
                   <br />
                   {stock.description || 'No description available'}=
                 </td>
-                <td>{stock.quantity}</td>
+                <td>{stock.stock}</td>
                 <td>{stock.packaging}</td>
                 <td>{stock.date || 'N/A'}</td>
                 <td>{stock.lastRestocked || 'N/A'}</td>

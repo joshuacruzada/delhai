@@ -1,10 +1,18 @@
-// Import Firebase SDK
 import { initializeApp } from "firebase/app";
-import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  FacebookAuthProvider,
+  setPersistence,
+  browserLocalPersistence,
+} from "firebase/auth";
 import { getDatabase } from "firebase/database";
 import { getStorage } from "firebase/storage";
+import {
+  getFunctions,
+  connectFunctionsEmulator, // 🟢 ADD THIS
+} from "firebase/functions";
 
-// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAm6_V2n5ArhWDNMqWThKY9IS2NLi_O4X4",
   authDomain: "delhai-database.firebaseapp.com",
@@ -16,19 +24,28 @@ const firebaseConfig = {
   measurementId: "G-PYSLZ5KZLZ",
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
+
 const auth = getAuth(app);
 const database = getDatabase(app);
 const storage = getStorage(app);
 
-// ✅ Enable persistence to avoid session issues
+// ✅ THIS IS THE MISSING PART
+const functions = getFunctions(app);
+if (window.location.hostname === "localhost") {
+  connectFunctionsEmulator(functions, "localhost", 5001); // Or use 5001 if that's your chosen port
+}
+
+// Auth providers
+const providerGoogle = new GoogleAuthProvider();
+const providerFacebook = new FacebookAuthProvider();
+
 setPersistence(auth, browserLocalPersistence)
   .then(() => {
-    console.log('✅ Auth persistence set to local.');
+    console.log("✅ Auth persistence set to local.");
   })
   .catch((error) => {
-    console.error('❌ Error setting persistence:', error.message);
+    console.error("❌ Error setting persistence:", error.message);
   });
 
-export { auth, database, storage };
+export { auth, database, storage, providerGoogle, providerFacebook, functions };

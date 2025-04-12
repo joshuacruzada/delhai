@@ -67,6 +67,8 @@ export const addNewCustomer = async (buyerInfo) => {
 
 // Save order to Firebase
 export const saveOrderToFirebase = async (customerId, order, totalAmount, userId) => {
+  console.log("Saving order for customer:", customerId);
+  console.log("Order details:", order);
 
   for (const item of order) {
     if (!item.id) {
@@ -85,10 +87,12 @@ export const saveOrderToFirebase = async (customerId, order, totalAmount, userId
       price: item.editablePrice || 0,
       quantity: item.quantity || 0,
       imageUrl: item.imageUrl || "placeholder.png",
-      packaging: item.packaging || "N/A", 
-      expiryDate: item.expiryDate || "N/A"
+      packaging: item.packaging || "N/A",
+      expiryDate: item.expiryDate || "N/A",
     })),
   };
+
+  console.log("Order data to be saved:", orderData);
 
   const ordersRef = ref(database, `orders/${userId}`);
   const newOrderRef = push(ordersRef);
@@ -187,36 +191,38 @@ export const sendEmailNotification = (buyerInfo, orderData, totalAmount) => {
 
 // Update stock function
 export const updateStock = async (productId, quantityChange, products, setProducts) => {
+  console.log("Updating stock for product:", productId, "with change:", quantityChange);
+
   const productRef = ref(database, `stocks/${productId}`);
   const product = products.find((p) => p.id === productId);
 
   if (product) {
-    const currentQuantity = Number(product.quantity) || 0; // Use 'quantity' instead of 'stock'
-    const updatedQuantity = Math.max(currentQuantity + quantityChange, 0); // Prevent negative quantity
+    const currentQuantity = Number(product.quantity) || 0;
+    const updatedQuantity = Math.max(currentQuantity + quantityChange, 0);
+
+    console.log("Current Quantity:", currentQuantity, "Updated Quantity:", updatedQuantity);
 
     if (!isNaN(updatedQuantity)) {
       try {
-        await update(productRef, { quantity: updatedQuantity }); // Update 'quantity' in Firebase
+        await update(productRef, { quantity: updatedQuantity });
         setProducts((prevProducts) =>
           prevProducts.map((p) =>
             p.id === productId ? { ...p, quantity: updatedQuantity } : p
           )
         );
-        console.log(`Quantity updated successfully for product: ${productId}`);
+        console.log(`Stock updated successfully for product: ${productId}`);
       } catch (error) {
-        console.error("Error updating quantity in Firebase:", error);
+        console.error("Error updating stock in Firebase:", error);
       }
     } else {
       console.error("Invalid quantity value detected:", updatedQuantity);
     }
   } else {
-    console.error("Product not found for quantity update");
+    console.error("Product not found for stock update:", productId);
   }
 };
 
 
-
-// Complete order process with proper stock updates
 export const completeOrderProcess = async (buyerInfo, order, totalAmount, products, setProducts, userId) => {
   try {
     console.log("Starting Complete Order Process");
@@ -238,20 +244,94 @@ export const completeOrderProcess = async (buyerInfo, order, totalAmount, produc
     // Step 2: Save the order
     const { orderId, orderData } = await saveOrderToFirebase(customerId, order, totalAmount, userId);
 
-    // Step 3: Create invoice
-    await createInvoice(orderId, customerId, totalAmount, orderData);
-
-    // Step 4: Send email notification
-    await sendEmailNotification(buyerInfo, orderData, totalAmount);
-
-    // Step 5: Update stock
+    // Step 3: Update stock using FIFO logic
     for (const item of order) {
-      await updateStock(item.id, -item.quantity, products, setProducts);
+      console.log(`\n🔍 Processing stock deduction for product "${item.name}" (ID: ${item.id}).`);
+      const productRef = ref(database, `stocks/${item.id}`);
+      const deductionLogRef = ref(database, `stocks/${item.id}/deductionLog`); // Deduction log reference
+      const productSnapshot = await get(productRef);
+
+      if (productSnapshot.exists()) {
+        const stockData = productSnapshot.val();
+        let quantityToDeduct = item.quantity || 0; // Total quantity to deduct
+        let stockHistory = stockData.stockHistory || {};
+        let updatedHistory = {};
+
+        // Convert stockHistory to an array for sorting
+        let historyArray = Object.entries(stockHistory).map(([key, value]) => ({
+          batchId: key,
+          ...value,
+        }));
+
+        // Ensure `initialBatch` is always first
+        historyArray.sort((a, b) => {
+          if (a.batchId === "initialBatch") return -1;
+          if (b.batchId === "initialBatch") return 1;
+          return new Date(a.restockDate || 0) - new Date(b.restockDate || 0);
+        });
+
+        console.log(`👉 Starting FIFO deduction for product "${item.name}".`);
+
+        // Deduct stock from batches
+        for (const batch of historyArray) {
+          if (quantityToDeduct <= 0) break;
+
+          const batchQuantity = batch.quantityAdded || 0; // Available quantity in the batch
+          const quantityRemoved = Math.min(batchQuantity, quantityToDeduct);
+
+          // Update batch quantity
+          batch.quantityAdded = batchQuantity - quantityRemoved;
+          quantityToDeduct -= quantityRemoved;
+
+          console.log(
+            `✅ Deducted ${quantityRemoved} from Batch "${batch.batchId}". Remaining in batch: ${batch.quantityAdded}.`
+          );
+
+          // Record deduction in deductionLog
+          const deductionLogEntry = {
+            batchId: batch.batchId,
+            deductedQuantity: quantityRemoved,
+            orderId: orderId,
+            timestamp: new Date().toISOString(),
+          };
+
+          const newLogRef = push(deductionLogRef); // Create a unique log entry
+          await set(newLogRef, deductionLogEntry);
+
+          // Retain all batches, even those with `quantityAdded` set to 0
+          updatedHistory[batch.batchId] = {
+            ...batch,
+            quantityAdded: batch.quantityAdded, // Keep 0 if fully deducted
+          };
+        }
+
+        // Calculate new stock
+        const newStock = historyArray.reduce((sum, batch) => sum + (batch.quantityAdded || 0), 0);
+
+        // Update product stock and stock history in Firebase
+        await update(productRef, {
+          stock: newStock, // Remaining stock
+          stockHistory: updatedHistory, // Updated history
+        });
+
+        console.log(
+          `✅ Final Stock for "${item.name}" (ID: ${item.id}): ${newStock}. Updated stock history logged.`
+        );
+      } else {
+        console.warn(`⚠️ Product "${item.name}" (ID: ${item.id}) not found in stocks. Skipping deduction.`);
+      }
     }
 
-    console.log("Order process completed successfully.");
+    // Step 4: Create invoice
+    await createInvoice(orderId, customerId, totalAmount, orderData);
+
+    // Step 5: Send email notification
+    await sendEmailNotification(buyerInfo, orderData, totalAmount);
+
+    console.log("🎉 Order process completed successfully.");
   } catch (error) {
-    console.error("Error in order process:", error);
+    console.error("❌ Error in order process:", error);
     throw error;
   }
 };
+

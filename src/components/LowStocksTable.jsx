@@ -23,15 +23,15 @@ const LowStocksTable = () => {
             id: key,
             name: data[key].name || 'No Name',
             description: data[key].description || 'No description available',
-            quantity: data[key].quantity || 0,
+            stock: data[key].stock || 0,
             criticalStock: data[key].criticalStock || 0,
             date: data[key].date || 'N/A',
             category: data[key].category || 'N/A', // Ensure category is included
           }))
           .filter(
             (stock) =>
-              stock.quantity > 0 && // Low stock: Quantity greater than 0 but less than critical stock
-              stock.quantity < stock.criticalStock &&
+              stock.stock > 0 && // Low stock: Quantity greater than 0 but less than critical stock
+              stock.stock < stock.criticalStock &&
               stock.category === category // Filter by category
           );
 
@@ -55,7 +55,6 @@ const LowStocksTable = () => {
             <th>Item Description</th>
             <th>Quantity</th>
             <th>Critical Stock</th>
-            <th>Date</th>
           </tr>
         </thead>
         <tbody>
@@ -64,9 +63,8 @@ const LowStocksTable = () => {
               <tr key={stock.id}>
                 <td>{stock.name}</td>
                 <td>{stock.description}</td>
-                <td>{stock.quantity}</td>
+                <td>{stock.stock}</td>
                 <td>{stock.criticalStock}</td>
-                <td>{stock.date}</td>
               </tr>
             ))
           ) : (

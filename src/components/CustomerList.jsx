@@ -11,6 +11,7 @@ import { cleanUpDuplicates } from "../services/customerCleanup";
 const CustomerList = () => {
   const [customers, setCustomers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [locationSearch, setLocationSearch] = useState(''); // New state for location filtering
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editCustomer, setEditCustomer] = useState(null);
   const [deleteCustomerId, setDeleteCustomerId] = useState(null);
@@ -47,6 +48,10 @@ const CustomerList = () => {
     setSearchTerm(event.target.value);
   };
 
+  const handleLocationSearchChange = (event) => {
+    setLocationSearch(event.target.value);
+  };
+
   const handleAddCustomer = () => {
     setIsAddModalOpen(true);
   };
@@ -63,12 +68,17 @@ const CustomerList = () => {
     fetchCustomers(); // Re-fetch customers after adding, editing, or deleting
   };
 
-  const filteredCustomers = customers.filter(
-    (customer) =>
+  const filteredCustomers = customers.filter((customer) => {
+    const matchesSearch = 
       customer.poNo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+      customer.email?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesLocation = 
+      customer.completeAddress?.toLowerCase().includes(locationSearch.toLowerCase());
+
+    return matchesSearch && matchesLocation; // Both search and location must match
+  });
 
   return (
     <div className="customer-list-container">
@@ -77,9 +87,16 @@ const CustomerList = () => {
         <div className="customer-list-actions">
           <input
             type="text"
-            placeholder="Search"
+            placeholder="Search by name, PO #, or email"
             value={searchTerm}
             onChange={handleSearchChange}
+          />
+          <input
+            type="text"
+            placeholder="Search by location"
+            value={locationSearch}
+            onChange={handleLocationSearchChange}
+            className="location-search-input"
           />
           <button className="new-customer-btn" onClick={handleAddCustomer}>
             <i className="bi bi-person-plus"></i> New Customer

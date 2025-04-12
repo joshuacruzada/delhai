@@ -100,10 +100,12 @@ const generateFile = (data, fileType, reportType) => {
   }
 };
 
- const exportToCSV = (data, filename, reportType) => {
+const exportToCSV = (data, filename, reportType) => {
   let csvContent = `\uFEFFDELHAI ${
     reportType === "sales" ? "SALES" : "INVENTORY"
   } REPORT\n\n`;
+
+  let grandTotal = 0; // Initialize grand total for all sales
 
   if (reportType === "sales") {
     data.forEach((sale) => {
@@ -117,7 +119,11 @@ const generateFile = (data, fileType, reportType) => {
       });
 
       csvContent += `,,,"Total Amount",${sale.totalAmount.toFixed(2)}\n\n`;
+      grandTotal += sale.totalAmount; // Add to grand total
     });
+
+    // Add grand total at the bottom
+    csvContent += `\n,,,Grand Total for All Dates,${grandTotal.toFixed(2)}\n`;
   } else if (reportType === "inventory") {
     csvContent += "Product Name,Packaging,Price,Quantity\n";
 
@@ -141,13 +147,13 @@ const generateFile = (data, fileType, reportType) => {
   document.body.removeChild(link);
 };
 
-  
-  
 const exportToXLS = (data, filename, reportType) => {
   const worksheetData = [
     [`DELHAI ${reportType === "sales" ? "SALES" : "INVENTORY"} REPORT`],
     [],
   ];
+
+  let grandTotal = 0; // Initialize grand total for all sales
 
   if (reportType === "sales") {
     data.forEach((sale) => {
@@ -171,8 +177,15 @@ const exportToXLS = (data, filename, reportType) => {
         "Total Amount",
         `${sale.totalAmount.toFixed(2)}`,
       ]);
-      worksheetData.push([]);
+
+      grandTotal += sale.totalAmount; // Add to grand total
+      worksheetData.push([]); // Add a blank row for spacing
     });
+
+    // Add grand total at the bottom
+    worksheetData.push([]);
+    worksheetData.push(["", "", "", "Grand Total for All Dates", `${grandTotal.toFixed(2)}`]);
+
   } else if (reportType === "inventory") {
     worksheetData.push(["Product Name", "Packaging", "Price", "Quantity"]);
 
@@ -197,7 +210,8 @@ const exportToXLS = (data, filename, reportType) => {
 };
 
 
-const exportToPDF = (data, filename, reportType) => {
+
+const exportToPDF = (data, filename, reportType) => { 
   const doc = new jsPDF();
 
   // Set Title
@@ -206,6 +220,7 @@ const exportToPDF = (data, filename, reportType) => {
   doc.text(title, 10, 10);
 
   let y = 20; // Initial y-coordinate for table rendering
+  let grandTotal = 0; // Initialize grand total for all sales
 
   if (reportType === "sales") {
     data.forEach((sale) => {
@@ -234,15 +249,27 @@ const exportToPDF = (data, filename, reportType) => {
       y = doc.lastAutoTable.finalY + 10;
       doc.setFontSize(12);
       const label = "Total Amount:";
-      const totalAmount = `${sale.totalAmount.toFixed(2)}`;
-      
+      const totalAmount = sale.totalAmount.toFixed(2);
+      grandTotal += sale.totalAmount; // Add to grand total
+
       // Calculate the width of the label
       const labelWidth = doc.getTextWidth(label);
-      
+
       doc.text(label, 10, y); // Add the label
       doc.text(totalAmount, 10 + labelWidth + 135, y);
       y += 20; // Add spacing between sales
     });
+
+    // Add grand total at the bottom
+    doc.setFontSize(14);
+    const grandTotalLabel = "Total Sales:";
+    const grandTotalText = `${grandTotal.toFixed(2)}`;
+
+    // Calculate the width of the label
+    const grandTotalLabelWidth = doc.getTextWidth(grandTotalLabel);
+
+    doc.text(grandTotalLabel, 10, y);
+    doc.text(grandTotalText, 10 + grandTotalLabelWidth + 135, y);
   } else if (reportType === "inventory") {
     const headers = [["Product Name", "Packaging", "Price", "Quantity"]];
     const rows = data.map((item) => [
@@ -265,18 +292,18 @@ const exportToPDF = (data, filename, reportType) => {
     doc.setFontSize(12);
     const label = "Total Stocks:";
     const totalStocks = data.reduce((sum, item) => sum + (item.quantity || 0), 0);
-    
+
     // Calculate the width of the label
     const labelWidth = doc.getTextWidth(label);
-    
+
     doc.text(label, 10, y); // Add the label
     doc.text(`${totalStocks}`, 10 + labelWidth + 130, y); 
     y += 20; 
-    
   }
 
   doc.save(`${filename}.pdf`);
 };
+
 
    return (
     <div className="analytics-container">

@@ -4,7 +4,16 @@ import { NavLink } from 'react-router-dom';
 import { getDatabase, ref, get } from 'firebase/database';
 import { getAuth } from 'firebase/auth';
 import './Sidebar.css';
-
+import { IconLogout } from '@tabler/icons-react';
+import { IconLayoutDashboard } from '@tabler/icons-react';
+import { IconShoppingBagCheck } from '@tabler/icons-react';
+import { IconUsersPlus } from '@tabler/icons-react';
+import { IconBox } from '@tabler/icons-react';
+import { IconArchive } from '@tabler/icons-react';
+import { IconFileInvoice } from '@tabler/icons-react';
+import { IconChartHistogram } from '@tabler/icons-react';
+import { IconSettings } from '@tabler/icons-react';
+import { IconUserCircle } from '@tabler/icons-react';
 const Sidebar = ({ onLogout }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [user, setUser] = useState({ name: '', role: '' });
@@ -41,7 +50,7 @@ const Sidebar = ({ onLogout }) => {
 
   const handleLogout = () => {
     setUser({ name: '', role: '' }); // Clear user state on logout
-    onLogout(); // Call the parent logout function
+    onLogout(); 
   };
 
   const toggleSidebar = () => {
@@ -62,59 +71,59 @@ const Sidebar = ({ onLogout }) => {
       <div className="nav-links-wrapper">
         <nav className="nav flex-column">
           <NavLink 
-            to="/" 
+            to="/dashboard" 
             className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
           >
-            <i className="bi bi-grid-fill"></i> {!isCollapsed && <span>Dashboard</span>}
+            <i><IconLayoutDashboard stroke={2} /></i> {!isCollapsed && <span>Dashboard</span>}
           </NavLink>
 
           <NavLink 
             to="/orders" 
             className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
           >
-            <i className="bi bi-list-check"></i> {!isCollapsed && <span>Orders</span>}
+           <i><IconShoppingBagCheck stroke={2} /></i> {!isCollapsed && <span>Orders</span>}
           </NavLink>
 
           <NavLink 
             to="/customers" 
             className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
           >
-            <i className="bi bi-people-fill"></i> {!isCollapsed && <span>Customers</span>}
+            <i><IconUsersPlus stroke={2} /></i> {!isCollapsed && <span>Customers</span>}
           </NavLink>
 
           <NavLink 
             to="/products" 
             className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
           >
-            <i className="bi bi-box-seam"></i> {!isCollapsed && <span>Products</span>}
+           <i><IconBox stroke={2} /> </i>{!isCollapsed && <span>Products</span>}
           </NavLink>
 
           <NavLink 
             to="/inventory" 
             className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
           >
-            <i className="bi bi-archive"></i> {!isCollapsed && <span>Inventory</span>}
+            <i><IconArchive stroke={2} /></i> {!isCollapsed && <span>Inventory</span>}
           </NavLink>
 
           <NavLink 
             to="/invoices" 
             className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
           >
-            <i className="bi bi-receipt"></i> {!isCollapsed && <span>Invoices</span>}
+          <i><IconFileInvoice stroke={2} /></i> {!isCollapsed && <span>Invoices</span>}
           </NavLink>
 
           <NavLink 
             to="/analytics" 
             className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
           >
-            <i className="bi bi-bar-chart"></i> {!isCollapsed && <span>Reports</span>}
+          <i> <IconChartHistogram stroke={2} /></i> {!isCollapsed && <span>Reports</span>}
           </NavLink>
 
           <NavLink 
             to="/settings" 
             className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
           >
-            <i className="bi bi-gear"></i> {!isCollapsed && <span>Settings</span>}
+          <i><IconSettings stroke={2} /></i> {!isCollapsed && <span>Settings</span>}
           </NavLink>
         </nav>
       </div>
@@ -123,19 +132,19 @@ const Sidebar = ({ onLogout }) => {
       <div className="account-section">
         {!isCollapsed && (
           <>
-            <i className="bi bi-person-circle account-avatar"></i>
+            <i><IconUserCircle stroke={2} color="white" size={45}/></i>
             <div className="account-info">
               <span className="account-name">{user.name}</span>
               <span className="account-role">{user.role}</span>
             </div>
             <div className="logout-icon" onClick={handleLogout}>
-              <i className="bi bi-box-arrow-right"></i>
+              <IconLogout stroke={2} />
             </div>
           </>
         )}
         {isCollapsed && (
           <div className="logout-icon-collapsed" onClick={handleLogout}>
-            <i className="bi bi-box-arrow-right"></i>
+            <IconLogout stroke={2} />
           </div>
         )}
       </div>

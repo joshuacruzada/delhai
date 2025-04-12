@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useCallback, useRef } from "react";
 import "./Orders.css";
 import NewOrderForm from "./NewOrderForm";
-import { FaCheck, FaTimes, FaTrashAlt, FaBan, FaEllipsisV, FaLink } from "react-icons/fa";
+import { FaCheck, FaTrashAlt, FaEllipsisV, FaLink } from "react-icons/fa";
 import { database } from "../FirebaseConfig";
 import { ref, get } from "firebase/database";
 import { AuthContext } from "../AuthContext";
@@ -9,7 +9,7 @@ import OrderDetailsModal from './OrderDetailsModal';
 import CustomerOrderLinkModal from "./CustomerOrderLinkModal";
 import { IconShoppingCartQuestion } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
-import { handlePaidOrder, handleCancelledOrder, handleUnpaidOrder } from "../utils/orderActions";
+import { handlePaidOrder} from "../utils/orderActions";
 import DeleteOrderWarning from "./DeleteOrderWarning";
 
 
@@ -35,7 +35,11 @@ const Orders = () => {
   const closeCustomerOrderLinkModal = () => setShowCustomerOrderLinkModal(false);
 
 
-  const openNewOrderForm = () => setShowNewOrderForm(true);
+  const openNewOrderForm = ({order}) => {
+    navigate("/new-order-form", { state: { order } });
+  }
+
+
   //const closeNewOrderForm = () => setShowNewOrderForm(false);
 
   
@@ -87,17 +91,12 @@ const Orders = () => {
   
 
 
-  // ** Fetch Orders and Merge Customer Information **
   const fetchOrders = useCallback(async () => {
     try {
-      if (!user?.uid) throw new Error("User not authenticated");
-  
-      // References
-      const ordersRef = ref(database, `orders/${user.uid}`);
-      const customersRef = ref(database, `customers/${user.uid}`);
+      const ordersRef = ref(database, `orders`);
+      const customersRef = ref(database, `customers`);
       const stocksRef = ref(database, `stocks`);
   
-      // Fetch data concurrently
       const [ordersSnapshot, customersSnapshot, stocksSnapshot] = await Promise.all([
         get(ordersRef),
         get(customersRef),
@@ -107,52 +106,50 @@ const Orders = () => {
       const ordersData = ordersSnapshot.exists() ? ordersSnapshot.val() : {};
       const customersData = customersSnapshot.exists() ? customersSnapshot.val() : {};
       const stocksData = stocksSnapshot.exists() ? stocksSnapshot.val() : {};
-     
   
-      // Map through orders and enrich data
-      const allOrders = Object.keys(ordersData).map((key) => {
-        const order = ordersData[key];
-        const customer = customersData[order.customerId] || {};
+      // Flatten all orders under all user nodes
+      const allOrders = Object.entries(ordersData).flatMap(([userId, userOrders]) =>
+        Object.entries(userOrders).map(([orderId, order]) => {
+          const customer = customersData[userId]?.[order.customerId] || {};
   
-        // Map products with stock data
-        const products = (order.products || []).map((product) => {
-          const stock = stocksData[product.id] || {};
+          const products = (order.products || []).map((product) => {
+            const stock = stocksData[product.id] || {};
+  
+            return {
+              id: product.id || 'N/A',
+              name: stock.name || product.name || 'N/A',
+              quantity: product.quantity || 0,
+              price: product.price || 0,
+              imageUrl: stock.imageUrl || product.imageUrl || '/placeholder.png',
+            };
+          });
   
           return {
-            id: product.id || 'N/A',
-            name: stock.name || product.name || 'N/A',
-            quantity: product.quantity || 0,
-            price: product.price || 0,
-            imageUrl: stock.imageUrl || product.imageUrl || '/placeholder.png',
+            id: orderId,
+            ...order,
+            customerName: customer.name || 'N/A',
+            customerAddress: customer.completeAddress || 'N/A',
+            tin: customer.tin || 'N/A',
+            shippedTo: customer.shippedTo || '',
+            drNo: customer.drNo || 'N/A',
+            poNo: customer.poNo || 'N/A',
+            terms: customer.terms || 'N/A',
+            salesman: customer.salesman || 'N/A',
+            email: customer.email || 'N/A',
+            products,
           };
-        });
+        })
+      );
   
-        return {
-          id: key,
-          ...order,
-          customerName: customer.name || 'N/A',
-          customerAddress: customer.completeAddress || 'N/A',
-          tin: customer.tin || 'N/A',
-          shippedTo: customer.shippedTo || '',
-          drNo: customer.drNo || 'N/A',
-          poNo: customer.poNo || 'N/A',
-          terms: customer.terms || 'N/A',
-          salesman: customer.salesman || 'N/A',
-          email: customer.email || 'N/A',
-          products,
-        };
-      });
-  
-      console.log("Fetched and Merged Orders with Stocks:", allOrders);
+      console.log("All Orders Fetched:", allOrders);
       setOrderHistory(allOrders);
     } catch (error) {
-      console.error("Error fetching orders:", error.message);
+      console.error("Error fetching all orders:", error.message);
       setOrderHistory([]);
     }
-  }, [user]);
+  }, []);
   
-
-
+  
   // ** Fetch Orders From Database ** 
   useEffect(() => {
     if (user) {
@@ -201,11 +198,7 @@ const Orders = () => {
     try {
       if (newStatus === "Paid") {
         await handlePaidOrder(user.uid, orderId);
-      } else if (newStatus === "Cancelled") {
-        await handleCancelledOrder(user.uid, orderId); 
-      } else if (newStatus === "Unpaid") {
-        await handleUnpaidOrder(user.uid, orderId);
-      }
+      } else if (newStatus === "Cancelled")
   
       // Refresh Orders List
       fetchOrders();
@@ -278,7 +271,7 @@ const Orders = () => {
           
            {/* Filter Tabs */}
           <div className="filter-tabs">
-            {["All", "Pending", "Paid", "Unpaid", "Cancelled"].map((status) => (
+            {["All", "Pending", "Paid"].map((status) => (
               <button
                 key={status}
                 className={`filter-tab ${activeTab === status ? "active" : ""}`}
@@ -337,18 +330,6 @@ const Orders = () => {
                                 onClick={() => updatePaymentStatus(order.id, "Paid")}
                               >
                                 <FaCheck /> Paid
-                              </button>
-                              <button
-                                className="btn-unpaid"
-                                onClick={() => updatePaymentStatus(order.id, "Unpaid")}
-                              >
-                                <FaTimes /> Unpaid
-                              </button>
-                              <button
-                                className="btn-cancel"
-                                onClick={() => updatePaymentStatus(order.id, "Cancelled")}
-                              >
-                                <FaBan /> Cancel
                               </button>
                               <button
                                 className="btn-delete"

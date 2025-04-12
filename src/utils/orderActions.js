@@ -2,93 +2,116 @@
 import { ref, update, get, set, push } from 'firebase/database';
 import { database } from '../FirebaseConfig';
 
+
 // 🟢 Handle Paid Order
+
 export const handlePaidOrder = async (userId, orderId) => {
-    const orderRef = ref(database, `orders/${userId}/${orderId}`);
-    const salesRef = ref(database, `sales/${userId}`); // Sales Node Reference
+  const orderRef = ref(database, `orders/${userId}/${orderId}`);
+  const salesRef = ref(database, `sales/${userId}`); // Sales Node Reference
 
-    try {
-        // Fetch Order Data
-        const orderSnapshot = await get(orderRef);
-        if (!orderSnapshot.exists()) {
-            throw new Error("Order not found");
-        }
-
-        const orderData = orderSnapshot.val();
-
-        // Fetch Customer Details Using customerId
-        const customerId = orderData.customerId || null;
-        let customerName = "N/A";
-        let customerAddress = "N/A";
-
-        if (customerId) {
-            const customerRef = ref(database, `customers/${userId}/${customerId}`);
-            const customerSnapshot = await get(customerRef);
-            if (customerSnapshot.exists()) {
-                const customerData = customerSnapshot.val();
-                customerName = customerData.name || "N/A";
-                customerAddress = customerData.completeAddress || "N/A";
-            }
-        }
-
-        // Step 1: Update order status to Paid
-        await update(orderRef, { paymentStatus: "Paid" });
-
-        // Step 2: Deduct stock for each product and log stock-out in stock history
-        for (const product of orderData.products || []) {
-            if (!product.id) continue; // Ensure the product has a valid ID
-
-            const productRef = ref(database, `stocks/${product.id}`);
-            const productSnapshot = await get(productRef);
-
-            if (productSnapshot.exists()) {
-                const currentStock = productSnapshot.val().quantity || 0;
-                const newStock = Math.max(currentStock - (product.quantity || 0), 0);
-
-                // Update Stock Quantity
-                await update(productRef, { quantity: newStock });
-
-                // Log Stock Out Entry under stockHistory
-                const stockHistoryRef = push(ref(database, `stocks/${product.id}/stockHistory`));
-                await set(stockHistoryRef, {
-                    type: "OUT",
-                    orderId: orderId,
-                    date: new Date().toISOString(),
-                    quantityRemoved: product.quantity || 0,
-                    productName: product.name || "Unknown",
-                    customerName: customerName,
-                    customerAddress: customerAddress,
-                    expiryDate: product.expiryDate || "N/A"
-                });
-
-                console.log(
-                    `✅ Stock Out logged for product "${product.name}" (ID: ${product.id}), Quantity: ${product.quantity}`
-                );
-            }
-        }
-
-        // Step 3: Add order to Sales Node with Customer Details
-        const saleEntryRef = push(salesRef); // Generate unique ID for each sale
-        await set(saleEntryRef, {
-            orderId: orderId,
-            totalAmount: orderData.totalAmount || 0,
-            date: new Date().toISOString(),
-            products: orderData.products || [],
-            customerName: customerName,
-            customerAddress: customerAddress,
-        });
-
-        console.log(`✅ Order ${orderId} marked as Paid, stock updated, sales recorded, and stock-out logged.`);
-    } catch (error) {
-        console.error("❌ Error handling Paid order:", error.message);
+  try {
+    // Fetch Order Data
+    const orderSnapshot = await get(orderRef);
+    if (!orderSnapshot.exists()) {
+      throw new Error("Order not found");
     }
+
+    const orderData = orderSnapshot.val();
+
+    // Fetch Customer Details
+    const customerId = orderData.customerId || null;
+    let customerName = "N/A";
+    let customerAddress = "N/A";
+
+    if (customerId) {
+      const customerRef = ref(database, `customers/${userId}/${customerId}`);
+      const customerSnapshot = await get(customerRef);
+      if (customerSnapshot.exists()) {
+        const customerData = customerSnapshot.val();
+        customerName = customerData.name || "N/A";
+        customerAddress = customerData.completeAddress || "N/A";
+      }
+    }
+
+    // Step 1: Update order status to Paid
+    await update(orderRef, { paymentStatus: "Paid" });
+
+    // Step 2: Log stock-out for each product
+    for (const product of orderData.products || []) {
+      if (!product.id) continue;
+
+      const productRef = ref(database, `stocks/${product.id}`);
+      const productSnapshot = await get(productRef);
+
+      if (productSnapshot.exists()) {
+        const stockData = productSnapshot.val();
+        const deductionLog = stockData.deductionLog || {};
+        const stockHistory = stockData.stockHistory || {};
+
+        // Log stock-out for each batch in the deductionLog
+        for (const logId in deductionLog) {
+          const deductionEntry = deductionLog[logId];
+
+          if (!deductionEntry.loggedAsOut && deductionEntry.deductedQuantity > 0) {
+            // Only log if there is actually a quantity deducted
+            const batchId = deductionEntry.batchId;
+            const expiryDate = stockHistory[batchId]?.expiryDate || "N/A";
+
+            // Log stock-out in stockOutHistory
+            const stockOutRef = push(
+              ref(database, `stocks/${product.id}/stockOutHistory`)
+            );
+            await set(stockOutRef, {
+              type: "OUT",
+              batchId: batchId,
+              orderId: deductionEntry.orderId,
+              date: deductionEntry.timestamp,
+              quantityRemoved: deductionEntry.deductedQuantity,
+              expiryDate: expiryDate, // Fetch dynamically from stockHistory
+            });
+
+            console.log(
+              `✅ Logged stock-out for Batch ID: ${batchId}, Quantity Removed: ${deductionEntry.deductedQuantity}, Expiry Date: ${expiryDate}`
+            );
+
+            // Mark the deductionLog entry as logged
+            await update(
+              ref(
+                database,
+                `stocks/${product.id}/deductionLog/${logId}`
+              ),
+              { loggedAsOut: true }
+            );
+          }
+        }
+      }
+    }
+
+    // Step 3: Add order to Sales Node
+    const saleEntryRef = push(salesRef);
+    await set(saleEntryRef, {
+      orderId: orderId,
+      totalAmount: orderData.totalAmount || 0,
+      date: new Date().toISOString(),
+      products: orderData.products || [],
+      customerName: customerName,
+      customerAddress: customerAddress,
+    });
+
+    console.log(
+      `✅ Order ${orderId} marked as Paid, sales recorded, and stock-out logged.`
+    );
+  } catch (error) {
+    console.error("❌ Error handling Paid order:", error.message);
+  }
 };
 
 
 
 
+
 // 🟠 Handle Cancelled Order
-export const handleCancelledOrder = async (userId, orderId) => {
+/*export const handleCancelledOrder = async (userId, orderId) => {
     const orderRef = ref(database, `orders/${userId}/${orderId}`);
     
     try {
@@ -148,3 +171,4 @@ export const handleUnpaidOrder = async (userId, orderId) => {
     console.error("❌ Error handling Unpaid order:", error.message);
   }
 };
+*/

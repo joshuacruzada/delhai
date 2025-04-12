@@ -1,0 +1,90 @@
+/* Ensure navbar is fixed at the top */
+.ecommerce-upperbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: white; /* Adjust as needed */
+    z-index: 1000; /* Ensure it stays above other elements */
+    padding: 10px 20px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.landing-contact-page{
+    margin-top: 40px;
+}
+/* Add padding to the shop container so content is not hidden behind navbar */
+.shop-container {
+    display: flex;
+    gap: 20px;
+    padding: 100px 20px 20px; /* ✅ Increase top padding to match navbar height */
+}
+
+/* Ensure sidebar stays visible */
+.shop-sidebar {
+    width: 250px;
+    background: #f8f8f8;
+    padding: 15px;
+    border-radius: 8px;
+    position: sticky;
+    top: 80px; /* Adjust based on navbar height */
+}
+
+  
+  .shop-sidebar h4 {
+    margin-top: 15px;
+  }
+  
+  .shop-sidebar ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .shop-sidebar ul li {
+    margin: 5px 0;
+  }
+  
+  .shop-subcategories {
+    margin-left: 15px;
+    list-style: none;
+  }
+  
+  .shop-products {
+    flex: 1;
+  }
+  
+  .shop-products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+  }
+
+  .shop-products-grid h4{
+    margin-top: 15px;
+    font-size: 18px;
+  }
+  
+  .shop-product-card {
+    background: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  
+  .shop-product-image {
+    width: 100%;
+    max-height: 150px;
+    object-fit: cover;
+    border-radius: 5px;
+  }
+  
+  .cart-icon-button{
+    border: none;
+    background-color: transparent;
+    transition: transform 0.1s ease-in-out;
+  }
+
+  .cart-icon-button:hover{
+    transform: scale(1.2) ;
+  }

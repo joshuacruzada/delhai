@@ -67,7 +67,7 @@ const Products = () => {
           pricePerPiece: data[key].pricePerPiece || "N/A",
           packaging: data[key].packaging || "N/A",
           piecesPerBox: data[key].piecesPerBox || "N/A",
-          quantity: data[key].quantity || 0,
+          stock: data[key].stock || 0,
           criticalStock: data[key].criticalStock || 0,
           expiryDate: data[key].expiryDate || "N/A",
         }));
@@ -162,7 +162,7 @@ const Products = () => {
             <div
               key={product.id}
               className={`product-card ${
-                product.quantity < product.criticalStock ? "low-stock-order" : ""
+                product.stock < product.criticalStock ? "low-stock-order" : ""
               }`}
               onClick={() => openProductDetails(product)}
             >
@@ -171,7 +171,7 @@ const Products = () => {
                 <span className="product-name">{product.name}</span>
                 <p className="product-description">{product.description}</p>
                 <p className="product-price">₱{product.pricePerBox}</p>
-                <p className="product-quantity">Stocks: {product.quantity}</p>
+                <p className="product-quantity">Stocks: {product.stock}</p>
               </div>
             </div>
           ))

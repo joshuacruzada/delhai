@@ -1,0 +1,202 @@
+.ecommerce-upperbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 40px;
+    background-color: white;
+    border-bottom: 1px solid #ddd;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+.delhai-link{
+
+    color: cadetblue !important;
+}
+.ecommerce-logo {
+    display: flex;
+    align-items: center; /* Aligns items vertically */
+    gap: 10px; /* Adjusts spacing between logo and text */
+}
+
+.upperbar-logo {
+    display: flex;
+    align-items: center;
+}
+
+.delhai-logo-img {
+    height: 40px; /* Adjust size if needed */
+    width: auto;
+}
+
+.ecommerce-logo a {
+    font-size: 1.5rem;
+    font-weight: 550;
+    color: rgb(132, 132, 132);
+    text-decoration: none;
+}
+
+
+.ecommerce-nav-links {
+    display: flex;
+    gap: 20px;
+}
+
+.ecommerce-nav-links a {
+    text-decoration: none;
+    color: black;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: color 0.3s ease-in-out;
+}
+
+.ecommerce-nav-links a:hover {
+    color: #007bff;
+}
+
+.ecommerce-search-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ecommerce-search-container input {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    outline: none;
+    width: 200px;
+    transition: all 0.3s ease-in-out;
+}
+
+.ecommerce-search-container input:focus {
+    border-color: #007bff;
+}
+
+.ecommerce-search-container button {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: black;
+    transition: color 0.3s ease-in-out;
+}
+
+.ecommerce-search-container button:hover {
+    color: #007bff;
+}
+
+/* Dark mode toggle for e-commerce */
+.ecommerce-toggle-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 35px;
+    background-color: #eee;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+}
+
+.ecommerce-toggle-container:hover {
+    background-color: #ddd;
+}
+
+/* Search Bar */
+.ecommerce-search {
+    display: flex;
+    align-items: center;
+    background: #fbfbfb;
+    border-radius: 25px;
+    padding: 5px 10px;
+    width: 50%;
+    margin: 10px;
+  }
+  
+  .search-input {
+    border: none;
+    outline: none;
+    padding: 5px;
+    font-size: 14px;
+    width: 95%;
+    background: transparent;
+    
+  }
+  
+  .search-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    margin-left: auto;
+    padding: 5px;
+    transition: 0.1s;
+  }
+
+  .search-btn:hover{
+    
+    background-color: cadetblue;
+    border-radius: 15px;
+    color:#eee;
+  }
+
+  .cart-icon-wrapper {
+    position: relative;
+  }
+  
+  .cart-count-badge {
+    position: absolute;
+    top: -4px;
+    right: -7px;
+    background: #007bff;
+    color: white;
+    font-size: 8px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 50%;
+}
+  
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .ecommerce-upperbar {
+        padding: 10px 20px;
+    }
+
+    .ecommerce-nav-links {
+        gap: 15px;
+    }
+
+    .ecommerce-nav-links a {
+        font-size: 0.9rem;
+    }
+
+    .ecommerce-search-container input {
+        width: 150px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .ecommerce-upperbar {
+        flex-direction: column;
+        align-items: center;
+        padding: 10px;
+    }
+
+    .ecommerce-nav-links {
+        margin-top: 10px;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .ecommerce-search-container {
+        margin-top: 10px;
+    }
+}

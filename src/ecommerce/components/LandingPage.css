@@ -1,0 +1,211 @@
+.ecommerce-upperbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: white; /* Adjust as needed */
+  z-index: 1000; /* Ensure it stays above other elements */
+  padding: 10px 20px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+
+.landing-container {
+  background-color: #fbfbfb; /* Off-white cement color */
+  padding: 40px ;
+}
+
+/* Hero Section */
+.landing-hero-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 175px 0;
+}
+
+.landing-hero-content {
+  max-width: 50%;
+}
+
+.landing-hero-content h1 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #000;
+  margin-bottom: 10px;
+}
+
+.landing-hero-content p {
+  font-size: 1.1rem;
+  color: #444;
+  margin-bottom: 20px;
+}
+
+.landing-shop-btn {
+  background-color: #6B91B5;
+  color: white;
+  text-decoration: none;
+  font-size: 1rem;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease-in-out;
+}
+
+.landing-shop-btn:hover {
+  background-color: #8db0d0;
+}
+
+/* Hero Image */
+.landing-hero-image img {
+  max-width: 350px;
+  height: auto;
+  background-color: none;
+  margin-right: 30px;
+}
+
+/* Featured Products */
+.landing-featured-products {
+  text-align: center;
+  margin-top: 50px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 40px;
+  box-shadow: 0 1px 2px rgba(29, 29, 29, 0.1);
+}
+
+.landing-featured-products h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.landing-products-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.landing-product-card {
+  background-color: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  width: 220px;
+  transition: transform 0.3s ease-in-out;
+}
+
+.landing-product-card:hover {
+  transform: translateY(-5px);
+}
+
+.landing-product-card img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 5px;
+}
+
+.landing-product-card h3 {
+  font-size: 1.2rem;
+  margin: 10px 0;
+}
+
+.landing-product-card p {
+  font-size: 1rem;
+  color: #555;
+}
+
+/* About Section */
+.landing-about-section {
+  text-align: center;
+  align-items: center;
+  width: 100vw; /* Full viewport width */
+  max-width: 100%; /* Prevents any overflow */
+  padding: 40px 0; 
+  margin-top: 50px;
+  background-color: white;
+}
+
+.landing-about-section h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  
+}
+
+
+/* Categories Section */
+.landing-categories {
+  text-align: center;
+  margin: 50px 0;
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 40px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.category-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.category-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 15px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  width: 150px;
+  transition: transform 0.2s;
+}
+
+.category-card:hover {
+  transform: scale(1.05);
+}
+
+.category-card img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border-radius: 50%;
+  background: #f5f5f5;
+  padding: 10px;
+}
+
+.category-card p {
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+}
+
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .landing-hero-section {
+      flex-direction: column;
+      text-align: center;
+  }
+
+  .landing-hero-content {
+      max-width: 100%;
+  }
+
+  .landing-hero-image img {
+      max-width: 250px;
+  }
+
+  .landing-products-container {
+      flex-direction: column;
+      align-items: center;
+  }
+}

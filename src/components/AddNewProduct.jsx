@@ -21,6 +21,7 @@ const AddNewProduct = () => {
     piecesPerBox: '',
     criticalStock: '',
     description: '',
+    stock:''
   });
 
   const [imageFile, setImageFile] = useState(null);
@@ -116,9 +117,9 @@ const AddNewProduct = () => {
       setErrorMessage('Please fill all required fields.');
       return;
     }
-
+  
     setIsLoading(true);
-
+  
     let downloadUrl = '';
     if (imageFile) {
       const imageRef = storageRef(storage, `products/${imageFile.name}`);
@@ -132,27 +133,50 @@ const AddNewProduct = () => {
         return;
       }
     }
-
-    const productWithImage = {
-      ...newProduct,
-      imageUrl: downloadUrl || newProduct.imageUrl,
+  
+    // Prepare the new product data with the updated structure
+    const productWithStructure = {
+      name: newProduct.name,
+      category: newProduct.category,
+      subCategory: newProduct.subCategory,
+      packaging: newProduct.packaging,
+      pricePerTest: parseFloat(newProduct.pricePerTest),
+      pricePerBox: parseFloat(newProduct.pricePerBox),
+      pricePerPiece: parseFloat(newProduct.pricePerPiece),
+      piecesPerBox: parseInt(newProduct.piecesPerBox),
+      criticalStock: parseInt(newProduct.criticalStock),
+      description: newProduct.description || '',
+      imageUrl: downloadUrl || newProduct.imageUrl || '',
+      stock: parseInt(newProduct.quantity),
+      totalAddedStock: parseInt(newProduct.quantity), // Total stock starts as the initial quantity
+      stockHistory: {
+        initialBatch: {
+          batchId: 'initialBatch',
+          quantityAdded: parseInt(newProduct.quantity), // Initial quantity of the product
+          expiryDate: newProduct.expiryDate || null, // Optional
+          date: newProduct.date, // Include the date here
+        },
+      },
     };
-
+  
     const productRef = push(ref(database, 'stocks/'));
-
-    set(productRef, productWithImage)
+  
+    set(productRef, productWithStructure)
       .then(() => {
-        console.log('Product added successfully');
+        console.log(
+          `✅ Product "${newProduct.name}" added successfully with initial stock: ${newProduct.quantity}.`
+        );
         navigate('/inventory');
       })
       .catch((error) => {
-        console.error('Error adding product:', error);
+        console.error('❌ Error adding product:', error);
         setErrorMessage('Failed to add product.');
       })
       .finally(() => {
         setIsLoading(false);
       });
   };
+  
 
   const handleBack = () => {
     navigate('/inventory');
@@ -165,8 +189,8 @@ const AddNewProduct = () => {
         <h2 className="add-product-header">Add New Product</h2>
 
         <div className="add-product-content">
-          <div className="image-section">
-            <div className="image-preview">
+          <div className="addorder-image-section">
+            <div className="addorder-image-preview">
               {newProduct.imageUrl ? (
                 <img src={newProduct.imageUrl} alt="Product" className="product-image" />
               ) : (

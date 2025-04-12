@@ -16,25 +16,36 @@ const NearlyExpiredProducts = () => {
           setNearlyExpiredItems([]); // Clear state if no data found
           return;
         }
-
-        // Filter stocks based on category and expiry date
-        const filteredItems = allStocks.filter((item) => {
-          if (!item.expiryDate || !item.category) return false; // Skip invalid items
-
-          const itemCategory = item.category.toLowerCase ? item.category.toLowerCase() : "";
-          const activeCategory = category.toLowerCase ? category.toLowerCase() : "";
-
-          if (itemCategory !== activeCategory) return false; // Match category
-
-          const expiryDate = new Date(item.expiryDate);
-          const currentDate = new Date();
-          const timeDifference = expiryDate.getTime() - currentDate.getTime();
-          return timeDifference <= 6 * 30 * 24 * 60 * 60 * 1000; // Items expiring within 6 months
+    
+        const filteredItems = [];
+    
+        allStocks.forEach((item) => {
+          if (!item.stockHistory) return; // Skip items without stockHistory
+    
+          const nearlyExpiredBatches = Object.values(item.stockHistory).filter((batch) => {
+            if (!batch.expiryDate) return false;
+    
+            const expiryDate = new Date(batch.expiryDate);
+            const currentDate = new Date();
+            const timeDifference = expiryDate.getTime() - currentDate.getTime();
+    
+            return timeDifference <= 30 * 24 * 60 * 60 * 1000; // Expiring within 1 month
+          });
+    
+          if (nearlyExpiredBatches.length > 0) {
+            // Add item with nearly expired batches to the list
+            filteredItems.push({
+              ...item,
+              nearlyExpiredBatches, // Attach the nearly expired batches
+            });
+          }
         });
-
+    
         setNearlyExpiredItems(filteredItems); // Update state with filtered items
       });
     };
+    
+    
 
     fetchAndFilterStocks();
   }, [category]); // Re-run the filtering whenever the category changes
@@ -50,30 +61,34 @@ const NearlyExpiredProducts = () => {
             <th>Packaging</th>
             <th>Item Name</th>
             <th>Description</th>
+            <th>Batch ID</th>
             <th>Expiry Date</th>
           </tr>
         </thead>
         <tbody>
           {nearlyExpiredItems.length > 0 ? (
-            nearlyExpiredItems.map((item) => (
-              <tr key={item.id}>
-                <td className="image-column">
-                  {item.imageUrl ? (
-                    <img src={item.imageUrl} alt={item.name} className="product-image" />
-                  ) : (
-                    <span>No Image</span>
-                  )}
-                </td>
-                <td>{`${item.quantity} ${item.quantityUnit || ""}`}</td>
-                <td>{item.packaging || "N/A"}</td>
-                <td>{item.name}</td>
-                <td>{item.description || "No description available"}</td>
-                <td>{item.expiryDate || "No expiry date"}</td>
-              </tr>
-            ))
+            nearlyExpiredItems.map((item) =>
+              item.nearlyExpiredBatches.map((batch, index) => (
+                <tr key={`${item.id}-${batch.batchId}-${index}`}>
+                  <td className="image-column">
+                    {item.imageUrl ? (
+                      <img src={item.imageUrl} alt={item.name} className="product-image" />
+                    ) : (
+                      <span>No Image</span>
+                    )}
+                  </td>
+                  <td>{`${batch.quantityAdded} ${item.quantityUnit || ""}`}</td>
+                  <td>{item.packaging || "N/A"}</td>
+                  <td>{item.name}</td>
+                  <td>{item.description || "No description available"}</td>
+                  <td>{batch.batchId}</td>
+                  <td>{batch.expiryDate}</td>
+                </tr>
+              ))
+            )
           ) : (
             <tr>
-              <td colSpan="6">No nearly expired products in {category}.</td>
+              <td colSpan="7">No nearly expired products in {category}.</td>
             </tr>
           )}
         </tbody>

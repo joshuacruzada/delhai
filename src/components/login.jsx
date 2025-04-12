@@ -5,6 +5,8 @@ import { ref, get, push } from "firebase/database";
 import { auth, database } from '../FirebaseConfig';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './login.css'; 
+import { IconEye, IconEyeClosed } from '@tabler/icons-react';
+
 
 const LoginForm = ({ onLogin }) => {
   const [formData, setFormData] = useState({
@@ -15,6 +17,8 @@ const LoginForm = ({ onLogin }) => {
   const [errors, setErrors] = useState({ identifier: '', password: '', general: '' });
   const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+
 
   const changeHandler = (e) => {
     const { name, value } = e.target;
@@ -110,7 +114,7 @@ const LoginForm = ({ onLogin }) => {
         setSuccessMessage(`✅ Logged in successfully as ${userData.role}`);
         setTimeout(() => {
           onLogin(userData.role);
-          navigate('/');
+          navigate('/dashboard');
         }, 2000);
       } else {
         setErrors((prev) => ({ ...prev, general: '❌ User data not found.' }));
@@ -130,17 +134,19 @@ const LoginForm = ({ onLogin }) => {
   };
   
   return (
+    
     <div className="login-page-wrapper d-flex justify-content-center align-items-center">
+
       <div className="card p-5 shadow-lg login-card text-center">
         <div className="logo-container">
           <img src="/delhailogo.ico" alt="Delhai Logo" className="logo-img" />
-          <div className="logo-text">
+          <div className="login-logo-text">
             <h3>DELHAI</h3>
             <p>Medical Enterprise System</p>
           </div>
         </div>
 
-        <h3 className="login-text text-center mb-4">Login</h3>
+        <h3 className="login-text text-center mb-4 mt-5">Login</h3>
 
         <form onSubmit={handleSubmit}>
           <div className="form-outline mb-4">
@@ -157,9 +163,9 @@ const LoginForm = ({ onLogin }) => {
             {errors.identifier && <div className="invalid-feedback">{errors.identifier}</div>}
           </div>
 
-          <div className="form-outline mb-2">
+          <div className="form-outline mb-2 position-relative">
             <input
-              type="password"
+              type={showPassword ? 'text' : 'password'} // Toggle between text and password
               id="password"
               name="password"
               className={`login-form-control ${errors.password ? 'is-invalid' : ''}`}
@@ -168,6 +174,19 @@ const LoginForm = ({ onLogin }) => {
               onChange={changeHandler}
               required
             />
+            <span
+              className="password-toggle-icon position-absolute"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                top: '50%',
+                right: '5%',
+                transform: 'translateY(-50%)',
+                cursor: 'pointer',
+                color: '#697565',
+              }}
+            >
+               {showPassword ? (<IconEye size={25} color="#ffffff" /> ) : (<IconEyeClosed size={25} color="#ffffff" /> )}
+            </span>
             {errors.password && <div className="invalid-feedback">{errors.password}</div>}
           </div>
 

@@ -18,9 +18,9 @@ const InventoryChart = () => {
       if (snapshot.exists()) {
         const data = snapshot.val();
 
-        // Calculate the total quantity
+        // Calculate the total stock
         const totalQuantity = Object.values(data).reduce(
-          (sum, stock) => sum + (stock.quantity || 0),
+          (sum, stock) => sum + (stock.stock || 0),
           0
         );
 
@@ -28,7 +28,7 @@ const InventoryChart = () => {
         const today = new Date().toISOString().split('T')[0];
 
         // Update stock data for the chart
-        setStockData([{ date: today, quantity: totalQuantity }]);
+        setStockData([{ date: today, stock: totalQuantity }]);
       } else {
         console.error('No stock data available');
         setStockData([]);
@@ -42,7 +42,7 @@ const InventoryChart = () => {
       chartInstance.current.destroy();
     }
 
-    const data = stockData.map((item) => item.quantity);
+    const data = stockData.map((item) => item.stock);
     const labels = stockData.map((item) => item.date);
 
     chartInstance.current = new Chart(chartRef.current, {

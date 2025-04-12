@@ -1,71 +1,67 @@
-/* General container styling for centering */
+.logo-container {
+  display: flex;
+  align-items: center;  /* Align logo and text in the center vertically */
+  justify-content: flex-start; /* Align content to the left */
+  gap: 10px; /* Space between logo and text */
+  width: 100%; /* Ensures full width */
+}
+
+/* 📌 Logo styling */
+.logo-img {
+  width: 48px; /* Adjust size as needed */
+  height: auto; /* Maintain aspect ratio */
+}
+
+/* 📌 Text styling */
+.login-logo-text {
+  display: flex;
+  flex-direction: column; /* Stack h3 and p vertically */
+  align-items: flex-start; /* Align text to the left */
+  text-align: left;
+}
+
+.login-logo-text h3 {
+  font-size: 1.5rem; /* Adjust title size */
+  margin: 0;
+}
+
+.login-logo-text p {
+  font-size: 0.86rem; /* Adjust subtitle size */
+  margin: 0;
+  color: #E0E0E0; /* Lighter color for better readability */
+}
+
+.login-form-control::placeholder {
+  color: rgba(255, 255, 255, 0.7); /* White color with slight transparency */
+  opacity: 1; /* Ensure full visibility */
+}
+
+
 .login-page-wrapper {
   height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #f8f9fa; /* Optional background color */
+  background-color: #f8f9fa;
+  padding: 10px;
 }
 
 /* Styling for the login card */
 .login-card {
-  width: 100%;
-  max-width: 400px; /* Adjust this width for the form container */
+  width: 100%; /* Use percentage instead of fixed px */
+  max-width: 600px;
   padding: 30px;
-  border-radius: 8px; /* Adds rounded corners to the card */
+  border-radius: 8px;
   text-align: center;
   background-color: #4D869C;
   color: aliceblue;
 }
 
-/* Logo container styling */
-.logo-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-}
-
-/* Logo image styling */
-/* Logo container styling */
-.logo-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-}
-
-/* Logo image styling */
-.logo-img {
-  width: 80px; /* Adjust width if needed */
-  height: 80px; /* Adjust height to match logo aspect ratio */
-  margin-right: 10px; /* Spacing between logo and text */
-}
-
-/* Title and subtitle styling */
-.logo-text {
-  display: flex;
-  flex-direction: column; /* Stack title and subtitle vertically */
-  align-items: flex-start;
-}
-
-.logo-text h3 {
-  font-size: 2.5rem;
-  margin: 0;
-}
-
-.logo-text p {
-  font-size: 0.875rem; /* Smaller font for subtitle */
-  margin: 0;
-  color: #E0E0E0; /* Lighter color for subtitle */
-}
-
-/* Styling for the input fields */
+/* 📌 Responsive Form Fields */
 .login-form-control {
   width: 100%;
-  max-width: 350px;
-  margin: 10px auto;
-  padding: 8px;
+  max-width: 100%; /* Ensures it fills container */
+  padding: 10px;
   border: none;
   border-bottom: 2px solid #ffffff;
   background: transparent;
@@ -73,79 +69,84 @@
   outline: none;
 }
 
-/* Adjust label styling */
-.login-form-label {
-  text-align: left;
-  font-weight: 500;
+/* 📌 Password Input with Toggle Icon */
+.password-container {
+  position: relative;
+  width: 100%;
+}
+
+.password-toggle-icon {
+  position: absolute;
+  top: 50%;
+  right: 10px; /* Keeps icon inside */
+  transform: translateY(-50%);
+  cursor: pointer;
   color: #ffffff;
-  margin-bottom: 5px;
+  font-size: 1.2rem;
 }
-.login-form-control::placeholder {
-  color: #ffffff; /* White placeholder text */
-  opacity: 0.8;   /* Slight transparency for better readability */
-}
-.login-text{
-  margin-top: 3rem;
-  font-size: 1.5rem;
-}
-/* Button styling */
-.login-btn{
-  width: 36vh;
-  margin-top: 20px;
-  padding: 10px;
-  border-radius: 8px;
+
+/* 📌 Fully Responsive Button */
+.login-btn {
+  width: 100%; /* Adapts to screen size */
+  max-width: 350px;
+  padding: 12px;
+  border-radius: 10px;
   background-color: #e4e5e6;
   color: #626161;
   cursor: pointer;
   border: none;
-  border-radius: 15px;
-  
+  font-size: clamp(14px, 1.2vw, 18px);
 }
-.login-btn:hover{
+
+.login-btn:hover {
   background-color: rgb(62, 171, 254);
   color: #E0E0E0;
 }
 
-.register-btn p {
-  color: antiquewhite;
-}
 
-.register-btn a {
-  color: #d4e4fc; /* Link color within the login card */
-  text-decoration: underline;
-}
 .forgot-password-container {
-  text-align: left !important; /* Aligns the link to the left */
-  margin-top: 20px;
-  margin-left: 150px; 
+  text-align: right;
+  width: 100%;
+  padding-right: 10px;
 }
 
-.forgot-password-link {
-  color: #ffffff !important;
-  font-size: 14px;
+.forgot-password-link{
+  display: block; 
+  margin-top: 22px; 
+  margin-bottom: 50px;
+  color: #E0E0E0;
   text-decoration: none;
 }
-
 .forgot-password-link:hover {
   text-decoration: underline;
-  color: #7AB2B2 !important;
 }
-
-/* Center the alert message */
-.login-card .alert {
-  font-size: 0.8rem; /* Smaller font size for alerts */
-  padding: 8px;
-  border-radius: 5px;
-  margin-top: 10px;
-  margin-left: auto; /* Auto margin to center */
-  margin-right: auto; /* Auto margin to center */
-  text-align: center; /* Center the text inside the alert */
-  max-width: 80%; /* Optional: Restrict the width of the alert for better layout */
-}
-
-
-@media (min-width: 768px) {
+/* --------------------------------- */
+/* 📱 Mobile (Small Screens) */
+@media (max-width: 576px) {
   .login-card {
-    max-width: 100vh; /* Adjust this width for larger screens */
+    padding: 40px;
+  }
+
+  .password-toggle-icon {
+    right: 5%; /* Adjust for mobile */
+  }
+
+  .forgot-password-container {
+    text-align: center; /* Center text on small screens */
+    margin-top: 10px;
+  }
+}
+
+/* 📱 Tablets (Medium Screens) */
+@media (max-width: 768px) {
+  .password-toggle-icon {
+    right: 3%;
+  }
+}
+
+/* 💻 Large Screens (Desktops) */
+@media (min-width: 1200px) {
+  .password-toggle-icon {
+    right: 2%;
   }
 }

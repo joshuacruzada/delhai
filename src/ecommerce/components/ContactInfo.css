@@ -1,0 +1,59 @@
+/* Ensure Contact Us fills the width and sticks to the bottom */
+.landing-contact-container {
+  text-align: center;
+  background-color: #3F5E7D; /* Adjusted dark blue color */
+  width: 100vw; /* Full viewport width */
+  max-width: 100%; /* Prevents any overflow */
+  padding: 40px 0; /* Adequate padding */
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative; /* Fixes extra spacing issues */
+}
+
+/* Ensure the main content pushes Contact Us to the bottom */
+.main-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Ensures full height */
+}
+
+.main-content {
+  flex: 1; /* Pushes footer down */
+}
+
+/* Contact Info Alignment */
+.landing-contact-info {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 50px;
+  flex-wrap: wrap;
+  width: 90%;
+  max-width: 1200px;
+  padding: 20px 0;
+}
+
+/* Individual Contact Items */
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  color: white;
+  white-space: nowrap;
+}
+
+.landing-contact-container h2 {
+  font-size: 26px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.landing-contact-container p {
+  font-size: 16px;
+  margin-bottom: 20px;
+  max-width: 900px;
+}

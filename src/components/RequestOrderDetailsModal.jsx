@@ -9,8 +9,7 @@ const RequestOrderDetailsModal = ({ isOpen, order, onClose }) => {
   if (!isOpen || !order) return null;
 
   const handleCreateOrder = () => {
-    // Example: Log order details before proceeding
-    console.log("Creating order with data:", order);
+
   
     // Example: Add validation (if required)
     if (!order || !order.order?.length) {
@@ -48,6 +47,7 @@ const RequestOrderDetailsModal = ({ isOpen, order, onClose }) => {
             <p><strong>DATE:</strong> {order.createdAt ? new Date(order.createdAt).toLocaleDateString("en-US") : "N/A"}</p>
             <p><strong>TERMS:</strong> {order.buyerInfo?.terms || "N/A"}</p>
             <p><strong>P.O NO.:</strong> {order.buyerInfo?.poNo || "N/A"}</p>
+            <p><strong>DR NO.:</strong> {order.buyerInfo?.drNo || "N/A"}</p>
             <p><strong>SALESMAN:</strong> {order.buyerInfo?.salesman || "N/A"}</p>
           </div>
         </div>

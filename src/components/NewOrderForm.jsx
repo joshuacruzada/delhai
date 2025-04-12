@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { RiDeleteBin6Line } from "react-icons/ri";
+import { useLocation,  } from "react-router-dom";
 import ViewProductListModal from "./ViewProductListModal";
 import "./NewOrderForm.css";
 import { database } from "../FirebaseConfig";
@@ -9,9 +10,9 @@ import { cleanUpDuplicates } from "../services/customerCleanup";
 import { findCustomerByName, addNewCustomer } from "../services/orderUtils";
 import { getAuth } from 'firebase/auth';
 import { AuthContext } from "../AuthContext";
+import { useNavigate } from 'react-router-dom';
 
-
-const NewOrderForm = ({ onBackToOrders }) => {
+const NewOrderForm = () => {
   const [step, setStep] = useState(1); // Tracks form step (1: Buyer Info, 2: Order Info)
   const [products, setProducts] = useState([]);
   const [order, setOrder] = useState([]);
@@ -21,6 +22,8 @@ const NewOrderForm = ({ onBackToOrders }) => {
   const [totalAmount, setTotalAmount] = useState(0);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const { user } = useContext(AuthContext); // user contains user ID and role
+  const { state } = useLocation();
+  const navigate = useNavigate(); 
 
   const [buyerInfo, setBuyerInfo] = useState({
     name: "",
@@ -47,7 +50,53 @@ const NewOrderForm = ({ onBackToOrders }) => {
     salesman: "Salesman",
     email: "Email",
    };
-   
+   useEffect(() => {
+    if (state?.order) {
+      const buyerDetails = state.order.buyerInfo || {};
+      const orderDetails = state.order.order || [];
+      const addressParts = buyerDetails.completeAddress?.split(", ") || [];
+  
+      setBuyerInfo({
+        name: buyerDetails.name || "",
+        email: buyerDetails.email || "",
+        phone: buyerDetails.phone || "",
+        street: addressParts[0] || "",
+        barangay: addressParts[1] || "",
+        city: addressParts[2] || "",
+        province: addressParts[3] || "",
+        zipCode: addressParts[4] || "",
+        tin: buyerDetails.tin || "",
+        poNo: buyerDetails.poNo || "",
+        drNo: buyerDetails.drNo || "",
+        terms: buyerDetails.terms || "",
+        salesman: buyerDetails.salesman || "",
+        date: state.order.createdAt
+          ? new Date(state.order.createdAt).toLocaleDateString("en-US")
+          : "",
+      });
+  
+      // Add `editablePrice` while setting the order
+      const formattedOrderDetails = orderDetails.map((item) => ({
+        id: item.id || "",
+        name: item.name || "",
+        packaging: item.packaging || "",
+        quantity: item.quantity || 0,
+        price: item.price || 0, // Original price
+        editablePrice: item.price || 0, // Make it editable
+        total: (item.price || 0) * (item.quantity || 0),
+        imageUrl: item.imageUrl || "",
+      }));
+  
+      setOrder(formattedOrderDetails);
+  
+      const total = formattedOrderDetails.reduce((sum, item) => sum + item.total, 0);
+      setTotalAmount(total);
+    }
+  }, [state]);
+  
+  
+  
+
    useEffect(() => {
     const fetchCustomers = async () => {
       const auth = getAuth();
@@ -110,51 +159,57 @@ const NewOrderForm = ({ onBackToOrders }) => {
 
   
   const handleCreateOrder = async () => {
-    if (order.length === 0) {
-      alert("No items in the order");
-      return;
+  console.log("Order Data:", order);
+  console.log("Buyer Info:", buyerInfo);
+
+  if (order.length === 0) {
+    alert("No items in the order");
+    return;
+  }
+  
+  try {
+    const userId = user?.uid; // Get the user ID from the authenticated user
+    if (!userId) {
+      throw new Error("User ID is missing. Cannot save the order.");
     }
-  
-    try {
-      const userId = user?.uid; // Get the user ID from the authenticated user
-      if (!userId) {
-        throw new Error("User ID is missing. Cannot save the order.");
-      }
-  
-      // Clean up duplicate customers in the database
-      await cleanUpDuplicates(userId);
-  
-      // Check if customer already exists in the database
-      const existingCustomer = await findCustomerByName(buyerInfo.name, userId);
-  
-      if (!existingCustomer) {
-        console.log("Customer not found. Adding as a new customer.");
-        await addNewCustomer(buyerInfo);
-      } else {
-        console.log("Customer already exists:", existingCustomer.name);
-        
-        // Update existing customer with new terms
-        const db = getDatabase();
-        const customerRef = ref(db, `customers/${userId}/${existingCustomer.id}`);
-        
-        await update(customerRef, {
-          terms: buyerInfo.terms || "", // Update terms if available
-        });
-        
-        console.log("Customer terms updated successfully:", buyerInfo.terms);
-      }
-  
-      // Complete the order process
-      await completeOrderProcess(buyerInfo, order, totalAmount, products, setProducts, userId);
-  
-      alert("Order created successfully!");
-      onBackToOrders(); // Call the parent callback to refresh and close form
-    } catch (error) {
-      console.error("Error creating order:", error);
-      alert("Failed to create order. Please try again.");
+
+    console.log("User ID:", userId);
+
+    // Clean up duplicate customers in the database
+    await cleanUpDuplicates(userId);
+
+    // Check if customer already exists in the database
+    const existingCustomer = await findCustomerByName(buyerInfo.name, userId);
+    console.log("Existing Customer:", existingCustomer);
+
+    if (!existingCustomer) {
+      console.log("Customer not found. Adding as a new customer.");
+      await addNewCustomer(buyerInfo);
+    } else {
+      console.log("Customer already exists:", existingCustomer.name);
+
+      // Update existing customer with new terms
+      const db = getDatabase();
+      const customerRef = ref(db, `customers/${userId}/${existingCustomer.id}`);
+
+      await update(customerRef, {
+        terms: buyerInfo.terms || "", // Update terms if available
+      });
+
+      console.log("Customer terms updated successfully:", buyerInfo.terms);
     }
-  };
-  
+
+    // Complete the order process
+    await completeOrderProcess(buyerInfo, order, totalAmount, products, setProducts, userId);
+
+    alert("Order created successfully!");
+    navigate('/orders'); // Call the parent callback to refresh and close form
+  } catch (error) {
+    console.error("Error creating order:", error);
+    alert("Failed to create order. Please try again.");
+  }
+};
+
   
   
 const [noRecordFound, setNoRecordFound] = useState(false); // New state for "No record" logic
@@ -298,6 +353,9 @@ const handleBuyerInfoChange = (e) => {
     
   };
 
+  const onBackToOrders = () => {
+    navigate("/orders"); // Adjust the path to match your orders route
+  };
  
 
   return (
@@ -418,7 +476,7 @@ const handleBuyerInfoChange = (e) => {
                   </div>
                   <input
                     type="text"
-                    value={(item.editablePrice || 0).toFixed(2)} // Display the price
+                    value={(item.editablePrice || 0).toFixed(2)} 
                     onChange={(e) => updatePrice(item.id, parseFloat(e.target.value) || 0)}
                     className="order-editable-price-input"
                   />

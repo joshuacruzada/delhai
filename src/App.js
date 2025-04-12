@@ -32,6 +32,14 @@ import OrderConfirmation from './components/OrderConfirmation';
 import StockHistory from './components/StockHIstory';
 import NewOrderForm from './components/NewOrderForm';
 import NearlyExpiredProducts from './components/NearlyExpiredProducts';
+import ItemHistory from './components/ItemHistory';
+import LandingPage from './ecommerce/components/LandingPage';
+import Shop from './ecommerce/components/Shop';
+import ProductDetail from './ecommerce/components/ProductDetail';
+import SocialLogin from './ecommerce/components/SocialLogin';
+import Cart from './ecommerce/components/Cart';
+import PaymentSuccess from './ecommerce/components/PaymentSuccess';
+import PaymentCancel from './ecommerce/components/PaymentCancel';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -133,7 +141,20 @@ function App() {
 
         <div className="content">
           <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<SocialLogin />} />
+          <Route path="/shop" element={<Shop />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/productdetail/:productId" element={<ProductDetail />} />
+          <Route path="/payment-success" element={<PaymentSuccess />} />
+          <Route path="/payment-cancel" element={<PaymentCancel />} />
+
+
+
+
+
             {/* Public Routes */}
+          
             <Route path="/login-page" element={<LoginForm onLogin={handleLogin} />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/signup-page" element={<SignUpForm />} />
@@ -141,7 +162,7 @@ function App() {
             <Route path="/user/:userId/customer-order" element={<CustomerOrderForm />} />
 
             {/* Protected Routes */}
-            <Route path="/" element={<ProtectedRoute element={Dashboard} allowedRoles={['admin', 'employee']} />} />
+            <Route path="/dashboard" element={<ProtectedRoute element={Dashboard} allowedRoles={['admin', 'employee']} />} />
             <Route path="/invoices" element={<ProtectedRoute element={Invoices} allowedRoles={['admin', 'employee']} />} />
             <Route path="/products" element={<ProtectedRoute element={Products} allowedRoles={['admin', 'employee']} />} />
             <Route path="/analytics" element={<ProtectedRoute element={Analytics} allowedRoles={['admin']} />} />
@@ -156,6 +177,7 @@ function App() {
             <Route path="/settings" element={<ProtectedRoute element={Settings} allowedRoles={['admin']} />} />
             <Route path="/audit-trail" element={<ProtectedRoute element={AuditTrail} allowedRoles={['admin']} />} />
             <Route path="/stock-history" element={<ProtectedRoute element={StockHistory} allowedRoles={['admin', 'employee']} />} />
+            <Route path="/item-history" element={<ProtectedRoute element={ItemHistory} allowedRoles={['admin', 'employee']} />} />
             <Route path="/request-orders" element={<ProtectedRoute element={RequestOrder} allowedRoles={['admin', 'employee']} />} />
             <Route path="/new-order-form" element={<ProtectedRoute element={NewOrderForm} allowedRoles={['admin', 'employee']} />} />
             <Route path="/nearly-expired" element={<ProtectedRoute element={NearlyExpiredProducts} allowedRoles={['admin', 'employee']} />} />

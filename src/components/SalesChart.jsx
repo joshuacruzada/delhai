@@ -41,40 +41,58 @@ const SalesChart = () => {
     fetchSalesData();
   }, []);
 
-  // Filter sales data based on selected view
-  useEffect(() => {
-    let filtered = [];
+  // Filter sales data based on selected view// Filter sales data based on selected view
+useEffect(() => {
+  let filtered = [];
 
-    if (view === 'daily') {
-      // Use sales data as-is (no aggregation)
-      filtered = salesData.map((sale) => ({
-        date: new Date(sale.date).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-        }),
-        amount: sale.amount,
-      }));
-    } else if (view === 'monthly') {
-      // Group by month
-      const aggregatedData = salesData.reduce((acc, sale) => {
-        const monthStr = new Date(sale.date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-        acc[monthStr] = (acc[monthStr] || 0) + sale.amount;
-        return acc;
-      }, {});
-      filtered = Object.entries(aggregatedData).map(([date, amount]) => ({ date, amount }));
-    } else if (view === 'yearly') {
-      // Group by year
-      const aggregatedData = salesData.reduce((acc, sale) => {
-        const yearStr = new Date(sale.date).getFullYear().toString();
-        acc[yearStr] = (acc[yearStr] || 0) + sale.amount;
-        return acc;
-      }, {});
-      filtered = Object.entries(aggregatedData).map(([date, amount]) => ({ date, amount }));
-    }
+  if (view === 'daily') {
+    // Aggregate sales by date
+    const aggregatedData = salesData.reduce((acc, sale) => {
+      const dateStr = new Date(sale.date).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
+      acc[dateStr] = (acc[dateStr] || 0) + sale.amount;
+      return acc;
+    }, {});
 
-    setFilteredData(filtered);
-  }, [salesData, view]);
+    filtered = Object.entries(aggregatedData).map(([date, amount]) => ({
+      date,
+      amount,
+    }));
+  } else if (view === 'monthly') {
+    // Group by month
+    const aggregatedData = salesData.reduce((acc, sale) => {
+      const monthStr = new Date(sale.date).toLocaleDateString('en-US', {
+        month: 'short',
+        year: 'numeric',
+      });
+      acc[monthStr] = (acc[monthStr] || 0) + sale.amount;
+      return acc;
+    }, {});
+
+    filtered = Object.entries(aggregatedData).map(([date, amount]) => ({
+      date,
+      amount,
+    }));
+  } else if (view === 'yearly') {
+    // Group by year
+    const aggregatedData = salesData.reduce((acc, sale) => {
+      const yearStr = new Date(sale.date).getFullYear().toString();
+      acc[yearStr] = (acc[yearStr] || 0) + sale.amount;
+      return acc;
+    }, {});
+
+    filtered = Object.entries(aggregatedData).map(([date, amount]) => ({
+      date,
+      amount,
+    }));
+  }
+
+  setFilteredData(filtered);
+}, [salesData, view]);
+
 
   // Render chart when filteredData or view changes
   useEffect(() => {

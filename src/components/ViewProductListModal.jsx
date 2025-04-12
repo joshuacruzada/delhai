@@ -129,7 +129,7 @@ const ViewProductListModal = ({ onAddProduct, onClose }) => {
               <div
                 key={product.id}
                 className={`product-card ${
-                  product.quantity < product.criticalStock ? "low-stock-order" : ""
+                  product.stock < product.criticalStock ? "low-stock-order" : ""
                 }`}
               >
                 <img
@@ -144,7 +144,7 @@ const ViewProductListModal = ({ onAddProduct, onClose }) => {
                   <p className="product-packaging">
                     Packaging: {product.packaging}
                   </p>
-                  <p className="product-quantity">Stocks: {product.quantity}</p>
+                  <p className="product-quantity">Stocks: {product.stock}</p>
                 </div>
                 <button
                   className="btn btn-success addto-order-btn"
