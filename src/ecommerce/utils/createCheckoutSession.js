@@ -1,6 +1,6 @@
 export const createCheckoutSession = async (cartItems) => {
   try {
-    const response = await fetch("http://localhost:5001/delhai-database/us-central1/api/createPaymongoCheckout", {
+    const response = await fetch("/api/createPaymongoCheckout", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -16,9 +16,7 @@ export const createCheckoutSession = async (cartItems) => {
 
     return result.checkout_url;
   } catch (error) {
-    console.error("🔥 Failed to create PayMongo session:", error);
+    console.error("Failed to create PayMongo session:", error);
     throw error;
   }
 };
-
-
