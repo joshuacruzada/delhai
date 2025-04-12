@@ -11,8 +11,8 @@ export default async function handler(req, res) {
     const lineItems = items.map((item) => ({
       name: item.name,
       amount: item.amount,
-      quantity: item.quantity,
       currency: item.currency || "PHP",
+      quantity: item.quantity,
     }));
 
     const response = await axios.post(
@@ -22,8 +22,8 @@ export default async function handler(req, res) {
           attributes: {
             payment_method_types: ["gcash", "paymaya"],
             line_items: lineItems,
-            success_url: "https://your-vercel-site.vercel.app/payment-success",
-            cancel_url: "https://your-vercel-site.vercel.app/payment-cancel",
+            success_url: process.env.SUCCESS_URL,
+            cancel_url: process.env.CANCEL_URL,
           },
         },
       },
@@ -35,10 +35,9 @@ export default async function handler(req, res) {
       }
     );
 
-    const checkoutUrl = response.data.data.attributes.checkout_url;
-    res.status(200).json({ checkout_url: checkoutUrl });
+    res.status(200).json({ checkout_url: response.data.data.attributes.checkout_url });
   } catch (error) {
-    console.error("PayMongo API error:", error.response?.data || error.message);
+    console.error("API error:", error.response?.data || error.message);
     res.status(500).json({ error: "Failed to create checkout session" });
   }
 }
