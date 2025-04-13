@@ -1,6 +1,6 @@
 export const createCheckoutSession = async (cartItems) => {
   try {
-    const response = await fetch("/api/createPaymongoCheckout", {
+    const response = await fetch("/system/api/createPaymongoCheckout", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
