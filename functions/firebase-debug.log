@@ -1,57 +1,69 @@
-[debug] [2025-04-07T11:42:13.791Z] ----------------------------------------------------------------------
-[debug] [2025-04-07T11:42:13.794Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\WANG\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js emulators:start
-[debug] [2025-04-07T11:42:13.795Z] CLI Version:   13.29.1
-[debug] [2025-04-07T11:42:13.795Z] Platform:      win32
-[debug] [2025-04-07T11:42:13.795Z] Node Version:  v22.12.0
-[debug] [2025-04-07T11:42:13.795Z] Time:          Mon Apr 07 2025 19:42:13 GMT+0800 (Singapore Standard Time)
-[debug] [2025-04-07T11:42:13.795Z] ----------------------------------------------------------------------
+[debug] [2025-04-18T13:25:06.441Z] ----------------------------------------------------------------------
+[debug] [2025-04-18T13:25:06.449Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\WANG\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js emulators:start
+[debug] [2025-04-18T13:25:06.450Z] CLI Version:   13.29.1
+[debug] [2025-04-18T13:25:06.451Z] Platform:      win32
+[debug] [2025-04-18T13:25:06.452Z] Node Version:  v22.12.0
+[debug] [2025-04-18T13:25:06.452Z] Time:          Fri Apr 18 2025 21:25:06 GMT+0800 (Singapore Standard Time)
+[debug] [2025-04-18T13:25:06.453Z] ----------------------------------------------------------------------
 [debug] 
-[debug] [2025-04-07T11:42:13.893Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
-[debug] [2025-04-07T11:42:13.893Z] > authorizing via signed-in user (joshuacantacruzada23@gmail.com)
+[debug] [2025-04-18T13:25:06.617Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-04-18T13:25:06.618Z] > authorizing via signed-in user (joshuacantacruzada23@gmail.com)
 [info] i  emulators: Starting emulators: functions, hosting, extensions {"metadata":{"emulator":{"name":"hub"},"message":"Starting emulators: functions, hosting, extensions"}}
-[debug] [2025-04-07T11:42:13.902Z] Checked if tokens are valid: true, expires at: 1744029257054
-[debug] [2025-04-07T11:42:13.902Z] Checked if tokens are valid: true, expires at: 1744029257054
-[debug] [2025-04-07T11:42:13.905Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/delhai-database [none]
-[debug] [2025-04-07T11:42:15.090Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/delhai-database 200
-[debug] [2025-04-07T11:42:15.091Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/delhai-database {"projectNumber":"719302477505","projectId":"delhai-database","lifecycleState":"ACTIVE","name":"Delhai-Database","labels":{"firebase":"enabled"},"createTime":"2024-09-09T05:31:31.902722Z"}
-[debug] [2025-04-07T11:42:15.123Z] [logging] Logging Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
-[debug] [2025-04-07T11:42:15.123Z] [hosting] Hosting Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
-[debug] [2025-04-07T11:42:15.123Z] assigned listening specs for emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"hosting":[{"address":"127.0.0.1","family":"IPv4","port":5000}]},"metadata":{"message":"assigned listening specs for emulators"}}
-[debug] [2025-04-07T11:42:15.134Z] [hub] writing locator at C:\Users\WANG\AppData\Local\Temp\hub-delhai-database.json
-[debug] [2025-04-07T11:42:15.155Z] [Extensions] Started Extensions emulator, this is a noop.
-[debug] [2025-04-07T11:42:15.182Z] [functions] Functions Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
-[debug] [2025-04-07T11:42:15.182Z] [eventarc] Eventarc Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
-[debug] [2025-04-07T11:42:15.183Z] [tasks] Cloud Tasks Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
-[debug] [2025-04-07T11:42:15.183Z] late-assigned ports for functions and eventarc emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"hosting":[{"address":"127.0.0.1","family":"IPv4","port":5000}],"functions":[{"address":"127.0.0.1","family":"IPv4","port":5001}],"eventarc":[{"address":"127.0.0.1","family":"IPv4","port":9299}],"tasks":[{"address":"127.0.0.1","family":"IPv4","port":9499}]},"metadata":{"message":"late-assigned ports for functions and eventarc emulators"}}
+[debug] [2025-04-18T13:25:06.631Z] Checked if tokens are valid: true, expires at: 1744985835304
+[debug] [2025-04-18T13:25:06.631Z] Checked if tokens are valid: true, expires at: 1744985835304
+[debug] [2025-04-18T13:25:06.637Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/delhai-database [none]
+[debug] [2025-04-18T13:25:09.243Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/delhai-database 200
+[debug] [2025-04-18T13:25:09.243Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/delhai-database {"projectNumber":"719302477505","projectId":"delhai-database","lifecycleState":"ACTIVE","name":"Delhai-Database","labels":{"firebase":"enabled"},"createTime":"2024-09-09T05:31:31.902722Z"}
+[debug] [2025-04-18T13:25:09.263Z] [logging] Logging Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-04-18T13:25:09.263Z] [hosting] Hosting Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-04-18T13:25:09.264Z] assigned listening specs for emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"hosting":[{"address":"127.0.0.1","family":"IPv4","port":5000}]},"metadata":{"message":"assigned listening specs for emulators"}}
+[debug] [2025-04-18T13:25:09.273Z] [hub] writing locator at C:\Users\WANG\AppData\Local\Temp\hub-delhai-database.json
+[debug] [2025-04-18T13:25:09.337Z] [Extensions] Started Extensions emulator, this is a noop.
+[debug] [2025-04-18T13:25:09.406Z] [functions] Functions Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-04-18T13:25:09.407Z] [eventarc] Eventarc Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-04-18T13:25:09.408Z] [tasks] Cloud Tasks Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-04-18T13:25:09.408Z] late-assigned ports for functions and eventarc emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"hosting":[{"address":"127.0.0.1","family":"IPv4","port":5000}],"functions":[{"address":"127.0.0.1","family":"IPv4","port":5001}],"eventarc":[{"address":"127.0.0.1","family":"IPv4","port":9299}],"tasks":[{"address":"127.0.0.1","family":"IPv4","port":9499}]},"metadata":{"message":"late-assigned ports for functions and eventarc emulators"}}
 [warn] !  functions: The following emulators are not running, calls to these services from the Functions emulator will affect production: apphosting, auth, firestore, database, pubsub, storage, dataconnect {"metadata":{"emulator":{"name":"functions"},"message":"The following emulators are not running, calls to these services from the Functions emulator will affect production: \u001b[1mapphosting, auth, firestore, database, pubsub, storage, dataconnect\u001b[22m"}}
-[debug] [2025-04-07T11:42:15.204Z] defaultcredentials: writing to file C:\Users\WANG\AppData\Roaming\firebase\joshuacantacruzada23_gmail_com_application_default_credentials.json
-[debug] [2025-04-07T11:42:15.209Z] Setting GAC to C:\Users\WANG\AppData\Roaming\firebase\joshuacantacruzada23_gmail_com_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to C:\\Users\\WANG\\AppData\\Roaming\\firebase\\joshuacantacruzada23_gmail_com_application_default_credentials.json"}}
-[debug] [2025-04-07T11:42:15.211Z] Checked if tokens are valid: true, expires at: 1744029257054
-[debug] [2025-04-07T11:42:15.211Z] Checked if tokens are valid: true, expires at: 1744029257054
-[debug] [2025-04-07T11:42:15.211Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/delhai-database/adminSdkConfig [none]
-[debug] [2025-04-07T11:42:15.854Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/delhai-database/adminSdkConfig 200
-[debug] [2025-04-07T11:42:15.855Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/delhai-database/adminSdkConfig {"projectId":"delhai-database","databaseURL":"https://delhai-database-default-rtdb.firebaseio.com","storageBucket":"delhai-database.appspot.com","locationId":"us-central"}
-[debug] [2025-04-07T11:42:15.908Z] Checked if tokens are valid: true, expires at: 1744029257054
-[debug] [2025-04-07T11:42:15.909Z] Checked if tokens are valid: true, expires at: 1744029257054
-[debug] [2025-04-07T11:42:15.909Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/delhai-database/sites 
-[debug] [2025-04-07T11:42:16.938Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/delhai-database/sites 200
-[debug] [2025-04-07T11:42:16.939Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/delhai-database/sites {"sites":[{"name":"projects/delhai-database/sites/delhai-database","defaultUrl":"https://delhai-database.web.app","type":"DEFAULT_SITE"}]}
-[debug] [2025-04-07T11:42:16.940Z] Checked if tokens are valid: true, expires at: 1744029257054
-[debug] [2025-04-07T11:42:16.941Z] Checked if tokens are valid: true, expires at: 1744029257054
-[debug] [2025-04-07T11:42:16.941Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/delhai-database/webApps/-/config [none]
-[debug] [2025-04-07T11:42:18.199Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/delhai-database/webApps/-/config 200
-[debug] [2025-04-07T11:42:18.200Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/delhai-database/webApps/-/config {"projectId":"delhai-database","appId":"1:719302477505:web:8ae03608f25b90d7e83640","databaseURL":"https://delhai-database-default-rtdb.firebaseio.com","storageBucket":"delhai-database.appspot.com","locationId":"us-central","apiKey":"AIzaSyAm6_V2n5ArhWDNMqWThKY9IS2NLi_O4X4","authDomain":"delhai-database.firebaseapp.com","messagingSenderId":"719302477505","measurementId":"G-PYSLZ5KZLZ"}
-[debug] [2025-04-07T11:42:18.224Z] Checked if tokens are valid: true, expires at: 1744029257054
-[debug] [2025-04-07T11:42:18.225Z] Checked if tokens are valid: true, expires at: 1744029257054
-[debug] [2025-04-07T11:42:18.227Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/delhai-database [none]
-[debug] [2025-04-07T11:42:18.594Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/delhai-database 200
-[debug] [2025-04-07T11:42:18.595Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/delhai-database {"projectId":"delhai-database","projectNumber":"719302477505","displayName":"Delhai-Database","name":"projects/delhai-database","resources":{"hostingSite":"delhai-database","realtimeDatabaseInstance":"delhai-database-default-rtdb","locationId":"us-central"},"state":"ACTIVE","etag":"1_06035f3f-7d99-4a17-959a-13313842e035"}
+[debug] [2025-04-18T13:25:09.445Z] defaultcredentials: writing to file C:\Users\WANG\AppData\Roaming\firebase\joshuacantacruzada23_gmail_com_application_default_credentials.json
+[debug] [2025-04-18T13:25:09.573Z] Setting GAC to C:\Users\WANG\AppData\Roaming\firebase\joshuacantacruzada23_gmail_com_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to C:\\Users\\WANG\\AppData\\Roaming\\firebase\\joshuacantacruzada23_gmail_com_application_default_credentials.json"}}
+[debug] [2025-04-18T13:25:09.575Z] Checked if tokens are valid: true, expires at: 1744985835304
+[debug] [2025-04-18T13:25:09.575Z] Checked if tokens are valid: true, expires at: 1744985835304
+[debug] [2025-04-18T13:25:09.575Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/delhai-database/adminSdkConfig [none]
+[debug] [2025-04-18T13:25:13.326Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/delhai-database/adminSdkConfig 200
+[debug] [2025-04-18T13:25:13.327Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/delhai-database/adminSdkConfig {"projectId":"delhai-database","databaseURL":"https://delhai-database-default-rtdb.firebaseio.com","storageBucket":"delhai-database.appspot.com","locationId":"us-central"}
+[debug] [2025-04-18T13:25:13.418Z] Checked if tokens are valid: true, expires at: 1744985835304
+[debug] [2025-04-18T13:25:13.419Z] Checked if tokens are valid: true, expires at: 1744985835304
+[debug] [2025-04-18T13:25:13.420Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/delhai-database/sites 
+[debug] [2025-04-18T13:25:27.312Z] *** [apiv2] error from fetch(https://firebasehosting.googleapis.com/v1beta1/projects/delhai-database/sites, {"headers":{},"method":"GET"}): FetchError: request to https://firebasehosting.googleapis.com/v1beta1/projects/delhai-database/sites failed, reason: Client network socket disconnected before secure TLS connection was established
+[debug] [2025-04-18T13:25:27.315Z] Failed to list hosting sites
+[debug] Failed to make request to https://firebasehosting.googleapis.com/v1beta1/projects/delhai-database/sites
+[debug] [2025-04-18T13:25:27.318Z] Checked if tokens are valid: true, expires at: 1744985835304
+[debug] [2025-04-18T13:25:27.319Z] Checked if tokens are valid: true, expires at: 1744985835304
+[debug] [2025-04-18T13:25:27.320Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/delhai-database/webApps/-/config [none]
+[debug] [2025-04-18T13:25:31.317Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/delhai-database/webApps/-/config 200
+[debug] [2025-04-18T13:25:31.319Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/delhai-database/webApps/-/config {"projectId":"delhai-database","appId":"1:719302477505:web:8ae03608f25b90d7e83640","databaseURL":"https://delhai-database-default-rtdb.firebaseio.com","storageBucket":"delhai-database.appspot.com","locationId":"us-central","apiKey":"AIzaSyAm6_V2n5ArhWDNMqWThKY9IS2NLi_O4X4","authDomain":"delhai-database.firebaseapp.com","messagingSenderId":"719302477505","measurementId":"G-PYSLZ5KZLZ"}
+[debug] [2025-04-18T13:25:31.364Z] Checked if tokens are valid: true, expires at: 1744985835304
+[debug] [2025-04-18T13:25:31.365Z] Checked if tokens are valid: true, expires at: 1744985835304
+[debug] [2025-04-18T13:25:31.366Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/delhai-database [none]
+[debug] [2025-04-18T13:25:35.307Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/delhai-database 200
+[debug] [2025-04-18T13:25:35.308Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/delhai-database {"projectId":"delhai-database","projectNumber":"719302477505","displayName":"Delhai-Database","name":"projects/delhai-database","resources":{"hostingSite":"delhai-database","realtimeDatabaseInstance":"delhai-database-default-rtdb","locationId":"us-central"},"state":"ACTIVE","etag":"1_06035f3f-7d99-4a17-959a-13313842e035"}
 [info] i  hosting[delhai-database]: Serving hosting files from: build {"metadata":{"emulator":{"name":"hosting"},"message":"Serving hosting files from: \u001b[1mbuild\u001b[22m"}}
 [info] +  hosting[delhai-database]: Local server: http://127.0.0.1:5000 {"metadata":{"emulator":{"name":"hosting"},"message":"Local server: \u001b[4m\u001b[1mhttp://127.0.0.1:5000\u001b[22m\u001b[24m"}}
-[debug] [2025-04-07T11:42:18.675Z] [Extensions] Connecting Extensions emulator, this is a noop.
+[debug] [2025-04-18T13:25:35.470Z] [Extensions] Connecting Extensions emulator, this is a noop.
 [info] i  functions: Watching "D:\delhai\system\functions" for Cloud Functions... {"metadata":{"emulator":{"name":"functions"},"message":"Watching \"D:\\delhai\\system\\functions\" for Cloud Functions..."}}
-[debug] [2025-04-07T11:42:18.690Z] Validating nodejs source
-[debug] [2025-04-07T11:42:20.215Z] > [functions] package.json contents: {
+[debug] [2025-04-18T13:25:35.500Z] Validating nodejs source
+[debug] [2025-04-18T13:25:45.683Z] checkFunctionsSDKVersion was unable to fetch information from NPM Error: spawnSync C:\WINDOWS\system32\cmd.exe ETIMEDOUT
+    at Object.spawnSync (node:internal/child_process:1120:20)
+    at Object.spawnSync (node:child_process:868:24)
+    at Function.spawnSync [as sync] (C:\Users\WANG\AppData\Roaming\npm\node_modules\firebase-tools\node_modules\cross-spawn\index.js:26:23)
+    at Object.getLatestSDKVersion (C:\Users\WANG\AppData\Roaming\npm\node_modules\firebase-tools\lib\deploy\functions\runtimes\node\versioning.js:54:25)
+    at Object.checkFunctionsSDKVersion (C:\Users\WANG\AppData\Roaming\npm\node_modules\firebase-tools\lib\deploy\functions\runtimes\node\versioning.js:74:32)
+    at Delegate.validate (C:\Users\WANG\AppData\Roaming\npm\node_modules\firebase-tools\lib\deploy\functions\runtimes\node\index.js:86:20)
+    at FunctionsEmulator.discoverTriggers (C:\Users\WANG\AppData\Roaming\npm\node_modules\firebase-tools\lib\emulator\functionsEmulator.js:331:35)
+    at async FunctionsEmulator.loadTriggers (C:\Users\WANG\AppData\Roaming\npm\node_modules\firebase-tools\lib\emulator\functionsEmulator.js:371:34)
+    at async FunctionsEmulator.connect (C:\Users\WANG\AppData\Roaming\npm\node_modules\firebase-tools\lib\emulator\functionsEmulator.js:297:13)
+    at async Object.startAll (C:\Users\WANG\AppData\Roaming\npm\node_modules\firebase-tools\lib\emulator\controller.js:671:13)
+[debug] [2025-04-18T13:25:45.686Z] > [functions] package.json contents: {
   "name": "functions",
   "description": "Cloud Functions for Firebase",
   "scripts": {
@@ -75,127 +87,8 @@
   },
   "private": true
 }
-[debug] [2025-04-07T11:42:20.216Z] Building nodejs source
-[debug] [2025-04-07T11:42:20.216Z] Failed to find version of module node: reached end of search path D:\delhai\system\functions\node_modules
+[debug] [2025-04-18T13:25:45.688Z] Building nodejs source
+[debug] [2025-04-18T13:25:45.690Z] Failed to find version of module node: reached end of search path D:\delhai\system\functions\node_modules
 [info] +  functions: Using node@22 from host. 
-[debug] [2025-04-07T11:42:20.220Z] Could not find functions.yaml. Must use http discovery
-[debug] [2025-04-07T11:42:20.247Z] Found firebase-functions binary at 'D:\delhai\system\functions\node_modules\.bin\firebase-functions'
-[info] Serving at port 8555
-
-[debug] [2025-04-07T11:42:21.241Z] Got response from /__/functions.yaml {"endpoints":{"api":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
-[debug] [2025-04-07T11:42:25.310Z] defaultcredentials: writing to file C:\Users\WANG\AppData\Roaming\firebase\joshuacantacruzada23_gmail_com_application_default_credentials.json
-[debug] [2025-04-07T11:42:25.310Z] Setting GAC to C:\Users\WANG\AppData\Roaming\firebase\joshuacantacruzada23_gmail_com_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to C:\\Users\\WANG\\AppData\\Roaming\\firebase\\joshuacantacruzada23_gmail_com_application_default_credentials.json"}}
-[info] +  functions: Loaded functions definitions from source: api. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: api."}}
-[info] +  functions[us-central1-api]: http function initialized (http://127.0.0.1:5001/delhai-database/us-central1/api). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/delhai-database/us-central1/api)."}}
-[debug] [2025-04-07T11:42:25.320Z] Could not find VSCode notification endpoint: FetchError: request to http://localhost:40001/vscode/notify failed, reason: connect ECONNREFUSED ::1:40001. If you are not running the Firebase Data Connect VSCode extension, this is expected and not an issue.
-[info] 
-┌─────────────────────────────────────────────────────────────┐
-│ ✔  All emulators ready! It is now safe to connect your app. │
-│ i  View Emulator UI at http://127.0.0.1:4000/               │
-└─────────────────────────────────────────────────────────────┘
-
-┌────────────┬────────────────┬──────────────────────────────────┐
-│ Emulator   │ Host:Port      │ View in Emulator UI              │
-├────────────┼────────────────┼──────────────────────────────────┤
-│ Functions  │ 127.0.0.1:5001 │ http://127.0.0.1:4000/functions  │
-├────────────┼────────────────┼──────────────────────────────────┤
-│ Hosting    │ 127.0.0.1:5000 │ n/a                              │
-├────────────┼────────────────┼──────────────────────────────────┤
-│ Extensions │ 127.0.0.1:5001 │ http://127.0.0.1:4000/extensions │
-└────────────┴────────────────┴──────────────────────────────────┘
-  Emulator Hub running at 127.0.0.1:4400
-  Other reserved ports: 4500
-┌─────────────────────────┬───────────────┬─────────────────────┐
-│ Extension Instance Name │ Extension Ref │ View in Emulator UI │
-└─────────────────────────┴───────────────┴─────────────────────┘
-Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
- 
-[debug] [2025-04-07T11:42:53.431Z] [work-queue] {"queuedWork":["/delhai-database/us-central1/api/createPaymongoCheckout-2025-04-07T11:42:53.431Z"],"queueLength":1,"runningWork":[],"workRunningCount":0}
-[debug] [2025-04-07T11:42:53.432Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":["/delhai-database/us-central1/api/createPaymongoCheckout-2025-04-07T11:42:53.431Z"],"workRunningCount":1}
-[debug] [2025-04-07T11:42:53.433Z] Accepted request OPTIONS /delhai-database/us-central1/api/createPaymongoCheckout --> us-central1-api
-[debug] [2025-04-07T11:42:53.435Z] [functions] Runtime ready! Sending request! {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Runtime ready! Sending request!"}}
-[debug] [2025-04-07T11:42:53.436Z] [functions] Got req.url=/delhai-database/us-central1/api/createPaymongoCheckout, mapping to path=/createPaymongoCheckout {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Got req.url=/delhai-database/us-central1/api/createPaymongoCheckout, mapping to path=/createPaymongoCheckout"}}
-[debug] [2025-04-07T11:42:53.455Z] [worker-pool] addWorker(us-central1-api) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] addWorker(us-central1-api)"}}
-[debug] [2025-04-07T11:42:53.457Z] [worker-pool] Adding worker with key us-central1-api, total=1 {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] Adding worker with key us-central1-api, total=1"}}
-[info] >  (node:1316) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead. {"user":"(node:1316) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"\u001b[90m> \u001b[39m (node:1316) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead."}}
-[info] >  (Use `node --trace-deprecation ...` to show where the warning was created) {"user":"(Use `node --trace-deprecation ...` to show where the warning was created)","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"\u001b[90m> \u001b[39m (Use `node --trace-deprecation ...` to show where the warning was created)"}}
-[debug] [2025-04-07T11:42:55.706Z] [runtime-status] [1316] Resolved module firebase-admin {"declared":true,"installed":true,"version":"12.7.0","resolution":"D:\\delhai\\system\\functions\\node_modules\\firebase-admin\\lib\\index.js"} {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[runtime-status] [1316] Resolved module firebase-admin {\"declared\":true,\"installed\":true,\"version\":\"12.7.0\",\"resolution\":\"D:\\\\delhai\\\\system\\\\functions\\\\node_modules\\\\firebase-admin\\\\lib\\\\index.js\"}"}}
-[debug] [2025-04-07T11:42:55.708Z] [runtime-status] [1316] Resolved module firebase-functions {"declared":true,"installed":true,"version":"6.3.2","resolution":"D:\\delhai\\system\\functions\\node_modules\\firebase-functions\\lib\\v2\\index.js"} {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[runtime-status] [1316] Resolved module firebase-functions {\"declared\":true,\"installed\":true,\"version\":\"6.3.2\",\"resolution\":\"D:\\\\delhai\\\\system\\\\functions\\\\node_modules\\\\firebase-functions\\\\lib\\\\v2\\\\index.js\"}"}}
-[debug] [2025-04-07T11:42:55.708Z] [runtime-status] [1316] Outgoing network have been stubbed. [{"name":"http","status":"mocked"},{"name":"http","status":"mocked"},{"name":"https","status":"mocked"},{"name":"https","status":"mocked"},{"name":"net","status":"mocked"}] {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[runtime-status] [1316] Outgoing network have been stubbed. [{\"name\":\"http\",\"status\":\"mocked\"},{\"name\":\"http\",\"status\":\"mocked\"},{\"name\":\"https\",\"status\":\"mocked\"},{\"name\":\"https\",\"status\":\"mocked\"},{\"name\":\"net\",\"status\":\"mocked\"}]"}}
-[debug] [2025-04-07T11:42:55.710Z] [runtime-status] [1316] Resolved module firebase-functions {"declared":true,"installed":true,"version":"6.3.2","resolution":"D:\\delhai\\system\\functions\\node_modules\\firebase-functions\\lib\\v2\\index.js"} {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[runtime-status] [1316] Resolved module firebase-functions {\"declared\":true,\"installed\":true,\"version\":\"6.3.2\",\"resolution\":\"D:\\\\delhai\\\\system\\\\functions\\\\node_modules\\\\firebase-functions\\\\lib\\\\v2\\\\index.js\"}"}}
-[debug] [2025-04-07T11:42:56.283Z] [runtime-status] [1316] Checked functions.config() {"config":{}} {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[runtime-status] [1316] Checked functions.config() {\"config\":{}}"}}
-[debug] [2025-04-07T11:42:56.283Z] [runtime-status] [1316] firebase-functions has been stubbed. {"functionsResolution":{"declared":true,"installed":true,"version":"6.3.2","resolution":"D:\\delhai\\system\\functions\\node_modules\\firebase-functions\\lib\\v2\\index.js"}} {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[runtime-status] [1316] firebase-functions has been stubbed. {\"functionsResolution\":{\"declared\":true,\"installed\":true,\"version\":\"6.3.2\",\"resolution\":\"D:\\\\delhai\\\\system\\\\functions\\\\node_modules\\\\firebase-functions\\\\lib\\\\v2\\\\index.js\"}}"}}
-[debug] [2025-04-07T11:42:56.284Z] [runtime-status] [1316] Resolved module firebase-functions {"declared":true,"installed":true,"version":"6.3.2","resolution":"D:\\delhai\\system\\functions\\node_modules\\firebase-functions\\lib\\v2\\index.js"} {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[runtime-status] [1316] Resolved module firebase-functions {\"declared\":true,\"installed\":true,\"version\":\"6.3.2\",\"resolution\":\"D:\\\\delhai\\\\system\\\\functions\\\\node_modules\\\\firebase-functions\\\\lib\\\\v2\\\\index.js\"}"}}
-[debug] [2025-04-07T11:42:56.481Z] [runtime-status] [1316] Resolved module firebase-admin {"declared":true,"installed":true,"version":"12.7.0","resolution":"D:\\delhai\\system\\functions\\node_modules\\firebase-admin\\lib\\index.js"} {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[runtime-status] [1316] Resolved module firebase-admin {\"declared\":true,\"installed\":true,\"version\":\"12.7.0\",\"resolution\":\"D:\\\\delhai\\\\system\\\\functions\\\\node_modules\\\\firebase-admin\\\\lib\\\\index.js\"}"}}
-[debug] [2025-04-07T11:42:56.627Z] [runtime-status] [1316] Resolved module firebase-functions {"declared":true,"installed":true,"version":"6.3.2","resolution":"D:\\delhai\\system\\functions\\node_modules\\firebase-functions\\lib\\v2\\index.js"} {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[runtime-status] [1316] Resolved module firebase-functions {\"declared\":true,\"installed\":true,\"version\":\"6.3.2\",\"resolution\":\"D:\\\\delhai\\\\system\\\\functions\\\\node_modules\\\\firebase-functions\\\\lib\\\\v2\\\\index.js\"}"}}
-[debug] [2025-04-07T11:42:56.628Z] [runtime-status] [1316] firebase-admin has been stubbed. {"adminResolution":{"declared":true,"installed":true,"version":"12.7.0","resolution":"D:\\delhai\\system\\functions\\node_modules\\firebase-admin\\lib\\index.js"}} {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[runtime-status] [1316] firebase-admin has been stubbed. {\"adminResolution\":{\"declared\":true,\"installed\":true,\"version\":\"12.7.0\",\"resolution\":\"D:\\\\delhai\\\\system\\\\functions\\\\node_modules\\\\firebase-admin\\\\lib\\\\index.js\"}}"}}
-[debug] [2025-04-07T11:42:56.865Z] [runtime-status] [1316] Functions runtime initialized. {"cwd":"D:\\delhai\\system\\functions","node_version":"22.12.0"} {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[runtime-status] [1316] Functions runtime initialized. {\"cwd\":\"D:\\\\delhai\\\\system\\\\functions\",\"node_version\":\"22.12.0\"}"}}
-[debug] [2025-04-07T11:42:56.865Z] [runtime-status] [1316] Listening to port: \\?\pipe\fire_emu_8216cdee3c61c445 {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[runtime-status] [1316] Listening to port: \\\\?\\pipe\\fire_emu_8216cdee3c61c445"}}
-[debug] [2025-04-07T11:42:56.971Z] [worker-us-central1-api-b47bc872-07d7-42bf-8cd7-e15826549457]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[worker-us-central1-api-b47bc872-07d7-42bf-8cd7-e15826549457]: IDLE"}}
-[debug] [2025-04-07T11:42:56.971Z] [worker-pool] submitRequest(triggerId=us-central1-api) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] submitRequest(triggerId=us-central1-api)"}}
-[info] i  functions: Beginning execution of "us-central1-api" {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Beginning execution of \"us-central1-api\""}}
-[debug] [2025-04-07T11:42:56.973Z] [worker-us-central1-api-b47bc872-07d7-42bf-8cd7-e15826549457]: BUSY {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[worker-us-central1-api-b47bc872-07d7-42bf-8cd7-e15826549457]: BUSY"}}
-[debug] [2025-04-07T11:42:56.981Z] Finishing up request with event=pause {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finishing up request with event=pause"}}
-[info] i  functions: Finished "us-central1-api" in 9.2466ms {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finished \"us-central1-api\" in 9.2466ms"}}
-[debug] [2025-04-07T11:42:56.983Z] [worker-us-central1-api-b47bc872-07d7-42bf-8cd7-e15826549457]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[worker-us-central1-api-b47bc872-07d7-42bf-8cd7-e15826549457]: IDLE"}}
-[debug] [2025-04-07T11:42:56.983Z] Finishing up request with event=finish {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finishing up request with event=finish"}}
-[debug] [2025-04-07T11:42:56.983Z] Finishing up request with event=close {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finishing up request with event=close"}}
-[debug] [2025-04-07T11:42:56.984Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":[],"workRunningCount":0}
-[debug] [2025-04-07T11:42:56.985Z] [work-queue] {"queuedWork":["/delhai-database/us-central1/api/createPaymongoCheckout-2025-04-07T11:42:56.985Z"],"queueLength":1,"runningWork":[],"workRunningCount":0}
-[debug] [2025-04-07T11:42:56.985Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":["/delhai-database/us-central1/api/createPaymongoCheckout-2025-04-07T11:42:56.985Z"],"workRunningCount":1}
-[debug] [2025-04-07T11:42:56.985Z] Accepted request POST /delhai-database/us-central1/api/createPaymongoCheckout --> us-central1-api
-[debug] [2025-04-07T11:42:56.986Z] [functions] Runtime ready! Sending request! {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Runtime ready! Sending request!"}}
-[debug] [2025-04-07T11:42:56.986Z] [functions] Got req.url=/delhai-database/us-central1/api/createPaymongoCheckout, mapping to path=/createPaymongoCheckout {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Got req.url=/delhai-database/us-central1/api/createPaymongoCheckout, mapping to path=/createPaymongoCheckout"}}
-[debug] [2025-04-07T11:42:56.986Z] [worker-pool] submitRequest(triggerId=us-central1-api) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] submitRequest(triggerId=us-central1-api)"}}
-[info] i  functions: Beginning execution of "us-central1-api" {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Beginning execution of \"us-central1-api\""}}
-[debug] [2025-04-07T11:42:56.987Z] [worker-us-central1-api-b47bc872-07d7-42bf-8cd7-e15826549457]: BUSY {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[worker-us-central1-api-b47bc872-07d7-42bf-8cd7-e15826549457]: BUSY"}}
-[info] >  🛒 Incoming cart items: [ {"user":"🛒 Incoming cart items: [","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"\u001b[90m> \u001b[39m 🛒 Incoming cart items: ["}}
-[info] >    { {"user":"  {","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"\u001b[90m> \u001b[39m   {"}}
-[info] >      name: 'PRIME SYRINGE 10CC', {"user":"    name: 'PRIME SYRINGE 10CC',","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"\u001b[90m> \u001b[39m     name: 'PRIME SYRINGE 10CC',"}}
-[info] >      amount: 40000, {"user":"    amount: 40000,","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"\u001b[90m> \u001b[39m     amount: 40000,"}}
-[info] >      quantity: 1, {"user":"    quantity: 1,","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"\u001b[90m> \u001b[39m     quantity: 1,"}}
-[info] >      currency: 'PHP' {"user":"    currency: 'PHP'","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"\u001b[90m> \u001b[39m     currency: 'PHP'"}}
-[info] >    } {"user":"  }","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"\u001b[90m> \u001b[39m   }"}}
-[info] >  ] {"user":"]","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"\u001b[90m> \u001b[39m ]"}}
-[debug] [2025-04-07T11:42:57.653Z] Finishing up request with event=pause {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finishing up request with event=pause"}}
-[info] i  functions: Finished "us-central1-api" in 666.017ms {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finished \"us-central1-api\" in 666.017ms"}}
-[debug] [2025-04-07T11:42:57.654Z] [worker-us-central1-api-b47bc872-07d7-42bf-8cd7-e15826549457]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[worker-us-central1-api-b47bc872-07d7-42bf-8cd7-e15826549457]: IDLE"}}
-[debug] [2025-04-07T11:42:57.655Z] Finishing up request with event=finish {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finishing up request with event=finish"}}
-[debug] [2025-04-07T11:42:57.655Z] Finishing up request with event=close {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finishing up request with event=close"}}
-[debug] [2025-04-07T11:42:57.655Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":[],"workRunningCount":0}
-[debug] [2025-04-07T11:45:46.956Z] [work-queue] {"queuedWork":["/delhai-database/us-central1/api/createPaymongoCheckout-2025-04-07T11:45:46.955Z"],"queueLength":1,"runningWork":[],"workRunningCount":0}
-[debug] [2025-04-07T11:45:46.956Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":["/delhai-database/us-central1/api/createPaymongoCheckout-2025-04-07T11:45:46.955Z"],"workRunningCount":1}
-[debug] [2025-04-07T11:45:46.956Z] Accepted request OPTIONS /delhai-database/us-central1/api/createPaymongoCheckout --> us-central1-api
-[debug] [2025-04-07T11:45:46.957Z] [functions] Runtime ready! Sending request! {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Runtime ready! Sending request!"}}
-[debug] [2025-04-07T11:45:46.957Z] [functions] Got req.url=/delhai-database/us-central1/api/createPaymongoCheckout, mapping to path=/createPaymongoCheckout {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Got req.url=/delhai-database/us-central1/api/createPaymongoCheckout, mapping to path=/createPaymongoCheckout"}}
-[debug] [2025-04-07T11:45:46.957Z] [worker-pool] submitRequest(triggerId=us-central1-api) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] submitRequest(triggerId=us-central1-api)"}}
-[info] i  functions: Beginning execution of "us-central1-api" {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Beginning execution of \"us-central1-api\""}}
-[debug] [2025-04-07T11:45:46.958Z] [worker-us-central1-api-b47bc872-07d7-42bf-8cd7-e15826549457]: BUSY {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[worker-us-central1-api-b47bc872-07d7-42bf-8cd7-e15826549457]: BUSY"}}
-[debug] [2025-04-07T11:45:46.963Z] Finishing up request with event=pause {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finishing up request with event=pause"}}
-[info] i  functions: Finished "us-central1-api" in 4.9702ms {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finished \"us-central1-api\" in 4.9702ms"}}
-[debug] [2025-04-07T11:45:46.964Z] [worker-us-central1-api-b47bc872-07d7-42bf-8cd7-e15826549457]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[worker-us-central1-api-b47bc872-07d7-42bf-8cd7-e15826549457]: IDLE"}}
-[debug] [2025-04-07T11:45:46.964Z] Finishing up request with event=finish {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finishing up request with event=finish"}}
-[debug] [2025-04-07T11:45:46.965Z] Finishing up request with event=close {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finishing up request with event=close"}}
-[debug] [2025-04-07T11:45:46.965Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":[],"workRunningCount":0}
-[debug] [2025-04-07T11:45:46.966Z] [work-queue] {"queuedWork":["/delhai-database/us-central1/api/createPaymongoCheckout-2025-04-07T11:45:46.966Z"],"queueLength":1,"runningWork":[],"workRunningCount":0}
-[debug] [2025-04-07T11:45:46.967Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":["/delhai-database/us-central1/api/createPaymongoCheckout-2025-04-07T11:45:46.966Z"],"workRunningCount":1}
-[debug] [2025-04-07T11:45:46.967Z] Accepted request POST /delhai-database/us-central1/api/createPaymongoCheckout --> us-central1-api
-[debug] [2025-04-07T11:45:46.967Z] [functions] Runtime ready! Sending request! {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Runtime ready! Sending request!"}}
-[debug] [2025-04-07T11:45:46.968Z] [functions] Got req.url=/delhai-database/us-central1/api/createPaymongoCheckout, mapping to path=/createPaymongoCheckout {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Got req.url=/delhai-database/us-central1/api/createPaymongoCheckout, mapping to path=/createPaymongoCheckout"}}
-[debug] [2025-04-07T11:45:46.968Z] [worker-pool] submitRequest(triggerId=us-central1-api) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] submitRequest(triggerId=us-central1-api)"}}
-[info] i  functions: Beginning execution of "us-central1-api" {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Beginning execution of \"us-central1-api\""}}
-[debug] [2025-04-07T11:45:46.974Z] [worker-us-central1-api-b47bc872-07d7-42bf-8cd7-e15826549457]: BUSY {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[worker-us-central1-api-b47bc872-07d7-42bf-8cd7-e15826549457]: BUSY"}}
-[info] >  🛒 Incoming cart items: [ {"user":"🛒 Incoming cart items: [","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"\u001b[90m> \u001b[39m 🛒 Incoming cart items: ["}}
-[info] >    { {"user":"  {","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"\u001b[90m> \u001b[39m   {"}}
-[info] >      name: 'PRIME SYRINGE 5CC', {"user":"    name: 'PRIME SYRINGE 5CC',","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"\u001b[90m> \u001b[39m     name: 'PRIME SYRINGE 5CC',"}}
-[info] >      amount: 28000, {"user":"    amount: 28000,","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"\u001b[90m> \u001b[39m     amount: 28000,"}}
-[info] >      quantity: 2, {"user":"    quantity: 2,","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"\u001b[90m> \u001b[39m     quantity: 2,"}}
-[info] >      currency: 'PHP' {"user":"    currency: 'PHP'","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"\u001b[90m> \u001b[39m     currency: 'PHP'"}}
-[info] >    } {"user":"  }","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"\u001b[90m> \u001b[39m   }"}}
-[info] >  ] {"user":"]","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"\u001b[90m> \u001b[39m ]"}}
-[debug] [2025-04-07T11:45:47.564Z] Finishing up request with event=pause {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finishing up request with event=pause"}}
-[info] i  functions: Finished "us-central1-api" in 590.4394ms {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finished \"us-central1-api\" in 590.4394ms"}}
-[debug] [2025-04-07T11:45:47.566Z] [worker-us-central1-api-b47bc872-07d7-42bf-8cd7-e15826549457]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[worker-us-central1-api-b47bc872-07d7-42bf-8cd7-e15826549457]: IDLE"}}
-[debug] [2025-04-07T11:45:47.566Z] Finishing up request with event=finish {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finishing up request with event=finish"}}
-[debug] [2025-04-07T11:45:47.567Z] Finishing up request with event=close {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"Finishing up request with event=close"}}
-[debug] [2025-04-07T11:45:47.567Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":[],"workRunningCount":0}
+[debug] [2025-04-18T13:25:45.705Z] Could not find functions.yaml. Must use http discovery
+[debug] [2025-04-18T13:25:45.852Z] Found firebase-functions binary at 'D:\delhai\system\functions\node_modules\.bin\firebase-functions'
