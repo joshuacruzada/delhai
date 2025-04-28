@@ -114,9 +114,13 @@ const Cart = () => {
     const cartToCheckout = cartItems
       .filter((item) => selectedItems.includes(item.id))
       .map((item) => ({
+        id: item.id,
         name: item.name,
-        amount: item.pricePerBox * 100,  // Convert to cents for PayMongo
+        pricePerBox: item.pricePerBox, // ✅ Add original unit price
         quantity: item.quantity,
+        imageUrl: item.imageUrl || '', // ✅ Add product image
+        packaging: item.packaging || '', // ✅ Optional: add packaging if you have
+        amount: item.pricePerBox * 100, // for PayMongo cents
         currency: "PHP"
       }));
   
@@ -125,12 +129,11 @@ const Cart = () => {
       return;
     }
   
-    // Compute totalAmount (in PHP) from selected items
     const totalAmount = cartToCheckout.reduce((sum, item) => {
       return sum + (item.amount / 100) * item.quantity;
     }, 0);
   
-    // Save to localStorage for retrieval in PaymentSuccess.jsx
+    // Save correct full data to localStorage
     localStorage.setItem("checkoutData", JSON.stringify({
       products: cartToCheckout,
       totalAmount,
@@ -146,7 +149,6 @@ const Cart = () => {
   };
   
   
-
   if (loading) return <p>Loading cart...</p>;
 
   return (

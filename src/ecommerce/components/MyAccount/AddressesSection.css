@@ -1,0 +1,78 @@
+.addresses-container {
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+  
+  .addresses-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .add-new-address-button {
+    background-color: cadetblue;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .address-list {
+    margin-top: 20px;
+  }
+  
+  .address-card {
+    background: white;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .address-actions button {
+    margin-left: 10px;
+    padding: 6px 10px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  .edit-btn {
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 4px;
+  }
+  
+  .delete-btn {
+    background-color: #f44336;
+    color: white;
+    border-radius: 4px;
+  }
+  
+  .address-tags {
+    margin-top: 8px;
+  }
+  
+  .tag-default {
+    background-color: cadetblue;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-right: 4px;
+  }
+  
+  .tag-label {
+    background-color: #eee;
+    color: black;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  

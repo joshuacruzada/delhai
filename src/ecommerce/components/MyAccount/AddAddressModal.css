@@ -1,0 +1,208 @@
+/* Modal Overlay */
+.add-address-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  /* Modal Content */
+  .add-address-modal-content {
+    background: white;
+    padding: 30px;
+    width: 450px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    animation: fadeIn 0.3s ease;
+  }
+  
+  /* Modal Title */
+  .add-address-modal-title {
+    font-size: 22px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+  /* Form Wrapper */
+  .add-address-modal-form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+
+  /* Input Fields */
+  .add-address-modal-input {
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    transition: border-color 0.3s ease;
+  }
+  
+  .add-address-modal-input.input-error {
+    border: 1px solid #e53935;
+    background-color: #ffecec;
+  }
+  
+  .add-address-postal-error {
+    font-size: 12px;
+    color: #e53935;
+    margin-top: -10px;
+    margin-bottom: 10px;
+  }
+
+  .add-address-location-dropdown {
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: white;
+    margin-top: 5px;
+    padding: 10px;
+    animation: fadeIn 0.3s ease;
+    max-height: 250px;
+    overflow-y: auto;
+  }
+
+
+  /* Label Group (Radio) */
+  .add-address-modal-label-group {
+    margin-bottom: 12px;
+  }
+  
+  .add-address-modal-radio {
+    margin-right: 16px;
+    font-size: 14px;
+  }
+  
+  /* Checkbox */
+  .add-address-modal-checkbox {
+    margin-bottom: 20px;
+  }
+  
+  .add-address-modal-checkbox-label {
+    font-size: 14px;
+  }
+  
+  /* Footer Buttons */
+  .add-address-modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  
+  /* Cancel Button */
+  .add-address-modal-cancel-btn {
+    padding: 10px 18px;
+    font-size: 14px;
+    color: #333;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .add-address-modal-cancel-btn:hover {
+    background-color: #f0f0f0;
+  }
+  
+  /* Submit Button (Cadetblue) */
+  .add-address-modal-submit-btn {
+    padding: 10px 18px;
+    font-size: 14px;
+    background-color: cadetblue;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .add-address-modal-submit-btn:hover {
+    background-color: #2f7c82;
+  }
+  
+  /* Cascading Location Picker */
+  .add-address-location-picker {
+    margin-bottom: 20px;
+  }
+  
+  .add-address-location-tabs {
+    display: flex;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 10px;
+  }
+  
+  .add-address-location-tab {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    font-size: 14px;
+    color: #666;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s ease;
+  }
+  
+  .add-address-location-tab.active {
+    color: cadetblue;
+    font-weight: 600;
+  }
+  
+  .add-address-location-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 10%;
+    width: 80%;
+    height: 2px;
+    background-color: cadetblue;
+    border-radius: 2px;
+  }
+  
+  /* Location Options List */
+  .add-address-location-options {
+    background: white;
+    border: 1px solid #ccc;
+    border-top: none;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 14px;
+  }
+  
+  .add-address-location-option {
+    padding: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .add-address-location-option:hover {
+    background-color: #f6f6f6;
+  }
+  
+  /* Selected Option */
+  .add-address-location-option.selected {
+    background-color: cadetblue;
+    color: white;
+  }
+  
+  /* Smooth Fade In */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  

@@ -1,168 +1,107 @@
-/* Modal overlay */
 .new-customer-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1050;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
 }
 
-/* Modal content */
 .new-customer-modal-content {
-    background: white; /* Ensure modal content has a white background */
-    padding: 20px 30px;
-    border-radius: 10px;
-    width: 400px; /* Control modal width */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Add a shadow for better visibility */
-    text-align: center;
-    animation: fadeIn 0.3s ease;
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  width: 600px;
+  max-width: 90%;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  animation: fadeIn 0.3s ease;
+  text-align: center;
 }
 
-/* Header */
 .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
 }
 
 .modal-header h2 {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: #333;
+  font-size: 1.8rem;
 }
 
-.modal-header .modal-date {
-    font-size: 0.9rem;
-    color: #888;
+.modal-date {
+  font-size: 0.9rem;
+  color: #666;
 }
 
-/* Input fields */
-.new-customer-modal-content input,
-.new-customer-modal-content select {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 0.8rem;
+/* Two column form layout */
+.two-column-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.two-column-form label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+  display: block;
+  color: #333;
+}
+
+.two-column-form input,
+.two-column-form select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 0.9rem;
 }
 
 /* Buttons */
-.new-customer-modal-content .btn {
-    padding: 10px 20px;
-    border-radius: 5px;
-    border: none;
-    cursor: pointer;
-    font-size: 0.8rem;
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
 }
 
-.new-customer-modal-content .btn-success {
-    background-color: #28a745;
-    color: white;
+.btn {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  border: none;
+  cursor: pointer;
 }
 
-.new-customer-modal-content .btn-success:hover {
-    background-color: #218838;
+.btn-success {
+  background-color: #28a745;
+  color: white;
 }
 
-.new-customer-modal-content .btn-secondary {
-    background-color: #6c757d;
-    color: white;
+.btn-success:hover {
+  background-color: #218838;
 }
 
-.new-customer-modal-content .btn-secondary:hover {
-    background-color: #5a6268;
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
 }
 
-/* Fade-in animation */
+.btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+/* Fade In Animation */
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
-
-/* Success Modal Overlay */
-.success-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1060;
-  }
-  
-  /* Success Modal Content */
-  .success-modal-content {
-    background: white;
-    padding: 15px 20px;
-    border-radius: 8px;
-    width: 300px; /* Compact size */
-    text-align: center;
-    animation: fadeIn 0.3s ease; /* Smooth fade-in effect */
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3); /* Add shadow */
-  }
-  
-  /* Check Icon Styling */
-  .success-icon-container {
-    margin: 10px 0; /* Space around the icon */
-  }
-  
-/* Checkmark SVG */
-.checkmark {
-    width: 50px;
-    height: 50px;
-    stroke-width: 2;
-    stroke: #28a745;
-    stroke-miterlimit: 10;
-    margin: 0 auto 10px auto;
-    display: block;
-  }
-  
-  /* Circle Animation */
-  .checkmark-circle {
-    stroke-dasharray: 157; /* Circumference of the circle */
-    stroke-dashoffset: 157;
-    animation: drawCircle 0.6s ease-out forwards;
-  }
-  
-  /* Checkmark Animation */
-  .checkmark-check {
-    stroke-dasharray: 36; /* Length of the check path */
-    stroke-dashoffset: 36;
-    animation: drawCheck 0.4s 0.6s ease-out forwards;
-  }
-
-/* Draw Circle Animation */
-@keyframes drawCircle {
-    from {
-      stroke-dashoffset: 157;
-    }
-    to {
-      stroke-dashoffset: 0;
-    }
-  }
-  
-  /* Draw Check Animation */
-  @keyframes drawCheck {
-    from {
-      stroke-dashoffset: 36;
-    }
-    to {
-      stroke-dashoffset: 0;
-    }
-  }

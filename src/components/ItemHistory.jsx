@@ -24,15 +24,15 @@ const ItemHistory = () => {
       console.error("No product selected.");
       return;
     }
-
+  
     const db = getDatabase();
     const stockRef = ref(db, `stocks/${item.id}`);
-
+  
     onValue(stockRef, (snapshot) => {
       const stockData = snapshot.val();
       if (stockData) {
-        const { stockHistory = {}, stockOutHistory = {}, totalAddedStock = 0, stock = 0 } = stockData;
-
+        const { stockHistory = {}, stockOutHistory = {} } = stockData;
+  
         const historyArray = [
           ...Object.keys(stockHistory).map((key) => {
             const batch = stockHistory[key];
@@ -49,31 +49,34 @@ const ItemHistory = () => {
             ...stockOutHistory[key],
           })),
         ];
-
-        // Sort history by date
+  
+        // Sort by date
         historyArray.sort((a, b) => {
           const dateA = new Date(a.restockDate || a.date || 0);
           const dateB = new Date(b.restockDate || b.date || 0);
           return dateA - dateB;
         });
-
-        // Calculate total deducted stock
-        const totalDeducted = Object.values(stockOutHistory || {}).reduce(
-          (sum, outRecord) => sum + (outRecord.quantityRemoved || 0),
-          0
-        );
-
-        // Get all batch IDs for filtering
-        const batchIds = Array.from(
-          new Set(historyArray.map((record) => record.batchId))
-        );
-
+  
+        // 🧠 NEW: Dynamically compute totals
+        let added = 0;
+        let deducted = 0;
+  
+        Object.values(stockHistory).forEach(batch => {
+          added += batch.quantityAdded || 0;
+        });
+  
+        Object.values(stockOutHistory).forEach(out => {
+          deducted += out.quantityRemoved || 0;
+        });
+  
+        const batchIds = Array.from(new Set(historyArray.map((record) => record.batchId)));
+  
         setStockHistory(historyArray);
-        setFilteredHistory(historyArray); // Set initially to all history
-        setOverallStock(stock); // Overall stock
-        setTotalAddedStock(totalAddedStock); // Set cumulative added stock
-        setTotalDeductedStock(totalDeducted); // Calculate total deducted stock
-        setBatchIds(batchIds); // Save batch IDs
+        setFilteredHistory(historyArray);
+        setTotalAddedStock(added);        
+        setTotalDeductedStock(deducted);   
+        setOverallStock(added - deducted); 
+        setBatchIds(batchIds);
       } else {
         setStockHistory([]);
         setFilteredHistory([]);
@@ -84,6 +87,7 @@ const ItemHistory = () => {
       }
     });
   }, [item]);
+  
 
   useEffect(() => {
     let filtered = [...stockHistory];

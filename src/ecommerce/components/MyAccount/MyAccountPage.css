@@ -1,0 +1,79 @@
+/* Main layout */
+.account-page-wrapper {
+  min-height: 100vh;
+  background-color: transparent;
+}
+
+/* Layout container after UpperBar */
+.account-layout-container {
+  display: flex;
+  margin-top: 70px; /* Adjust if your UpperBar height differs */
+}
+
+/* Sidebar */
+.account-sidebar {
+  width: 240px;
+  background-color: transparent;
+  border-right: 1px solid #e6e6e6;
+  padding: 24px 16px;
+}
+
+/* Sidebar menu main list */
+.account-sidebar-menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Each main sidebar item */
+.account-menu-item {
+  margin-bottom: 16px;
+}
+
+/* Main menu link */
+.account-menu-link {
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  color: #333;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 8px 0;
+  transition: color 0.2s ease;
+}
+
+/* When active (highlight the text and icon) */
+.account-menu-item.active .account-menu-link {
+  color: cadetblue;
+  font-weight: bold;
+}
+
+/* Submenu container under My Account */
+.account-submenu {
+  list-style: none;
+  margin: 8px 0 0 32px;
+  padding: 0;
+}
+
+/* Each submenu item */
+.account-submenu-link {
+  display: block;
+  font-size: 14px;
+  color: #666;
+  text-decoration: none;
+  padding: 6px 0;
+  transition: color 0.2s ease;
+}
+
+/* Submenu hover */
+.account-submenu-link:hover {
+  color: cadetblue;
+}
+
+/* Main content */
+.account-main-content {
+  flex: 1;
+  padding: 40px;
+  background-color: #fafafa;
+  min-height: calc(100vh - 70px);
+}

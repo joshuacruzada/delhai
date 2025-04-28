@@ -51,27 +51,20 @@ const Invoices = () => {
 
           return {
             ...invoice,
-            invoiceNumber: formatInvoiceNumber(index + 1),
-            customerName: customer.name || 'N/A',
-            customerAddress: customer.completeAddress || 'N/A',
-            tin: customer.tin || 'N/A',
-            shippedTo: customer.shippedTo || 'N/A',
-            drNo: customer.drNo || 'N/A',
-            poNo: customer.poNo || 'N/A',
-            terms: customer.terms || 'N/A',
-            salesman: customer.salesman || 'N/A',
+            invoiceNumber: formatInvoiceNumber(invoice.invoiceNumber || 1),
+            customerName: invoice.customerName || customer.name || 'N/A',
+            customerAddress: invoice.customerAddress || customer.completeAddress || 'N/A',
+            tin: invoice.tin || 'N/A',
+            shippedTo: invoice.shippedTo || 'N/A',
+            drNo: invoice.drNo || 'N/A',
+            poNo: invoice.poNo || 'N/A',
+            terms: invoice.terms || 'N/A',
+            salesman: invoice.salesman || 'N/A',
             totalAmount: invoice.totalAmount || 0,
-            paymentStatus: order.paymentStatus || 'Pending',
-            products: invoice.orderDetails?.map((product) => ({
-              id: product.id || 'N/A',
-              name: product.name || 'N/A',
-              quantity: product.quantity || 0,
-              price: product.price || 0,
-              imageUrl: product.imageUrl || '',
-              packaging: product.packaging || ''
-            })) || [],
+            paymentStatus: invoice.paymentStatus || order.paymentStatus || 'Pending',
+            products: invoice.orderDetails || [],
           };
-        });
+        }).sort((a, b) => new Date(b.issuedAt) - new Date(a.issuedAt)); // sort here
 
         setInvoices(mergedInvoices);
       } catch (error) {

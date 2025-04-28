@@ -99,29 +99,7 @@
     gap: 10px; /* Add spacing between the icons */
   }
   
-  .customer-table .action-icons i {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 1rem;
-    background-color: #4d869c;
-    color: white;
-    width: 32px; /* Set consistent width */
-    height: 32px; /* Set consistent height */
-    border-radius: 10%; /* Make icons circular */
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-  
-  .customer-table .action-icons .edit-icon:hover {
-    background-color: #dba10d;
-    color: #e7e9ea; /* Yellow for Edit hover */
-  }
-  
-  .customer-table .action-icons .delete-icon:hover {
-    background-color: #dc3545;
-    color: #e7e9ea; /* Red for Delete hover */
-  }
+
   
   /* No Customers Message */
   .no-customers {

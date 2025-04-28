@@ -106,3 +106,6 @@ export const deleteProduct = (id, callback) => {
       console.error('Error deleting item:', error);
     });
 };
+
+
+

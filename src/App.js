@@ -42,6 +42,14 @@ import SocialLogin from './ecommerce/components/SocialLogin';
 import Cart from './ecommerce/components/Cart';
 import PaymentSuccess from './ecommerce/components/PaymentSuccess';
 import PaymentCancel from './ecommerce/components/PaymentCancel';
+import CreateAccount from './ecommerce/components/CreateAccount';
+import MyAccountPage from './ecommerce/components/MyAccount/MyAccountPage';
+import ProfileSection from './ecommerce/components/MyAccount/ProfileSection';
+import AddressesSection from './ecommerce/components/MyAccount/AddressesSection';
+import ChangePasswordSection from './ecommerce/components/MyAccount/ChangePasswordSection';
+import MyPurchasePage from './ecommerce/components/MyAccount/MyPurchasePage';
+
+
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -142,14 +150,26 @@ function App() {
         {isAuthenticated && userRole === 'employee' && <SidebarEmployee onLogout={handleLogout} />}
 
         <div className="content">
+          
           <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<SocialLogin />} />
+          <Route path="/signup" element={<CreateAccount />} /> 
           <Route path="/shop" element={<Shop />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/productdetail/:productId" element={<ProductDetail />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/payment-cancel" element={<PaymentCancel />} />
+
+          <Route path="/my-account/*" element={<MyAccountPage />}>
+            <Route path="profile" element={<ProfileSection />} />
+            <Route path="addresses" element={<AddressesSection/>} />
+            <Route path="change-password" element={<ChangePasswordSection />} />
+            <Route path="my-purchase" element={<MyPurchasePage />} />
+          </Route>
+
+         
+
 
 
             {/* Public Routes */}

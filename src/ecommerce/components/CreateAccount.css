@@ -1,0 +1,70 @@
+.create-account-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f5f5f5;
+  }
+  
+  .create-account-box {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 300px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .create-account-logo-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .create-account-logo-img {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .create-account-logo-text {
+    text-align: center;
+  }
+  
+  .create-account-box h2 {
+    margin-top: 10px;
+    text-align: center;
+  }
+  
+  .create-account-box input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+  }
+  
+  .create-account-btn {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .create-account-btn:hover {
+    background-color: #0056b3;
+  }
+  
+  .social-btns {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+
+  
+  .signup-link {
+    text-align: center;
+    margin-top: 15px;
+  }
+  

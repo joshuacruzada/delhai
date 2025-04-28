@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { database } from '../../FirebaseConfig';
 import { ref, onValue } from 'firebase/database';
 import { Link } from "react-router-dom";
-import ContactInfo from '../components/ContactInfo'; // Import ContactInfo
+import ContactInfo from '../components/ContactInfo';
 import './LandingPage.css';
 
-
+import landingImage from '../pictures/landing-image.png'; // 🛠️ Import the fixed landing image
 import rapidTestsImg from '../pictures/rapid-test.png';
 import xrayProductsImg from '../pictures/xray-product.png';
 import labReagentsImg from '../pictures/cholesterol liquid.webp';
@@ -21,7 +21,6 @@ const categories = [
 
 const LandingPage = () => {
   const [products, setProducts] = useState([]);
-  const [heroImage, setHeroImage] = useState(null);
 
   useEffect(() => {
     const productsRef = ref(database, 'stocks');
@@ -33,12 +32,6 @@ const LandingPage = () => {
           ...fetchedProducts[id]
         }));
         setProducts(productList);
-
-        // Select a random product image for hero section
-        if (productList.length > 0) {
-          const randomProduct = productList[Math.floor(Math.random() * productList.length)];
-          setHeroImage(randomProduct.imageUrl || '/default-placeholder.png');
-        }
       }
     });
 
@@ -55,14 +48,14 @@ const LandingPage = () => {
             <h1>Welcome to DELHAI Medical Enterprise</h1>
             <p>Discover the best selection of medical supplies at unbeatable prices. Whether you're looking for syringes, gloves, or diagnostic tests, we've got you covered.</p>
             <Link to="/shop" className="landing-shop-btn">Shop Now</Link>
-
           </div>
           <div className="landing-hero-image">
-            <img src={heroImage || '/default-placeholder.png'} alt="Medical Enterprise" />
+            {/* 🛠️ Always use the fixed image */}
+            <img src={landingImage} alt="DELHAI Medical Enterprise" />
           </div>
         </div>
 
-
+        {/* Categories */}
         <div className="landing-categories">
           <h2>Categories</h2>
           <div className="category-container">
@@ -87,23 +80,22 @@ const LandingPage = () => {
               </div>
             ))}
           </div>
-
         </div>
-
-        
       </div>
+
       {/* About Section */}
       <div className="landing-about-section">
-          <h2>About Us</h2>
-          <p>
-            We are dedicated to providing high-quality healthcare products to hospitals, clinics, and laboratories worldwide. 
-            Our company specializes in offering a wide range of medical supplies, from essential diagnostic tools to high-precision laboratory reagents. 
-            We are committed to affordability without compromising quality, ensuring that healthcare providers have access to reliable medical solutions. 
-            Our mission is to enhance healthcare accessibility by delivering safe, and effective products to the industry. 
-            With DELHAI, you can trust that your medical supply needs are met with professionalism and excellence.
-          </p>
-        </div>
-      {/* Contact Info (Placed Outside landing-container) */}
+        <h2>About Us</h2>
+        <p>
+          We are dedicated to providing high-quality healthcare products to hospitals, clinics, and laboratories worldwide. 
+          Our company specializes in offering a wide range of medical supplies, from essential diagnostic tools to high-precision laboratory reagents. 
+          We are committed to affordability without compromising quality, ensuring that healthcare providers have access to reliable medical solutions. 
+          Our mission is to enhance healthcare accessibility by delivering safe, and effective products to the industry. 
+          With DELHAI, you can trust that your medical supply needs are met with professionalism and excellence.
+        </p>
+      </div>
+
+      {/* Contact Info */}
       <ContactInfo />
     </div>
   );

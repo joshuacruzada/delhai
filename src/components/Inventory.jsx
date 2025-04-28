@@ -229,7 +229,7 @@ const Inventory = () => {
                       const isLowStock =
                         item.quantity !== undefined &&
                         item.criticalStock !== undefined &&
-                        item.quantity < item.criticalStock;
+                        item.totalAddedStock  <= item.criticalStock;
 
                       const isNearlyExpired =
                         item.expiryDate &&

@@ -89,8 +89,6 @@ const Orders = () => {
   }, [orderHistory, searchTerm, activeTab]);
   
   
-
-
   const fetchOrders = useCallback(async () => {
     try {
       const ordersRef = ref(database, `orders`);
@@ -107,11 +105,9 @@ const Orders = () => {
       const customersData = customersSnapshot.exists() ? customersSnapshot.val() : {};
       const stocksData = stocksSnapshot.exists() ? stocksSnapshot.val() : {};
   
-      // Flatten all orders under all user nodes
       const allOrders = Object.entries(ordersData).flatMap(([userId, userOrders]) =>
         Object.entries(userOrders).map(([orderId, order]) => {
           const customer = customersData[userId]?.[order.customerId] || {};
-  
           const products = (order.products || []).map((product) => {
             const stock = stocksData[product.id] || {};
   
@@ -126,29 +122,44 @@ const Orders = () => {
   
           return {
             id: orderId,
-            ...order,
-            customerName: customer.name || 'N/A',
-            customerAddress: customer.completeAddress || 'N/A',
-            tin: customer.tin || 'N/A',
-            shippedTo: customer.shippedTo || '',
-            drNo: customer.drNo || 'N/A',
-            poNo: customer.poNo || 'N/A',
-            terms: customer.terms || 'N/A',
-            salesman: customer.salesman || 'N/A',
-            email: customer.email || 'N/A',
+            userId,
+            createdAt: order.createdAt,
+            customerName: customer.name || order.customerName || "N/A",
+            customerAddress: customer.completeAddress || order.customerAddress || "N/A",
+            totalAmount: order.totalAmount,
+            paymentStatus: order.paymentStatus || "Pending",
             products,
           };
         })
       );
   
-      console.log("All Orders Fetched:", allOrders);
-      setOrderHistory(allOrders);
+      const uniqueOrders = [];
+      const seen = new Set();
+  
+      for (const order of allOrders) {
+        const key = `${order.userId}_${order.id}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          uniqueOrders.push(order);
+        }
+      }
+  
+      // ✅ Sort orders by newest createdAt
+      uniqueOrders.sort((a, b) => {
+        const dateA = new Date(a.createdAt);
+        const dateB = new Date(b.createdAt);
+        return dateB - dateA;
+      });
+  
+      setOrderHistory(uniqueOrders);
+  
+      console.log("Unique Orders Fetched and Sorted:", uniqueOrders);
+  
     } catch (error) {
-      console.error("Error fetching all orders:", error.message);
+      console.error("Error fetching orders:", error.message);
       setOrderHistory([]);
     }
   }, []);
-  
   
   // ** Fetch Orders From Database ** 
   useEffect(() => {

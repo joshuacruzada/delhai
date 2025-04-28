@@ -7,11 +7,11 @@ import NewCustomer from './NewCustomer';
 import EditCustomer from './EditCustomer';
 import DeleteWarningModal from './DeleteWarningModal';
 import { cleanUpDuplicates } from "../services/customerCleanup";
-
+import { IconEdit, IconTrash } from '@tabler/icons-react';
 const CustomerList = () => {
   const [customers, setCustomers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [locationSearch, setLocationSearch] = useState(''); // New state for location filtering
+  const [locationSearch, setLocationSearch] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editCustomer, setEditCustomer] = useState(null);
   const [deleteCustomerId, setDeleteCustomerId] = useState(null);
@@ -26,47 +26,51 @@ const CustomerList = () => {
     if (!user) return;
 
     try {
-      await cleanUpDuplicates(user.uid); // Remove duplicates if any
-      const customersRef = ref(database, `customers/${user.uid}`);
-      const snapshot = await get(customersRef);
+      await cleanUpDuplicates(user.uid);
 
-      if (snapshot.exists()) {
-        const customerList = Object.entries(snapshot.val()).map(([key, value]) => ({
+      // Fetch admin UID from config
+      const adminConfigRef = ref(database, 'config/adminUID');
+      const adminSnapshot = await get(adminConfigRef);
+      const adminUID = adminSnapshot.exists() ? adminSnapshot.val() : null;
+
+      let customersList = [];
+
+      // Fetch customers from ADMIN path
+      if (adminUID) {
+        const adminCustomersRef = ref(database, `customers/${adminUID}`);
+        const adminCustomersSnapshot = await get(adminCustomersRef);
+        if (adminCustomersSnapshot.exists()) {
+          const adminCustomers = Object.entries(adminCustomersSnapshot.val()).map(([key, value]) => ({
+            id: key,
+            ...value,
+          }));
+          customersList = customersList.concat(adminCustomers);
+        }
+      }
+
+      // Fetch customers from USER path (ecommerce users)
+      const userCustomersRef = ref(database, `customers/${user.uid}`);
+      const userCustomersSnapshot = await get(userCustomersRef);
+      if (userCustomersSnapshot.exists()) {
+        const userCustomers = Object.entries(userCustomersSnapshot.val()).map(([key, value]) => ({
           id: key,
           ...value,
         }));
-        setCustomers(customerList);
-      } else {
-        setCustomers([]);
+        customersList = customersList.concat(userCustomers);
       }
+
+      setCustomers(customersList);
     } catch (error) {
       console.error("Error fetching customers:", error);
     }
   };
 
-  const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value);
-  };
-
-  const handleLocationSearchChange = (event) => {
-    setLocationSearch(event.target.value);
-  };
-
-  const handleAddCustomer = () => {
-    setIsAddModalOpen(true);
-  };
-
-  const handleEditCustomer = (customer) => {
-    setEditCustomer(customer);
-  };
-
-  const handleDeleteCustomer = (customerId) => {
-    setDeleteCustomerId(customerId);
-  };
-
-  const handleCustomerChange = () => {
-    fetchCustomers(); // Re-fetch customers after adding, editing, or deleting
-  };
+  const handleSearchChange = (event) => setSearchTerm(event.target.value);
+  const handleLocationSearchChange = (event) => setLocationSearch(event.target.value);
+  const handleAddCustomer = () => setIsAddModalOpen(true);
+  const handleEditCustomer = (customer) => setEditCustomer(customer);
+  const handleDeleteCustomer = (customerId) => setDeleteCustomerId(customerId);
+  const handleCustomerChange = () => fetchCustomers();
 
   const filteredCustomers = customers.filter((customer) => {
     const matchesSearch = 
@@ -77,7 +81,7 @@ const CustomerList = () => {
     const matchesLocation = 
       customer.completeAddress?.toLowerCase().includes(locationSearch.toLowerCase());
 
-    return matchesSearch && matchesLocation; // Both search and location must match
+    return matchesSearch && matchesLocation;
   });
 
   return (
@@ -120,20 +124,24 @@ const CustomerList = () => {
           <tbody>
             {filteredCustomers.map((customer) => (
               <tr key={customer.id}>
-                <td>{customer.poNo}</td>
-                <td>{customer.name}</td>
-                <td>{customer.completeAddress}</td>
-                <td>{customer.email}</td>
-                <td>{customer.salesman}</td>
+                <td>{customer.poNo || 'N/A'}</td>
+                <td>{customer.name || 'N/A'}</td>
+                <td>{customer.completeAddress || 'N/A'}</td>
+                <td>{customer.email || 'N/A'}</td>
+                <td>{customer.salesman || 'N/A'}</td>
                 <td className="action-icons">
-                  <i
-                    className="bi bi-pencil-fill edit-icon"
+                  <IconEdit 
+                    size={20}
+                    stroke={2}
+                    style={{ cursor: "pointer", marginRight: "10px", color: "black" }}
                     onClick={() => handleEditCustomer(customer)}
-                  ></i>
-                  <i
-                    className="bi bi-trash-fill delete-icon"
+                  />
+                  <IconTrash
+                    size={20}
+                    stroke={2}
+                    style={{ cursor: "pointer", color: "red" }}
                     onClick={() => handleDeleteCustomer(customer.id)}
-                  ></i>
+                  />
                 </td>
               </tr>
             ))}

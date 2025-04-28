@@ -52,10 +52,10 @@ const Shop = () => {
 
   const handleAddToCart = async (product) => {
     if (!auth.currentUser) return alert("Please login to add items to cart.");
-
+  
     const cartRef = ref(database, `users/${auth.currentUser.uid}/cart/${product.id}`);
     const snapshot = await get(cartRef);
-
+  
     if (snapshot.exists()) {
       const existing = snapshot.val();
       await set(cartRef, { ...existing, quantity: existing.quantity + 1 });
@@ -64,10 +64,31 @@ const Shop = () => {
         name: product.name,
         pricePerBox: product.pricePerBox,
         imageUrl: product.imageUrl || "/placeholder.png",
-        quantity: 1
+        quantity: 1,
       });
     }
+  
+    // 🔥 Sync localStorage cart too
+    const cartItemsRaw = localStorage.getItem("cartItems");
+    let cartItems = cartItemsRaw ? JSON.parse(cartItemsRaw) : [];
+  
+    const existingLocalItem = cartItems.find(item => item.id === product.id);
+    if (existingLocalItem) {
+      existingLocalItem.quantity += 1;
+    } else {
+      cartItems.push({
+        id: product.id,
+        name: product.name,
+        pricePerBox: product.pricePerBox,
+        imageUrl: product.imageUrl || "/placeholder.png",
+        quantity: 1,
+      });
+    }
+  
+    localStorage.setItem("cartItems", JSON.stringify(cartItems));
+    console.log("🛒 Product added to cart + localStorage updated.");
   };
+  
 
   return (
     <div className="shop-page">

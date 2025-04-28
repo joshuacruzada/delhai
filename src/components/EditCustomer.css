@@ -1,85 +1,97 @@
-/* Modal overlay for Edit Customer */
 .edit-customer-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1050; /* Ensure it appears above other elements */
-  }
-  
-  /* Modal content container */
-  .edit-customer-modal-content {
-    background: white;
-    padding: 30px;
-    border-radius: 10px;
-    width: 500px;
-    max-width: 90%;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    animation: fadeIn 0.3s ease;
-    text-align: center;
-  }
-  
-  /* Modal header text */
-  .edit-customer-modal-content h2 {
-    font-size: 1.8rem;
-    margin-bottom: 20px;
-    color: #333;
-  }
-  
-  /* Form input styling */
-  .edit-customer-modal-content .form-control {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 1rem;
-  }
-  
-  /* Buttons container */
-  .edit-customer-modal-content button {
-    padding: 10px 15px;
-    font-size: 1rem;
-    margin: 5px;
-    border-radius: 5px;
-  }
-  
-  /* Success button */
-  .edit-customer-modal-content .btn-success {
-    background-color: #28a745;
-    color: white;
-    border: none;
-  }
-  
-  .edit-customer-modal-content .btn-success:hover {
-    background-color: #218838;
-  }
-  
-  /* Cancel button */
-  .edit-customer-modal-content .btn-secondary {
-    background-color: #6c757d;
-    color: white;
-    border: none;
-  }
-  
-  .edit-customer-modal-content .btn-secondary:hover {
-    background-color: #5a6268;
-  }
-  
-  /* Fade-in animation */
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: scale(0.9);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-  
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.edit-customer-modal-content {
+  background: #fff;
+  padding: 20px 30px;
+  width: 700px;
+  max-width: 90%;
+  border-radius: 10px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.edit-customer-modal-content h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+.edit-customer-form {
+  margin-top: 10px;
+}
+
+.form-grid {
+  display: flex;
+  gap: 20px;
+}
+
+.form-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-column label {
+  font-size: 0.9rem;
+  color: #555;
+  margin-top: 10px;
+  margin-bottom: 5px;
+}
+
+.form-column input,
+.form-column select {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 0.95rem;
+  width: 100%;
+}
+
+.edit-customer-buttons {
+  display: flex;
+  justify-content: center;
+  margin-top: 25px;
+  gap: 10px;
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+}
+
+.btn-cancel {
+  background-color: #6c757d;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.btn-cancel:hover {
+  background-color: #5a6268;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
