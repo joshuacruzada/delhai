@@ -56,13 +56,13 @@
   .brand-name {
     font-size: 24px;
     font-weight: 800;
-    color: #006878;
+    color: cadetblue;
     margin: 0;
   }
   
   .brand-subtitle {
     font-size: 14px;
-    color: #006878 !important;
+    color: cadetblue !important;
     font-weight: 600;
     margin: 0;
   }
@@ -125,7 +125,7 @@
   .login-btn {
     width: 100%;
     padding: 12px;
-    background-color: #007c91;
+    background-color: cadetblue;
     color: white;
     font-size: 16px;
     font-weight: 600;
@@ -206,7 +206,7 @@
   
   .signup-link a {
     font-weight: bold;
-    color: #d34b2c;
+    color: cadetblue !important;
     text-decoration: none;
   }
   

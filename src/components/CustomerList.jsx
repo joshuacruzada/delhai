@@ -7,7 +7,7 @@ import NewCustomer from './NewCustomer';
 import EditCustomer from './EditCustomer';
 import DeleteWarningModal from './DeleteWarningModal';
 import { cleanUpDuplicates } from "../services/customerCleanup";
-import { IconEdit, IconTrash } from '@tabler/icons-react';
+
 const CustomerList = () => {
   const [customers, setCustomers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -130,18 +130,8 @@ const CustomerList = () => {
                 <td>{customer.email || 'N/A'}</td>
                 <td>{customer.salesman || 'N/A'}</td>
                 <td className="action-icons">
-                  <IconEdit 
-                    size={20}
-                    stroke={2}
-                    style={{ cursor: "pointer", marginRight: "10px", color: "black" }}
-                    onClick={() => handleEditCustomer(customer)}
-                  />
-                  <IconTrash
-                    size={20}
-                    stroke={2}
-                    style={{ cursor: "pointer", color: "red" }}
-                    onClick={() => handleDeleteCustomer(customer.id)}
-                  />
+                  <i className="bi bi-pencil-fill edit-icon" onClick={() => handleEditCustomer(customer)}></i>
+                  <i className="bi bi-trash-fill delete-icon" onClick={() => handleDeleteCustomer(customer.id)}></i>
                 </td>
               </tr>
             ))}

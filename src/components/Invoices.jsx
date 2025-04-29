@@ -61,7 +61,7 @@ const Invoices = () => {
             terms: invoice.terms || 'N/A',
             salesman: invoice.salesman || 'N/A',
             totalAmount: invoice.totalAmount || 0,
-            paymentStatus: invoice.paymentStatus || order.paymentStatus || 'Pending',
+            paymentStatus: order.paymentStatus || invoice.paymentStatus || 'Pending',
             products: invoice.orderDetails || [],
           };
         }).sort((a, b) => new Date(b.issuedAt) - new Date(a.issuedAt)); // sort here

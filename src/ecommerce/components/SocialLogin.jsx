@@ -59,7 +59,7 @@ const SocialLogin = () => {
 
         <input
           type="text"
-          placeholder="Phone number / Email"
+          placeholder="Email"
           value={emailOrPhone}
           onChange={(e) => setEmailOrPhone(e.target.value)}
           required

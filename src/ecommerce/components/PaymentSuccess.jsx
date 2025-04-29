@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { getAuth } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import { remove, ref } from "firebase/database";
+import { remove, ref, get, set } from "firebase/database"; // ⬅️ Added get and set here
 import { database } from "../../FirebaseConfig";
 import "./PaymentSuccess.css";
 import { completeOrderProcess } from "../../services/orderUtils";
@@ -29,11 +29,10 @@ const PaymentSuccess = () => {
 
       const orderData = JSON.parse(rawData);
 
-      // 🔥 Build buyerInfo properly
       const buyerInfo = {
         name: currentUser.displayName || "Walk-in Customer",
         email: currentUser.email || "",
-        street: "N/A", // No street info from Firebase Auth
+        street: "N/A",
         barangay: "N/A",
         city: "N/A",
         province: "N/A",
@@ -47,20 +46,44 @@ const PaymentSuccess = () => {
       };
 
       try {
-        // 🔥 Call completeOrderProcess
+        // 🔥 Deduct stock quantities before saving order
+        if (Array.isArray(orderData.products)) {
+          const deductionPromises = orderData.products.map(async (product) => {
+            const productId = product.id || product.productId;
+            const quantityPurchased = product.quantity || 1;
+
+            if (productId) {
+              const stockRef = ref(database, `products/${productId}/stock`);
+              try {
+                const stockSnapshot = await get(stockRef);
+                if (stockSnapshot.exists()) {
+                  const currentStock = stockSnapshot.val();
+                  const newStock = currentStock - quantityPurchased;
+                  await set(stockRef, newStock >= 0 ? newStock : 0); // No negative stock
+                }
+              } catch (err) {
+                console.error(`Failed to deduct stock for product ${productId}`, err);
+              }
+            }
+          });
+
+          await Promise.all(deductionPromises);
+        }
+
+        // 🔥 Save order process
         await completeOrderProcess(
           buyerInfo,
           orderData.products,
           orderData.totalAmount,
-          [], // Empty products array for now
-          () => {}, // Dummy setProducts function
+          [],
+          () => {},
           currentUser.uid
         );
 
-        // 🔥 Remove cart items after successful order
+        // 🔥 Remove cart items
         if (Array.isArray(orderData.products)) {
           const removalPromises = orderData.products.map(async (product) => {
-            const productId = product.id || product.productId || null;
+            const productId = product.id || product.productId;
             if (productId) {
               await remove(ref(database, `users/${currentUser.uid}/cart/${productId}`));
             }
@@ -69,7 +92,7 @@ const PaymentSuccess = () => {
           await Promise.all(removalPromises);
         }
 
-        // ✅ SET order info to show success page
+        // ✅ Set orderInfo to show success screen
         setOrderInfo({ customerInfo: buyerInfo, orderData });
         localStorage.removeItem("checkoutData");
         localStorage.removeItem("cartItems");
@@ -112,17 +135,18 @@ const PaymentSuccess = () => {
                   </li>
                 ))}
               </ul>
-              <div style={{ marginTop: "20px", textAlign: "center" }}>
-                <button
-                  onClick={() => navigate("/")}
-                  className="home-button"
-                >
-                  Back to Home
-                </button>
-              </div>
             </div>
           </div>
         )}
+
+        <div style={{ marginTop: "20px", textAlign: "center" }}>
+          <button
+            onClick={() => navigate("/")}
+            className="home-button"
+          >
+            Back to Home
+          </button>
+        </div>
       </div>
     </div>
   );
